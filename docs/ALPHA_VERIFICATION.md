@@ -35,13 +35,33 @@ passing runtime run, not those failures.
 ## Deployment / privacy
 
 Production https://ts7-carplay-lite-relay.vercel.app, deployment
-dpl_CQPYaboA5wGxM1Zj8KdUKU7qTyDX READY. Both diagnostic (#5) and alpha (#13) routes
+dpl_CQPYaboA5wGxM1Zj8KdUKU7qTyDX was initially READY. Both diagnostic (#5) and alpha (#13) routes
 verified live GET405 / invalid-schema POST400. Successful GitHub destinations tested
 with mocked responses; no fabricated device report posted as a canary.
 
 Diagnostic v0.2 real user upload succeeded. Alpha real user upload pending.
 Token remains only in Vercel, not read back or embedded. Bounded process-local
 rate/dedup are best-effort, not distributed guarantees.
+
+### Post-publication deployment repair
+
+Final live checks caught a real regression: GitHub-triggered production deployments
+were using the repository root instead of `backend`, replacing the working API with
+static output and returning 404 for both routes. The existing project's Root
+Directory is now `backend`, read back from Vercel; its GitHub integration and sensitive
+production secret remain in place. No secret value was read back.
+
+Redeployed from the repository root, as required when Root Directory is configured.
+Deployment dpl_D7rRSmDUZfzAPtJ1mPSCavJ3HGWC is READY and inspection shows both
+`api/diagnostics` and `api/carplay-diagnostics` serverless functions. The production
+alias again passes all four live checks: both GETs are JSON405/method_not_allowed;
+both empty-object POSTs are JSON400/invalid_payload. No GitHub comment was created.
+All 15 mocked backend tests pass again. See backend/README.md for the persistent
+deployment setup and mandatory post-push checks.
+
+This is a server configuration repair only. Published APK/tag/signature/checksum
+remain unchanged. Real alpha user upload is still pending, not inferred from these
+negative route checks or mocked GitHub responses.
 
 ## Preserved / unverified
 

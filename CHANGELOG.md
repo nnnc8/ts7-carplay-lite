@@ -19,6 +19,7 @@
 - PR/main alpha/diagnostic CI PASS; API27 emulator Surface output, stream-reset recovery and stop PASS (OMX.google.h264.decoder, not SPRD evidence).
 - Published normal APK, SHA-256 5a2461ce16324b793425aa3fa287840c64f55a9980f95385044839bd252b26da.
 - Independent runtime/backend security reviews cleared; no embedded credential, proprietary receiver or Apple authentication identity.
+- Repaired production relay 404 regression caused by GitHub deployments using the repository root: Vercel Root Directory is now `backend`, both serverless routes restored and live GET405/invalid POST400 checked. Published APK unchanged; alpha real-user upload remains pending.
 
 ## Unreleased
 

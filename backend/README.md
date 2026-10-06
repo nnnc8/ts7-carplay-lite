@@ -15,6 +15,30 @@ Use a fine-grained GitHub PAT restricted to the `nnnc8/ts7-carplay-lite` reposit
 
 Only rate-window/max tuning is configurable; owner/repository/issue are hard-coded per server route. Previous destination environment variables have no effect. Neither route accepts client destination fields.
 
+## Production deployment
+
+The existing Vercel project is `ncnc8/ts7-carplay-lite-relay`. Its **Root Directory
+must be `backend`**, including for GitHub-triggered deployments. Keep the existing
+production `GITHUB_TOKEN` secret; do not copy it into local files or Android builds.
+
+Run Vercel CLI linking/deployment from the **repository root**, not from `backend`,
+because Vercel applies the configured root directory itself:
+
+```sh
+vercel link --scope ncnc8 --project ts7-carplay-lite-relay --yes
+vercel deploy --prod --yes --scope ncnc8
+```
+
+After any deployment or GitHub push, verify **both** public API routes: GET must
+return JSON 405 and an empty-object JSON POST must return JSON 400. These harmless
+checks must not create an issue comment. A 404/static page is not a passing check.
+Successful alpha device-to-GitHub upload remains a separate real-user test.
+
+During preview publication, the project was incorrectly configured with the
+repository root. A later GitHub deployment replaced the working manual relay with
+a static deployment, producing 404 for both routes. Setting Root Directory to
+`backend` repairs both manual and future GitHub deployments; APK assets are unchanged.
+
 ## Local tests
 
 ```sh
