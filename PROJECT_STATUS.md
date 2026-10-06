@@ -64,7 +64,7 @@ JVM tests mean IMPLEMENTED / LOCAL TESTED, not hardware VERIFIED. Emulator evide
 ## Publication / deployment
 
 - [Repository](https://github.com/nnnc8/ts7-carplay-lite): PUBLIC, default main.
-- Branch: feature/wireless-carplay-alpha from 44b688a.
+- Branch: feature/wireless-carplay-alpha from 44b688a. Independent receiver/runtime review completed; identified callback/retry/fallback/touch/lifecycle issues repaired, no residual blocking findings.
 - [Alpha test issue #13](https://github.com/nnnc8/ts7-carplay-lite/issues/13).
 - [PR #14](https://github.com/nnnc8/ts7-carplay-lite/pull/14); [lawful wireless core #15](https://github.com/nnnc8/ts7-carplay-lite/issues/15), [state validation #16](https://github.com/nnnc8/ts7-carplay-lite/issues/16), [recovery #17](https://github.com/nnnc8/ts7-carplay-lite/issues/17).
 - Diagnostic endpoint: https://ts7-carplay-lite-relay.vercel.app/api/diagnostics. User upload succeeded; token configured server-side only.

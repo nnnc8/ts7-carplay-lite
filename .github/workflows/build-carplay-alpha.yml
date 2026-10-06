@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       TS7_CARPLAY_UPLOAD_URL: https://ts7-carplay-lite-relay.vercel.app/api/carplay-diagnostics
     steps:
@@ -54,7 +54,7 @@ jobs:
 
   android-81-surface:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4

@@ -12,6 +12,14 @@ assert re.search(r"(?:minSdkVersion|sdkVersion):'27'", badging) and "targetSdkVe
 assert "package: name='io.ts7.carplay'" in badging and "versionName='0.1-alpha'" in badging
 assert "native-code:" not in badging
 assert "launchable-activity: name='io.ts7.carplay.MainActivity'" in badging
+permissions = set(re.findall(r"uses-permission: name='([^']+)'", badging))
+assert permissions == {
+    "android.permission.INTERNET", "android.permission.ACCESS_NETWORK_STATE",
+    "android.permission.ACCESS_WIFI_STATE", "android.permission.BLUETOOTH",
+}, "Unexpected permission or missing declared purpose"
+instrumented = apk.name.endswith("-instrumented.apk")
+if not instrumented:
+    assert "application-debuggable" not in badging, "Release preview must not be debuggable"
 with zipfile.ZipFile(apk) as archive:
     names = archive.namelist()
     assert "classes.dex" in names and "AndroidManifest.xml" in names
@@ -19,9 +27,11 @@ with zipfile.ZipFile(apk) as archive:
     assert not any(name.startswith("lib/") for name in names), "Java-only build must not become host-native"
     assert not any(re.search(r"(?i)(tlink|zlink|offline-mfi|[.](pk8|p7b|pem|key|so|p12|pfx|jks|keystore)$)", name) for name in names)
     dex = archive.read("classes.dex")
+    assert instrumented == (b"Lio/ts7/carplay/RendererInstrumentation;" in dex), "Test entry point must be CI-only"
     assert not re.search(rb"ghp_|github_pat_|GITHUB_TOKEN|BEGIN [A-Z ]*PRIVATE KEY", dex)
     for forbidden in (b"Landroid/graphics/Bitmap;", b"Landroid/webkit/WebView;", b"Landroid/graphics/Canvas;",
-                      b"getSSID", b"getBSSID", b"getMacAddress", b"getIpAddress", b"getSerial", b"getDeviceId"):
+                      b"getSSID", b"getBSSID", b"getMacAddress", b"getIpAddress", b"getSerial", b"getDeviceId",
+                      b"getImei", b"getSubscriberId", b"Landroid/accounts/AccountManager;"):
         assert forbidden not in dex, "Forbidden API reference: " + forbidden.decode()
     asset = archive.read("assets/ts7-pattern.h264")
     source = pathlib.Path(__file__).resolve().parents[1] / "src/main/assets/ts7-pattern.h264"
