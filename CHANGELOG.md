@@ -8,6 +8,8 @@
 - Added the complete Phase 0–7 roadmap and GitHub issue seed list.
 - Improved build-toolchain diagnostics for hosts that do not expose `ld.lld` on `PATH`.
 - Local build and JAR signature verification completed on 2026-10-06 after installing LLVM/LLD.
+- Published the private `nnnc8/ts7-carplay-lite` repository on `main` with 12 labels and 11 issue seeds.
+- Verified the first GitHub Actions run builds and uploads the diagnostic APK artifact.
 
 ## 0.1 — 2026-10-06
 

@@ -10,7 +10,18 @@ Status: **WAITING_FOR_DEVICE_RESULT**
 
 The immediate blocker is not source code. We need one real diagnostic run on the target TS7 before choosing the CarPlay video/transport architecture.
 
-Repository preparation is complete locally. GitHub publication, Issues, tag and Release remain pending until the first safe push.
+Repository preparation and initial GitHub publication are complete. The version tag and Release remain pending until this final documentation/workflow commit is pushed.
+
+## GitHub publication
+
+- Repository: [nnnc8/ts7-carplay-lite](https://github.com/nnnc8/ts7-carplay-lite)
+- Visibility: PRIVATE
+- Default branch: `main`
+- Initial commit: `43a3be62b4c092acf04a557fc483b6d441d7dcb9`
+- First Actions run: [37448438159](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37448438159) — SUCCESS, including APK artifact upload.
+- Release/tag: pending final documentation commit.
+
+Created issue seeds: #1 Wi-Fi/Bluetooth, #2 performance telemetry, #3 wireless feasibility, #4 H.264 decoder, #5 first diagnostic report, #6 60-minute stability, #7 30-minute stability, #8 display resolution, #9 Surface prototype, #10 USB topology, #11 wired transport.
 
 ## Target device
 
@@ -41,6 +52,8 @@ Repository preparation is complete locally. GitHub publication, Issues, tag and 
 - [x] CI workflow added for future agent handoff.
 - [x] README, agent handoff contract, roadmap, backlog and release guidance completed.
 - [x] Local ARMv7 APK build and JAR signature verification completed on 2026-10-06 with LLVM/LLD.
+- [x] Private GitHub repository created, `main` pushed without force, labels and 11 issue seeds created.
+- [x] GitHub Actions build and APK artifact upload verified on the initial push.
 
 ## Evidence labels
 

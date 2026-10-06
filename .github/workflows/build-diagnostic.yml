@@ -2,13 +2,9 @@ name: Build TS7 Diagnostic
 
 on:
   push:
-    paths:
-      - 'diagnostic/**'
-      - '.github/workflows/build-diagnostic.yml'
+    branches: [main]
   pull_request:
-    paths:
-      - 'diagnostic/**'
-      - '.github/workflows/build-diagnostic.yml'
+    branches: [main]
   workflow_dispatch:
 
 jobs:
