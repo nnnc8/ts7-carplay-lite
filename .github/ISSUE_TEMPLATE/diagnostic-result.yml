@@ -1,0 +1,40 @@
+name: TS7 diagnostic result
+description: Submit a sanitized diagnostic report from the target head unit.
+title: "[Diagnostic] "
+labels: ["diagnostic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before posting, remove any IMEI, serial number, SSID/BSSID, account name or other private identifier.
+  - type: input
+    id: apk
+    attributes:
+      label: Diagnostic APK version
+      placeholder: "0.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Connection state during test
+      options:
+        - Wired CarPlay path connected
+        - Wireless CarPlay Wi-Fi/Bluetooth state
+        - No phone connected
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: Sanitized report
+      description: Paste the diagnostic output here.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: symptoms
+    attributes:
+      label: Current CarPlay symptom
+      placeholder: "Freeze, disconnect, black screen, audio continues, etc."

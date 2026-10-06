@@ -1,0 +1,15 @@
+# Build output
+build/
+dist/
+*.keystore
+*.jks
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+*.iml
+
+# Local diagnostic reports (may contain device-specific data)
+reports/*.txt
+!reports/.gitkeep
