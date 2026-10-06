@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### CarPlay Lite v0.1-alpha technical preview — 2026-10-06
+
+- Advanced to wireless-only Phase 1 after captured Diagnostic v0.2 report; wired/USB issues remain deferred.
+- Added original API 27 Java shell and evidence-gated session states; lawful authentication boundary fails closed.
+- Added bounded SPS/PPS/IDR-aware H.264 input, SPRD-preferred MediaCodec → Surface and 1280×720 @ 30/25/20 fps.
+- Added developer-only generated H.264 pattern, never called CarPlay.
+- Added rendered-frame/queue/drop/latency/RAM/radio telemetry, fixed event ring and finite recovery/watchdog.
+- Added normalized touch boundary and minimal PCM AudioTrack sink; real media audio/touch unverified, Siri deferred.
+- Added fixed Issue #13 alpha relay/privacy tests; preserved Diagnostic v0.2 and Issue #5.
+- Added reproducible inspected APK build and separate API 27 Surface instrumentation CI.
+- Pinned upstream/API/ABI/license/auth research; no core, proprietary binary or Apple identity imported.
+- Wireless CarPlay BLOCKED; real TS7 alpha rendering/reconnect/long runs NOT YET VERIFIED. **TECHNICAL PREVIEW / NOT YET A FUNCTIONAL CARPLAY RECEIVER**.
+
 ### Changed
 
 - Expanded the handoff documentation for AI agents, evidence labels, issue tracking and release downloads.

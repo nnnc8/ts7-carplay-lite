@@ -1,79 +1,25 @@
-# Backlog
+# Backlog / handoff
 
-This file mirrors the issues that should exist in GitHub. Once the repository is writable, create one GitHub Issue per item and keep issue state synchronized here only when useful for agent handoff.
+Phase 0 basic gate complete; Phase 1 wireless current. GitHub issue state is authoritative; this file records priorities, not automatic acceptance.
 
-## GitHub issue seed list
-
-Create or maintain one GitHub Issue for each title below. Keep the labels in sync with the issue purpose.
-
-| Priority | Issue title | Labels |
+| Priority | Tracking | Remaining acceptance |
 | --- | --- | --- |
-| P0 | Collect first TS7 diagnostic report | `high-priority`, `diagnostic`, `blocked` |
-| P0 | Verify H.264 MediaCodec hardware decoder | `high-priority`, `codec`, `hardware` |
-| P0 | Determine physical display resolution | `high-priority`, `diagnostic`, `hardware` |
-| P0 | Inspect TS7 USB topology | `diagnostic`, `usb`, `hardware` |
-| P0 | Inspect Wi-Fi and Bluetooth capabilities | `diagnostic`, `wifi`, `hardware` |
-| P1 | Choose wired CarPlay transport implementation | `carplay`, `research`, `feature` |
-| P1 | Build minimal H.264 Surface rendering prototype | `carplay`, `codec`, `feature` |
-| P1 | Implement performance telemetry | `performance`, `feature` |
-| P1 | 30-minute stability test | `performance`, `research` |
-| P1 | 60-minute stability test | `performance`, `research` |
-| P2 | Wireless CarPlay feasibility investigation | `carplay`, `wifi`, `research` |
+| COMPLETE basic gate | #5 diagnostic | Captured report/instantiate; upload preserved |
+| Evidence captured | #8 display | 1280×720 / 160 DPI / ~60 Hz; panel internals not claimed |
+| P0 OPEN | #4 decoder | Sustained real TS7 30/25/20 fps, not enumeration/instantiate |
+| P0 | #15 Wireless alpha | Lawful API 27/ARMv7a core/auth; no vendor keys/proprietary blobs |
+| P0 | #9 Surface | API 27 actual output plus TS7 5/15-min, bounded queue and stop/restart |
+| P0 | #13 device alpha test | UI/pattern/decoder/fps/drops/RAM/copy/explicit upload/failures |
+| P1 | #16 Wireless state machine | Real bootstrap/Wi-Fi/auth/frame proof, guarded callbacks, no fake STREAMING |
+| P1 | #17 Recovery | Real network/decoder loss, finite 1/2/5s, IDR resync, no multiplied stuck workers |
+| P1 | #1 / #3 radios/research | Baseline captured; usable lawful session still unproven |
+| P1 | #2 telemetry | Codes/counters only; no identifiers/automatic uploads |
+| P2 | Audio/touch/Siri | Real PCM/touch first; permission-gated Siri later |
+| P2 | #7 30-min / #6 60-min | Real wireless session, RAM trend/classified failures |
+| DEFERRED | #10 USB / #11 wired | Keep open; debugging fallback only |
 
-The first issue, **Collect first TS7 diagnostic report**, is the current blocker and must carry `high-priority`, `diagnostic`, and `blocked`.
+## Publication gate
 
-## P0 — Validate Diagnostic v0.1 on real TS7
+Technical preview: working H.264 Surface renderer, documented architecture, passing build/CI/privacy/APK checks and explicit **NOT YET A FUNCTIONAL CARPLAY RECEIVER** authentication blocker.
 
-Acceptance criteria:
-
-- APK installs and launches on Android 8.1 target.
-- Full report renders without crash.
-- Report can be copied or saved.
-- Record any permission/install quirks.
-
-## P0 — Analyze first real-device report
-
-Acceptance criteria:
-
-- Confirm CPU ABI and board strings.
-- Confirm actual display resolution / DPI.
-- Identify H.264 hardware decoder(s) and usable capability range.
-- Identify USB device path used with iPhone connected.
-- Record free RAM under normal head-unit load.
-- Update `PROJECT_STATUS.md` and `docs/ARCHITECTURE_DECISIONS.md`.
-
-## P1 — Wired CarPlay session proof of concept
-
-Acceptance criteria:
-
-- Establish a wired CarPlay session on the TS7 target.
-- Render a basic CarPlay video stream.
-- No wireless implementation in this issue.
-- Instrument connection state and failure reason.
-
-## P1 — Direct MediaCodec to Surface video pipeline
-
-Acceptance criteria:
-
-- H.264 frames are decoded with the selected MediaCodec implementation.
-- Output goes directly to Surface.
-- No Bitmap conversion in the normal path.
-- Resolution/fps constrained to what the target can sustain.
-
-## P1 — Stability benchmark and freeze classification
-
-Acceptance criteria:
-
-- 30–60 minute wired run.
-- Detect transport disconnect vs decoder stall vs UI stall.
-- Log frame timing / queue state without excessive allocation.
-- Define 30/25/20 fps stability profiles if needed.
-
-## P2 — Wireless CarPlay prototype
-
-Acceptance criteria:
-
-- Start only after wired baseline is stable.
-- Characterize Bluetooth bootstrap and Wi‑Fi data path.
-- Record latency / disconnect pattern.
-- Implement reconnect without requiring full app restart where feasible.
+Functional CarPlay tag requires a lawful real wireless session and first real video frame. Never close #4/long-session gates from advertised ranges, instantiate or emulator output; keep incomplete audio/touch/reconnect visible.
