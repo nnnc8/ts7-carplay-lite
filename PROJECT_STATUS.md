@@ -10,7 +10,7 @@ Status: **WAITING_FOR_DEVICE_RESULT**
 
 The immediate blocker is not source code. We need one real diagnostic run on the target TS7 before choosing the CarPlay video/transport architecture.
 
-Repository preparation and initial GitHub publication are complete. The version tag and Release remain pending until this final documentation/workflow commit is pushed.
+Repository preparation, initial GitHub publication, tag and Release are complete. The only project blocker is still the missing real-device diagnostic result.
 
 ## GitHub publication
 
@@ -19,7 +19,8 @@ Repository preparation and initial GitHub publication are complete. The version 
 - Default branch: `main`
 - Initial commit: `43a3be62b4c092acf04a557fc483b6d441d7dcb9`
 - First Actions run: [37448438159](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37448438159) — SUCCESS, including APK artifact upload.
-- Release/tag: pending final documentation commit.
+- Release/tag: [`diagnostic-v0.1.0`](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/diagnostic-v0.1.0)
+- Release APK: [`TS7-Diagnostic-v0.1.apk`](https://github.com/nnnc8/ts7-carplay-lite/releases/download/diagnostic-v0.1.0/TS7-Diagnostic-v0.1.apk)
 
 Created issue seeds: #1 Wi-Fi/Bluetooth, #2 performance telemetry, #3 wireless feasibility, #4 H.264 decoder, #5 first diagnostic report, #6 60-minute stability, #7 30-minute stability, #8 display resolution, #9 Surface prototype, #10 USB topology, #11 wired transport.
 
@@ -54,6 +55,7 @@ Created issue seeds: #1 Wi-Fi/Bluetooth, #2 performance telemetry, #3 wireless f
 - [x] Local ARMv7 APK build and JAR signature verification completed on 2026-10-06 with LLVM/LLD.
 - [x] Private GitHub repository created, `main` pushed without force, labels and 11 issue seeds created.
 - [x] GitHub Actions build and APK artifact upload verified on the initial push.
+- [x] `diagnostic-v0.1.0` tag and `TS7 Diagnostic v0.1` Release created with the APK asset.
 
 ## Evidence labels
 

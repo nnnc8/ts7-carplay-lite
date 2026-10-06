@@ -10,6 +10,7 @@
 - Local build and JAR signature verification completed on 2026-10-06 after installing LLVM/LLD.
 - Published the private `nnnc8/ts7-carplay-lite` repository on `main` with 12 labels and 11 issue seeds.
 - Verified the first GitHub Actions run builds and uploads the diagnostic APK artifact.
+- Created tag `diagnostic-v0.1.0` and the `TS7 Diagnostic v0.1` GitHub Release with the APK asset.
 
 ## 0.1 — 2026-10-06
 

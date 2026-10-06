@@ -148,7 +148,8 @@ reports/                     Local-only sanitized report staging area
 ## 13. Releases
 
 - [GitHub Releases](https://github.com/nnnc8/ts7-carplay-lite/releases/latest)
-- `diagnostic-v0.1.0` — planned release for the first experimental hardware diagnostic build.
+- [`diagnostic-v0.1.0` — TS7 Diagnostic v0.1](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/diagnostic-v0.1.0)
+- [Direct APK download](https://github.com/nnnc8/ts7-carplay-lite/releases/download/diagnostic-v0.1.0/TS7-Diagnostic-v0.1.apk)
 
 ## 安全與授權
 
