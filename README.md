@@ -4,6 +4,8 @@
 
 針對低階 Android 車機 **TS7 / SL8141E / Android 8.1 / 2 GB RAM / 32 GB storage** 的極簡 CarPlay Receiver 研究與實作專案。
 
+這個 private GitHub repository 是本專案的 **single source of truth**；後續 agents 應以此處的程式碼、文件、Issues、Actions 與 Releases 為準。
+
 目前還不是完整 CarPlay Receiver。現在是 **Phase 0 — Diagnostics**：先取得真實 TS7 的硬體、MediaCodec、USB、Wi‑Fi、記憶體與顯示能力，再決定 receiver 架構。
 
 ## 1. Project Goal

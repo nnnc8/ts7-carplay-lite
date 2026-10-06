@@ -70,6 +70,15 @@ Created issue seeds: #1 Wi-Fi/Bluetooth, #2 performance telemetry, #3 wireless f
 - [ ] Run with Wi‑Fi/Bluetooth in the normal wireless CarPlay state if wireless is the target.
 - [ ] Return the full report or screenshots.
 
+## Next
+
+- Analyze MediaCodec results.
+- Identify the hardware AVC decoder, if available.
+- Identify the physical display resolution and DPI.
+- Inspect the USB device path and topology.
+- Inspect the Wi-Fi environment and Bluetooth capabilities.
+- Determine the first CarPlay Lite architecture from measured evidence.
+
 ## Blocked
 
 CarPlay Receiver implementation must not be optimized blindly until the diagnostic result is available.

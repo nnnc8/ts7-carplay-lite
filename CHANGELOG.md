@@ -11,6 +11,7 @@
 - Published the private `nnnc8/ts7-carplay-lite` repository on `main` with 12 labels and 11 issue seeds.
 - Verified the first GitHub Actions run builds and uploads the diagnostic APK artifact.
 - Created tag `diagnostic-v0.1.0` and the `TS7 Diagnostic v0.1` GitHub Release with the APK asset.
+- Clarified the GitHub repository as the single source of truth and documented the stable-main branch workflow and next diagnostic gate.
 
 ## 0.1 — 2026-10-06
 

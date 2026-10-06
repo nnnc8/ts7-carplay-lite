@@ -44,12 +44,16 @@ Do not mark hardware behavior as validated unless it was observed on the real TS
 
 ## Branch / PR convention
 
-Preferred branches:
+`main` means a stable state that is safe for the next agent to use. Do not put unverified experiments directly on `main`.
+
+Use these branch prefixes:
 
 - `agent/<short-task>`
 - `diag/<short-task>`
 - `carplay/<short-task>`
+- `feature/<topic>` for new functionality
 - `fix/<short-task>`
+- `research/<topic>` for investigations
 
 PR descriptions should state:
 
@@ -58,6 +62,8 @@ PR descriptions should state:
 - whether it was compiled
 - whether it was tested on emulator/device
 - what remains unverified
+
+Large features and experiments should go through a Pull Request before merging to `main`.
 
 ## Definition of done
 
