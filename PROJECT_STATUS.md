@@ -22,8 +22,10 @@ Repository preparation, public GitHub publication, v0.1 tag/Release and the v0.2
 - Release/tag: [`diagnostic-v0.1.0`](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/diagnostic-v0.1.0)
 - Release APK: [`TS7-Diagnostic-v0.1.apk`](https://github.com/nnnc8/ts7-carplay-lite/releases/download/diagnostic-v0.1.0/TS7-Diagnostic-v0.1.apk)
 - v0.2 branch CI: [37479300420](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37479300420) — SUCCESS, including APK signature and credential scan.
+- v0.2 main CI: [37479902327](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37479902327) — SUCCESS after PR #12 merge.
 - v0.2 APK SHA-256: `87dc5f08a1d0d5562720b834d460329a4cbc008f10072778d8e7f81540497a34`
-- v0.2 Release/tag: pending PR merge and release completion.
+- v0.2 Release/tag: [`diagnostic-v0.2.0`](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/diagnostic-v0.2.0)
+- v0.2 Release APK: [`TS7-Diagnostic-v0.2.apk`](https://github.com/nnnc8/ts7-carplay-lite/releases/download/diagnostic-v0.2.0/TS7-Diagnostic-v0.2.apk)
 
 ## Diagnostic upload relay
 
