@@ -1,10 +1,10 @@
-# TS7 Diagnostic
+# TS7 Diagnostic v0.1 legacy implementation
 
-A minimal Android NativeActivity diagnostic utility for the TS7 target.
+A frozen NativeActivity implementation retained for comparison with the v0.1 black-screen report. New builds and device testing use [`diagnostic-app/`](../diagnostic-app/).
 
 Package: `io.ts7diag.tool`
 
-Current version: `0.1`
+Current version: `0.1` (legacy)
 
 ## What it reads
 
@@ -25,7 +25,7 @@ Current version: `0.1`
 - no account access
 - no analytics / telemetry
 
-## Build
+## Build legacy APK
 
 From the repository root:
 
@@ -39,4 +39,4 @@ Output:
 dist/TS7-Diagnostic-v0.1.apk
 ```
 
-The build intentionally uses a NativeActivity and a small ARMv7 shared library. A local debug/test keystore is generated if no keystore is supplied. Do not use that test key for a production release.
+The build intentionally uses a NativeActivity and a small ARMv7 shared library. This is not the v0.2 build path: the v0.1 app performs blocking diagnostic work before creating its UI and must not be used for the current real-device test. A local debug/test keystore is generated if no keystore is supplied. Do not use that test key for a production release.

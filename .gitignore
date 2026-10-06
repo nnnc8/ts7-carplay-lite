@@ -3,6 +3,13 @@ build/
 dist/
 *.keystore
 *.jks
+.vercel/
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
 
 # IDE / OS
 .idea/

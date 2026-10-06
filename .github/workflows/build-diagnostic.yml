@@ -1,4 +1,4 @@
-name: Build TS7 Diagnostic
+name: Build TS7 Diagnostic v0.2
 
 on:
   push:
@@ -10,6 +10,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      TS7_DIAGNOSTIC_UPLOAD_URL: ${{ vars.TS7_DIAGNOSTIC_UPLOAD_URL }}
     permissions:
       contents: read
 
@@ -19,19 +23,34 @@ jobs:
       - name: Install build tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang lld zip openjdk-17-jdk-headless file
+          sudo apt-get install -y zip openjdk-17-jdk-headless file
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then SDKMANAGER="$(command -v sdkmanager)"; fi
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Run backend tests
+        working-directory: backend
+        run: npm test
+
+      - name: Run Android privacy tests
+        run: ./diagnostic-app/test.sh
 
       - name: Build APK
-        run: ./diagnostic/scripts/build.sh
+        run: ./diagnostic-app/build.sh
 
       - name: Inspect artifact
         run: |
-          unzip -l dist/TS7-Diagnostic-v0.1.apk
-          jarsigner -verify dist/TS7-Diagnostic-v0.1.apk
+          unzip -l dist/TS7-Diagnostic-v0.2.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify dist/TS7-Diagnostic-v0.2.apk
+          if unzip -p dist/TS7-Diagnostic-v0.2.apk classes.dex | strings | grep -E 'ghp_|github_pat_|GITHUB_TOKEN'; then
+            echo 'credential-like string found in APK' >&2
+            exit 1
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: TS7-Diagnostic-v0.1
-          path: dist/TS7-Diagnostic-v0.1.apk
+          name: TS7-Diagnostic-v0.2
+          path: dist/TS7-Diagnostic-v0.2.apk
           if-no-files-found: error
