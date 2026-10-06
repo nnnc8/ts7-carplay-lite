@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-10-06
+Last updated: 2026-10-07
 
 ## Current phase
 
@@ -66,8 +66,9 @@ JVM tests mean IMPLEMENTED / LOCAL TESTED, not hardware VERIFIED. Emulator evide
 - [Repository](https://github.com/nnnc8/ts7-carplay-lite): PUBLIC, default main.
 - Branch: feature/wireless-carplay-alpha from 44b688a.
 - [Alpha test issue #13](https://github.com/nnnc8/ts7-carplay-lite/issues/13).
+- [PR #14](https://github.com/nnnc8/ts7-carplay-lite/pull/14); [lawful wireless core #15](https://github.com/nnnc8/ts7-carplay-lite/issues/15), [state validation #16](https://github.com/nnnc8/ts7-carplay-lite/issues/16), [recovery #17](https://github.com/nnnc8/ts7-carplay-lite/issues/17).
 - Diagnostic endpoint: https://ts7-carplay-lite-relay.vercel.app/api/diagnostics. User upload succeeded; token configured server-side only.
-- Alpha endpoint: https://ts7-carplay-lite-relay.vercel.app/api/carplay-diagnostics; deployment verification pending this branch.
+- Alpha endpoint: https://ts7-carplay-lite-relay.vercel.app/api/carplay-diagnostics; Vercel production deployment dpl_CQPYaboA5wGxM1Zj8KdUKU7qTyDX READY. Both routes return safe GET 405 and invalid-schema POST 400; alpha successful GitHub-write behavior tested locally, real alpha user upload pending.
 - Preserved [diagnostic-v0.2.0](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/diagnostic-v0.2.0), APK SHA-256 87dc5f08a1d0d5562720b834d460329a4cbc008f10072778d8e7f81540497a34.
 - Historical diagnostic main CI [37479902327](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37479902327) SUCCESS after PR #12.
 

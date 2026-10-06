@@ -86,6 +86,9 @@ public final class ReceiverTest {
         check(!session.authenticated() && session.uptimeMs() == 0, "Lost session cannot accept video as authenticated");
         session.authenticationConfirmed();
         check(session.state() == SessionMachine.State.RECOVERING, "Fresh authentication alone is not recovered video");
+        session.recovering(SessionMachine.Reason.SESSION_LOST);
+        check(!session.authenticated(), "Loss before first recovered frame invalidates fresh authentication");
+        session.authenticationConfirmed();
         session.firstCarPlayFrame();
         check(session.state() == SessionMachine.State.STREAMING, "Fresh real frame ends authenticated recovery");
         session.observeBluetooth(true, false, true);
@@ -98,6 +101,7 @@ public final class ReceiverTest {
         check(!new ReceiverCore.Unavailable().hasLawfulAuthentication(), "Shipped core never grants authentication");
 
         RetryBudget retry = new RetryBudget();
+        check(retry.peekDelayMs() == 1000 && retry.peekDelayMs() == 1000, "Cancelled timer does not consume retry");
         check(retry.nextDelayMs() == 1000 && retry.nextDelayMs() == 2000 && retry.nextDelayMs() == 5000 && retry.nextDelayMs() == -1, "Recovery waits 1/2/5 seconds then stops");
         float[] mapped = new float[2];
         check(TouchMapper.map(640, 360, 1280, 720, 1280, 720, mapped) && mapped[0] == 0.5f && mapped[1] == 0.5f, "Center touch normalized");

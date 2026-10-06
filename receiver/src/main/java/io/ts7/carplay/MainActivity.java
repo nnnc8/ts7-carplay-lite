@@ -42,6 +42,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     private VideoProfile profile = VideoProfile.DEFAULT;
     private volatile int generation;
     private volatile int connectionGeneration;
+    private int recoveryGeneration;
     private volatile boolean coreActive;
     private int reconnectCount;
     private boolean resumed;
@@ -238,6 +239,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                             if (session.state() == SessionMachine.State.CARPLAY_NEGOTIATING
                                     || session.state() == SessionMachine.State.RECOVERING) {
                                 session.firstCarPlayFrame();
+                                recoveryGeneration++; // Invalidates timers from this recovery cycle.
                                 reconnect.reset();
                             }
                             hideChrome();
@@ -265,6 +267,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     private void stopPlayback(SessionMachine.Reason reason) {
         releaseTouch();
         connectionGeneration++;
+        recoveryGeneration++;
         coreActive = false;
         core.disconnect();
         reconnect.reset();
@@ -341,6 +344,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                     if (state != SessionMachine.State.CARPLAY_NEGOTIATING && state != SessionMachine.State.RECOVERING) return;
                     if (session.authenticated()) return; // Duplicate provider callback, not a new session.
                     if (prepareRenderer("CARPLAY")) {
+                        recoveryGeneration++; // Do not retry over an authenticated decoder startup.
                         session.authenticationConfirmed();
                         renderer.start();
                         core.videoSinkReady(); // Source must preserve initial SPS/PPS/IDR until this handshake.
@@ -364,21 +368,40 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     }
 
     private void handleDisconnect(int expected, SessionMachine.Reason reason) {
-        if (!connectionCurrent(expected) || session.state() == SessionMachine.State.RECOVERING) return;
+        if (!connectionCurrent(expected)
+                || (session.state() == SessionMachine.State.RECOVERING && !session.authenticated())) return;
         session.recovering(reason);
         stopVideo(reason); // Fresh authentication and a fresh rendered frame are needed.
         events.add(EventCode.RECOVERY_START);
-        scheduleReconnect(expected);
+        scheduleReconnect(expected, ++recoveryGeneration);
     }
 
-    private void scheduleReconnect(int expectedConnection) {
-        long delay = reconnect.nextDelayMs();
-        if (delay < 0) { session.exhausted(); stopPlayback(SessionMachine.Reason.RECOVERY_EXHAUSTED); return; }
+    private boolean recoveryCurrent(int expectedConnection, int expectedRecovery) {
+        return connectionCurrent(expectedConnection) && recoveryGeneration == expectedRecovery
+            && session.state() == SessionMachine.State.RECOVERING && !session.authenticated();
+    }
+
+    private void scheduleReconnect(int expectedConnection, int expectedRecovery) {
+        long delay = reconnect.peekDelayMs();
+        if (delay < 0) {
+            // The final attempt gets a completion window; never cancel it on the same UI turn.
+            main.postDelayed(() -> {
+                if (!recoveryCurrent(expectedConnection, expectedRecovery)) return;
+                session.exhausted();
+                stopPlayback(SessionMachine.Reason.RECOVERY_EXHAUSTED);
+            }, 5000);
+            return;
+        }
         main.postDelayed(() -> {
-            if (!connectionCurrent(expectedConnection) || session.state() != SessionMachine.State.RECOVERING) return;
+            if (!recoveryCurrent(expectedConnection, expectedRecovery)) return;
+            reconnect.nextDelayMs(); // Consume only an attempt actually dispatched.
             reconnectCount++;
             core.reconnect(); // Acceptance is not evidence of recovery: core must resume authenticated media.
-            if (session.state() == SessionMachine.State.RECOVERING) scheduleReconnect(expectedConnection);
+            // Let synchronous provider callbacks posted to the UI complete first.
+            main.post(() -> {
+                if (recoveryCurrent(expectedConnection, expectedRecovery))
+                    scheduleReconnect(expectedConnection, expectedRecovery);
+            });
         }, delay);
     }
 

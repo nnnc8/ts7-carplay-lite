@@ -226,26 +226,26 @@ public final class SurfaceRenderer {
             if (!active) return;
             if (rejectedCodecs.contains(candidate)) continue;
             try {
-            codec = MediaCodec.createByCodecName(candidate);
-            if (!active) { releaseCodec(); return; }
-            MediaFormat format = MediaFormat.createVideoFormat("video/avc", current.width, current.height);
-            format.setByteBuffer("csd-0", ByteBuffer.wrap(current.sps));
-            format.setByteBuffer("csd-1", ByteBuffer.wrap(current.pps));
-            format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, VideoQueue.MAX_PACKET_BYTES);
-            format.setInteger(MediaFormat.KEY_FRAME_RATE, profile.fps);
-            codec.configure(format, surface, null, 0);
-            if (!active) { releaseCodec(); return; }
-            codec.setOnFrameRenderedListener(this::frameRendered, callbacks);
-            codec.start();
-            decoderName = codec.getName();
-            videoWidth = current.width;
-            videoHeight = current.height;
-            configuredRevision = current.revision;
-            pendingInput = -1;
-            if (hasConfigured) restartCount++;
-            hasConfigured = true;
-            events.add(EventCode.DECODER_CONFIGURED);
-            return;
+                codec = MediaCodec.createByCodecName(candidate);
+                if (!active) { releaseCodec(); return; }
+                MediaFormat format = MediaFormat.createVideoFormat("video/avc", current.width, current.height);
+                format.setByteBuffer("csd-0", ByteBuffer.wrap(current.sps));
+                format.setByteBuffer("csd-1", ByteBuffer.wrap(current.pps));
+                format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, VideoQueue.MAX_PACKET_BYTES);
+                format.setInteger(MediaFormat.KEY_FRAME_RATE, profile.fps);
+                codec.configure(format, surface, null, 0);
+                if (!active) { releaseCodec(); return; }
+                codec.setOnFrameRenderedListener(this::frameRendered, callbacks);
+                codec.start();
+                decoderName = codec.getName();
+                videoWidth = current.width;
+                videoHeight = current.height;
+                configuredRevision = current.revision;
+                pendingInput = -1;
+                if (hasConfigured) restartCount++;
+                hasConfigured = true;
+                events.add(EventCode.DECODER_CONFIGURED);
+                return;
             } catch (Exception error) {
                 events.add(EventCode.DECODER_ERROR, codecErrorCode(error));
                 rejectedCodecs.add(candidate);

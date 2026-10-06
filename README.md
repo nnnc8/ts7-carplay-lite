@@ -38,7 +38,7 @@
 
 1. 安裝 `TS7-CarPlay-Lite-v0.1-alpha.apk`。開啟後確認立即看到標題、Settings、Diagnostics；啟動不初始化 decoder。
 2. Settings → Developer test mode 設為 ON，再選 Start developer H.264 pattern。
-3. 預設 1280×720 @ 30 fps，先跑 5 分鐘再跑 15 分鐘。若不穩，分別重測 Balanced 25 fps、Stability 20 fps。切换 profile 會停止播放，須手動重啟。
+3. 預設 1280×720 @ 30 fps，先跑 5 分鐘再跑 15 分鐘。若不穩，分別重測 Balanced 25 fps、Stability 20 fps。切換 profile 會停止播放，須手動重啟。
 4. Diagnostics → Copy diagnostics。記錄 decoderName、measuredFps、queue、drops、RAM、restart，以及 freeze／black screen。按 Upload diagnostics 並確認才公開上傳到固定 [Issue #13](https://github.com/nnnc8/ts7-carplay-lite/issues/13)；離線仍可複製。
 5. Stop playback、回到桌面再重開，確認沒有殘留黑屏／decoder 卡死。保留每輪報告；不要在駕駛中操作。
 

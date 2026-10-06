@@ -90,7 +90,7 @@ public final class SessionMachine {
     }
 
     public synchronized void recovering(Reason reason) {
-        if (state == State.IDLE || state == State.ERROR || state == State.RECOVERING) return;
+        if (state == State.IDLE || state == State.ERROR || (state == State.RECOVERING && !authenticated)) return;
         authenticated = false;
         sessionStartedNs = 0;
         lastReason = reason;

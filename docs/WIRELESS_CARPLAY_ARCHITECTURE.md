@@ -153,7 +153,9 @@ Copy and confirmed upload are user actions; no background telemetry.
 
 Frame stall threshold: 3 s (5 s initial startup). Recovery releases/resyncs, waits
 1/2/5 s, then stops with RECOVERY_EXHAUSTED. Stable output may reset the decoder
-budget. Session retries have a separate budget and epoch/state-guarded delayed work.
+budget. Session retries have a separate budget and connection/recovery-epoch/state-guarded
+delayed work; cancelled timers do not consume attempts. Authentication/first frame
+invalidates old retry timers. Final attempt has a bounded 5 s completion window.
 Repeated failures cannot spin forever. A vendor native call missing worker heartbeat
 for 5 s reports CODEC_CALL_TIMEOUT and refuses to create another worker while the old
 one remains live.

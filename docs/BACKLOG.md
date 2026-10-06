@@ -7,11 +7,11 @@ Phase 0 basic gate complete; Phase 1 wireless current. GitHub issue state is aut
 | COMPLETE basic gate | #5 diagnostic | Captured report/instantiate; upload preserved |
 | Evidence captured | #8 display | 1280×720 / 160 DPI / ~60 Hz; panel internals not claimed |
 | P0 OPEN | #4 decoder | Sustained real TS7 30/25/20 fps, not enumeration/instantiate |
-| P0 | Wireless alpha | Lawful API 27/ARMv7 core/auth; no vendor keys/proprietary blobs |
+| P0 | #15 Wireless alpha | Lawful API 27/ARMv7a core/auth; no vendor keys/proprietary blobs |
 | P0 | #9 Surface | API 27 actual output plus TS7 5/15-min, bounded queue and stop/restart |
 | P0 | #13 device alpha test | UI/pattern/decoder/fps/drops/RAM/copy/explicit upload/failures |
-| P1 | Wireless state machine | Real bootstrap/Wi-Fi/auth/frame proof, guarded callbacks, no fake STREAMING |
-| P1 | Recovery | Real network/decoder loss, finite 1/2/5s, IDR resync, no multiplied stuck workers |
+| P1 | #16 Wireless state machine | Real bootstrap/Wi-Fi/auth/frame proof, guarded callbacks, no fake STREAMING |
+| P1 | #17 Recovery | Real network/decoder loss, finite 1/2/5s, IDR resync, no multiplied stuck workers |
 | P1 | #1 / #3 radios/research | Baseline captured; usable lawful session still unproven |
 | P1 | #2 telemetry | Codes/counters only; no identifiers/automatic uploads |
 | P2 | Audio/touch/Siri | Real PCM/touch first; permission-gated Siri later |
