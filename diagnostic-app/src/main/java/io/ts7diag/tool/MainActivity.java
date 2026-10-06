@@ -383,7 +383,7 @@ public final class MainActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final ProbeResult result;
+                ProbeResult result;
                 try {
                     result = future.get(ADVANCED_TEST_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException timeout) {
@@ -393,11 +393,12 @@ public final class MainActivity extends Activity {
                     result = ProbeResult.failed("mediaCodecAdvanced", ProbeResult.Status.FAILED, 0L, new LinkedHashMap<String, Object>(), error.getClass().getSimpleName());
                 }
                 report.addResult(result);
+                final ProbeResult completedResult = result;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         advancedButton.setEnabled(true);
-                        statusText.setText("Status: Advanced H.264 test " + result.getStatus().name());
+                        statusText.setText("Status: Advanced H.264 test " + completedResult.getStatus().name());
                     }
                 });
             }
