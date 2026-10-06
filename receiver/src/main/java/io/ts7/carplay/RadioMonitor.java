@@ -14,10 +14,8 @@ import android.net.wifi.WifiManager;
 
 /** Observes system radio state only. Pairing/discovery remains in Android's consent UI. */
 public final class RadioMonitor extends BroadcastReceiver {
-    public interface Listener { void networkLost(); }
     private final Context context;
     private final SessionMachine machine;
-    private final Listener listener;
     private boolean registered;
     private boolean observedLink;
     public volatile boolean connected;
@@ -25,10 +23,9 @@ public final class RadioMonitor extends BroadcastReceiver {
     public volatile int linkSpeedMbps;
     public volatile int frequencyMHz;
 
-    public RadioMonitor(Context context, SessionMachine machine, Listener listener) {
+    public RadioMonitor(Context context, SessionMachine machine) {
         this.context = context.getApplicationContext();
         this.machine = machine;
-        this.listener = listener;
     }
 
     public void start() {
@@ -75,6 +72,8 @@ public final class RadioMonitor extends BroadcastReceiver {
             linkSpeedMbps = connected && metrics != null ? Math.max(0, metrics.getLinkSpeed()) : 0;
             frequencyMHz = connected && metrics != null ? Math.max(0, metrics.getFrequency()) : 0;
         } catch (RuntimeException ignored) { connected = false; rssiDbm = -127; linkSpeedMbps = 0; frequencyMHz = 0; }
-        if (machine.observeWifi(connected)) listener.networkLost();
+        // TYPE_WIFI describes client Wi-Fi, not an Android 8 LocalOnlyHotspot.
+        // Only the lawful core's data-path/lifetime callback may assert session loss.
+        machine.observeWifi(connected);
     }
 }

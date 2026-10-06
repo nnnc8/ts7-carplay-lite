@@ -87,7 +87,9 @@ TEST_PATTERN playback does not enter this streaming chain.
 ```
 
 BOOTSTRAP_CONFIRMED and SESSION_LINK_CONFIRMED are provider evidence, never inferred
-from generic adapter/network flags. Periodic radio refresh does not overwrite proof
+from generic adapter/network flags. RadioMonitor observes client TYPE_WIFI, which is
+not the Android 8 LocalOnlyHotspot data path. Only the lawful provider's socket/hotspot
+lifetime callback can assert CarPlay network loss. Periodic radio refresh does not overwrite proof
 with a generic connected flag. Provider callbacks are scoped to a connection epoch;
 stop/lifecycle invalidates them. Duplicated/out-of-order callbacks cannot start a
 cancelled session or throw from the UI state transition. Recovery needs fresh

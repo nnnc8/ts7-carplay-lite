@@ -102,8 +102,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         root.addView(bar, new LinearLayout.LayoutParams(-1, 54));
         setContentView(root); // No probes, assets or MediaCodec work precede visible UI.
         events.add(EventCode.APP_OPEN);
-        radio = new RadioMonitor(this, session,
-            () -> handleDisconnect(connectionGeneration, SessionMachine.Reason.NETWORK_LOSS));
+        radio = new RadioMonitor(this, session);
     }
 
     @Override protected void onResume() {

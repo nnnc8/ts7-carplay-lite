@@ -95,6 +95,9 @@ public final class ReceiverTest {
         session.observeWifi(true);
         check(session.bluetooth() == SessionMachine.BluetoothState.BOOTSTRAP_CONFIRMED
             && session.wifi() == SessionMachine.WifiState.SESSION_LINK_CONFIRMED, "Radio refresh does not overwrite provider proof");
+        session.observeWifi(false);
+        check(session.authenticated() && session.state() == SessionMachine.State.STREAMING
+            && session.wifi() == SessionMachine.WifiState.SESSION_LINK_CONFIRMED, "Client Wi-Fi observation cannot tear down a provider hotspot session");
         session.recovering(SessionMachine.Reason.SESSION_LOST);
         session.exhausted();
         check(!session.authenticated() && session.state() == SessionMachine.State.ERROR, "Exhaustion stops session");

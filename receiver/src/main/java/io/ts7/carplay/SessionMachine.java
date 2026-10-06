@@ -14,6 +14,7 @@ public final class SessionMachine {
     private WifiState wifi = WifiState.DISCONNECTED;
     private Reason lastReason = Reason.NONE;
     private boolean authenticated;
+    private boolean observedNetwork;
     private long sessionStartedNs;
 
     public SessionMachine(EventRing events) { this.events = events; events.add(EventCode.STATE_IDLE); }
@@ -38,17 +39,18 @@ public final class SessionMachine {
     }
 
     public synchronized boolean observeWifi(boolean connected) {
-        boolean lost = !connected && wifi != WifiState.DISCONNECTED;
-        WifiState next = !connected ? WifiState.DISCONNECTED
-            : wifi == WifiState.SESSION_LINK_CONFIRMED ? WifiState.SESSION_LINK_CONFIRMED : WifiState.NETWORK_OBSERVED;
-        if (wifi != next) events.add(connected ? EventCode.WIFI_CONNECT : EventCode.NETWORK_LOSS);
-        wifi = next;
-        return lost && authenticated;
+        boolean lost = !connected && observedNetwork;
+        if (connected != observedNetwork) events.add(connected ? EventCode.WIFI_CONNECT : EventCode.NETWORK_LOSS);
+        observedNetwork = connected;
+        if (wifi != WifiState.SESSION_LINK_CONFIRMED)
+            wifi = connected ? WifiState.NETWORK_OBSERVED : WifiState.DISCONNECTED;
+        return lost; // Observation only; client Wi-Fi loss is not proof of a hotspot/session loss.
     }
 
     public synchronized void begin(boolean lawfulProviderAvailable) {
         authenticated = false;
         sessionStartedNs = 0;
+        clearRadioProof();
         if (!lawfulProviderAvailable) {
             lastReason = Reason.BLOCKED_BY_AUTHENTICATION_REQUIREMENT;
             events.add(EventCode.AUTHENTICATION_BLOCKED);
@@ -77,6 +79,7 @@ public final class SessionMachine {
         if (state != State.CARPLAY_NEGOTIATING && state != State.RECOVERING)
             throw new IllegalStateException("INVALID_TRANSITION");
         authenticated = true;
+        wifi = WifiState.SESSION_LINK_CONFIRMED;
         sessionStartedNs = System.nanoTime();
         events.add(EventCode.CARPLAY_SESSION_START);
     }
@@ -93,6 +96,7 @@ public final class SessionMachine {
         if (state == State.IDLE || state == State.ERROR || (state == State.RECOVERING && !authenticated)) return;
         authenticated = false;
         sessionStartedNs = 0;
+        wifi = observedNetwork ? WifiState.NETWORK_OBSERVED : WifiState.DISCONNECTED;
         lastReason = reason;
         events.add(EventCode.SESSION_LOST);
         transition(State.RECOVERING);
@@ -101,6 +105,7 @@ public final class SessionMachine {
     public synchronized void stop(Reason reason) {
         authenticated = false;
         sessionStartedNs = 0;
+        clearRadioProof();
         lastReason = reason;
         transition(State.IDLE);
     }
@@ -108,6 +113,7 @@ public final class SessionMachine {
     public synchronized void exhausted() {
         authenticated = false;
         sessionStartedNs = 0;
+        clearRadioProof();
         lastReason = Reason.RECOVERY_EXHAUSTED;
         events.add(EventCode.RECOVERY_EXHAUSTED);
         transition(State.ERROR);
@@ -115,6 +121,11 @@ public final class SessionMachine {
 
     private void require(State expected) {
         if (state != expected) throw new IllegalStateException("INVALID_TRANSITION");
+    }
+
+    private void clearRadioProof() {
+        if (bluetooth == BluetoothState.BOOTSTRAP_CONFIRMED) bluetooth = BluetoothState.IDLE;
+        wifi = observedNetwork ? WifiState.NETWORK_OBSERVED : WifiState.DISCONNECTED;
     }
 
     private void transition(State next) {

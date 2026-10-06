@@ -2,7 +2,7 @@ name: Build TS7 CarPlay Lite alpha
 
 on:
   push:
-    branches: [main, feature/wireless-carplay-alpha]
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
