@@ -49,17 +49,18 @@ UNKNOWN: full wireless session compatibility, legal authentication mechanism, su
 
 | Check | Result / scope |
 | --- | --- |
-| Local Java core | PASS: config/IDR/bounds/malformed input/states/retries/touch |
+| Local Java core | PASS: 2047 checks for config/IDR/bounds/malformed input/states/retries/touch |
 | Both backend route tests | PASS: fixed destinations/schema/privacy/limits/auth/duplicates |
 | Local alpha APK | PASS: API 27, Java-only ARMv7-compatible, signed, generated asset inspected |
-| Actual API 27 MediaCodec Surface | Pending emulator CI; no TS7 alpha result yet |
-| PR/main CI | Pending branch publication |
+| Actual API 27 MediaCodec Surface | PASS emulator: 90+ frames, 720p, stream-reset recovery and stop; OMX.google.h264.decoder, NOT SPRD/TS7 |
+| PR CI | PASS [37495146916](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37495146916); preserved diagnostic [37495147056](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37495147056) PASS |
+| main CI | Runs on merge; final release notes record verified main run and APK checksum |
 | Real TS7 alpha rendering | NOT YET |
 | Real wireless CarPlay | BLOCKED: lawful authentication/core |
 | Real audio/touch/Siri | NOT YET / Siri deferred |
 | 30/60-minute session gates | NOT YET |
 
-JVM tests mean IMPLEMENTED / LOCAL TESTED, not hardware VERIFIED. Emulator evidence proves generic Surface output, not SPRD decode.
+JVM tests mean IMPLEMENTED / LOCAL TESTED, not hardware VERIFIED. API 27 screenshot visually inspected: synthetic color bars/counter, TECHNICAL PREVIEW / TEST PATTERN labels, approximately 30 fps and bounded queue. Emulator proves generic Surface output, not SPRD decode. Independent runtime/security reviews found no residual blocking regressions after fixes. See docs/ALPHA_VERIFICATION.md.
 
 ## Publication / deployment
 
