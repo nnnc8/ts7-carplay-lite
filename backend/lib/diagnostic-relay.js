@@ -7,6 +7,7 @@ const MAX_COMMENT_BYTES = 60 * 1024;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const DEFAULT_RATE_LIMIT_MAX = 10;
 const DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
+const MAX_DUPLICATE_ENTRIES = 2048;
 
 const REQUIRED_TOP_LEVEL_FIELDS = [
   "schemaVersion",
@@ -67,6 +68,19 @@ class RelayError extends Error {
 }
 
 async function handleDiagnostics(req, res) {
+  return handleRelay(req, res, {
+    namespace: "diagnostic-v0.2", validate: validatePayload,
+    sanitize: sanitizePublicPayload, format: formatMarkdown,
+    destination: Object.freeze({ owner: "nnnc8", repo: "ts7-carplay-lite", issue: 5 }),
+  });
+}
+
+// Only server-side route modules can supply a contract/destination.
+function createHandler(contract) {
+  return (req, res) => handleRelay(req, res, contract);
+}
+
+async function handleRelay(req, res, contract) {
   try {
     if (req.method !== "POST") {
       return sendJson(res, 405, { success: false, error: "method_not_allowed" }, { Allow: "POST" });
@@ -91,7 +105,7 @@ async function handleDiagnostics(req, res) {
       throw new RelayError(400, "invalid_json", "The request body must be valid JSON.");
     }
 
-    const validationErrors = validatePayload(payload);
+    const validationErrors = contract.validate(payload);
     if (validationErrors.length > 0) {
       return sendJson(res, 400, {
         success: false,
@@ -100,9 +114,9 @@ async function handleDiagnostics(req, res) {
       });
     }
 
-    const publicPayload = sanitizePublicPayload(payload);
+    const publicPayload = contract.sanitize(payload);
     const serialized = JSON.stringify(publicPayload);
-    const reportHash = crypto.createHash("sha256").update(serialized, "utf8").digest("hex");
+    const reportHash = crypto.createHash("sha256").update(contract.namespace + serialized, "utf8").digest("hex");
     const duplicate = getFreshDuplicate(reportHash);
     if (duplicate) {
       return sendJson(res, 200, {
@@ -113,12 +127,12 @@ async function handleDiagnostics(req, res) {
       });
     }
 
-    const comment = formatMarkdown(publicPayload);
+    const comment = contract.format(publicPayload);
     if (Buffer.byteLength(comment, "utf8") > MAX_COMMENT_BYTES) {
       throw new RelayError(413, "comment_too_large", "The sanitized report is too large for an issue comment.");
     }
-    const githubUrl = await postGithubComment(comment);
-    duplicateCache.set(reportHash, {
+    const githubUrl = await postGithubComment(comment, contract.destination);
+    rememberDuplicate(reportHash, {
       githubUrl,
       expiresAt: Date.now() + DUPLICATE_WINDOW_MS,
     });
@@ -383,14 +397,12 @@ function markdownValue(value) {
     .replace(/[\\`*_{}[\]()#+.!|>~-]/g, "\\$&");
 }
 
-async function postGithubComment(comment) {
+async function postGithubComment(comment, destination) {
   const token = process.env.GITHUB_TOKEN && process.env.GITHUB_TOKEN.trim();
   if (!token) {
     throw new RelayError(503, "relay_not_configured", "GITHUB_TOKEN is not configured.");
   }
-  const owner = process.env.GITHUB_OWNER || "nnnc8";
-  const repo = process.env.GITHUB_REPO || "ts7-carplay-lite";
-  const issue = process.env.GITHUB_ISSUE_NUMBER || "5";
+  const { owner, repo, issue } = destination;
   const endpoint = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/issues/${encodeURIComponent(issue)}/comments`;
   let response;
   try {
@@ -404,6 +416,7 @@ async function postGithubComment(comment) {
         "X-GitHub-Api-Version": "2022-11-28",
       },
       body: JSON.stringify({ body: comment }),
+      signal: AbortSignal.timeout(10000),
     });
   } catch (error) {
     throw new RelayError(502, "github_relay_error", "GitHub request failed.");
@@ -452,6 +465,10 @@ function allowRequest(address) {
   const now = Date.now();
   const windowMs = boundedEnvNumber("RATE_LIMIT_WINDOW", DEFAULT_RATE_LIMIT_WINDOW_MS, 1000, 24 * 60 * 60 * 1000);
   const max = boundedEnvNumber("RATE_LIMIT_MAX", DEFAULT_RATE_LIMIT_MAX, 1, 1000);
+  if (rateBuckets.size >= 4096) {
+    for (const [key, value] of rateBuckets) if (now - value.startedAt >= windowMs) rateBuckets.delete(key);
+    if (!rateBuckets.has(address) && rateBuckets.size >= 4096) return false;
+  }
   const bucket = rateBuckets.get(address) || { startedAt: now, count: 0 };
   if (now - bucket.startedAt >= windowMs) {
     bucket.startedAt = now;
@@ -472,6 +489,16 @@ function getFreshDuplicate(hash) {
   return item;
 }
 
+function rememberDuplicate(hash, item) {
+  if (duplicateCache.size >= MAX_DUPLICATE_ENTRIES) {
+    const now = Date.now();
+    for (const [key, value] of duplicateCache) if (value.expiresAt <= now) duplicateCache.delete(key);
+    if (duplicateCache.size >= MAX_DUPLICATE_ENTRIES)
+      duplicateCache.delete(duplicateCache.keys().next().value);
+  }
+  duplicateCache.set(hash, item);
+}
+
 function boundedEnvNumber(name, fallback, min, max) {
   const parsed = Number(process.env[name]);
   if (!Number.isFinite(parsed)) return fallback;
@@ -480,7 +507,8 @@ function boundedEnvNumber(name, fallback, min, max) {
 
 function clientAddress(req) {
   const forwarded = header(req, "x-forwarded-for");
-  return (forwarded ? forwarded.split(",")[0].trim() : req.socket && req.socket.remoteAddress) || "unknown";
+  const address = (forwarded ? forwarded.split(",")[0].trim() : req.socket && req.socket.remoteAddress) || "unknown";
+  return crypto.createHash("sha256").update(address).digest("hex");
 }
 
 function header(req, name) {
@@ -513,6 +541,7 @@ function resetTestState() {
 }
 
 module.exports = {
+  createHandler,
   handleDiagnostics,
   formatMarkdown,
   sanitizePublicPayload,

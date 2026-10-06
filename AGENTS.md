@@ -16,7 +16,7 @@ Before changing code, read in this order:
 
 ## Hard constraints
 
-- Target is **TS7 / SL8141E / Android 8.1 / 2 GB RAM**. Do not optimize for modern flagship Android devices at the expense of this target.
+- Target is **TS7 / Android 8.1 / API 27 / ARMv7 / 2 GB RAM**. About-screen SL8141E and diagnostic sp7731e_1h10 strings are distinct evidence, not exact silicon proof.
 - Do not assume the marketing Android version. Use actual diagnostic evidence.
 - Never assume unverified hardware behavior.
 - Every hardware statement must be marked `VERIFIED`, `OBSERVED`, `HYPOTHESIS`, or `UNKNOWN`.
@@ -24,7 +24,7 @@ Before changing code, read in this order:
 - Keep runtime memory allocations low.
 - Prefer direct `MediaCodec -> Surface` rendering for video.
 - Do not introduce WebView or a heavy UI framework without a measured reason.
-- Wired stability comes before wireless features.
+- User only cares about wireless CarPlay. Do not spend Phase 1 effort on wired USB unless required as a debugging fallback. Keep #10 and #11 deferred, not deleted.
 - Do not silently add telemetry, analytics, account access, or INTERNET permission.
 - Do not commit user-private diagnostic data. Redact serials, SSIDs, BSSIDs, IMEI, account names, precise location and similar data.
 - Do not reverse engineer or redistribute proprietary TLink/ZLink binaries or proprietary Apple authentication material.
@@ -77,4 +77,12 @@ For code changes:
 
 ## Current highest-priority task
 
-Do not start implementing the full CarPlay receiver yet. First validate **TS7 Diagnostic v0.2** on the real TS7, collect the sanitized report, and use it to choose the decoder and transport path. See `PROJECT_STATUS.md`.
+Phase 0 basic report is complete. Current: **Phase 1 — Wireless CarPlay minimal receiver / IMPLEMENTATION_IN_PROGRESS**. Read research, wireless architecture and the captured report linked in PROJECT_STATUS.
+
+Priority: wireless session → video stability → decoder stability → recovery → audio → touch → Siri.
+
+Lawful authentication/core is blocked. Ship only a clearly labeled technical preview of the working renderer until legal integration exists. Never equate synthetic video, paired/enabled adapters, network connection, codec enumeration or instantiate PASS with CarPlay or sustained TS7 decode. Keep #4 open.
+
+Preserve Diagnostic v0.2 workflow/APK and fixed Issue #5 relay. Alpha uploads go to fixed #13 only after explicit confirmation, with codes/counters and no identifiers, arbitrary exception text or credentials. No client destination control.
+
+Inspect actual APK API 27, Java-only ARMv7 compatibility, permissions, secrets/proprietary scans, generated asset provenance and signature. Separate emulator evidence from TS7 evidence in release/handoff.

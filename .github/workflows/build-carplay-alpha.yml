@@ -1,0 +1,83 @@
+name: Build TS7 CarPlay Lite alpha
+
+on:
+  push:
+    branches: [main, feature/wireless-carplay-alpha]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TS7_CARPLAY_UPLOAD_URL: https://ts7-carplay-lite-relay.vercel.app/api/carplay-diagnostics
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: android-actions/setup-android@v3
+      - name: Install pinned Android build tools
+        run: sdkmanager 'platforms;android-27' 'build-tools;35.0.0'
+      - name: Core and privacy contracts
+        run: |
+          ./receiver/test.sh
+          ./diagnostic-app/test.sh
+          npm --prefix backend test
+      - name: Build and inspect alpha APKs
+        run: |
+          ./receiver/build.sh
+          ./receiver/build.sh --instrumented
+      - name: Upload requested alpha APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TS7-CarPlay-Lite-v0.1-alpha.apk
+          path: dist/TS7-CarPlay-Lite-v0.1-alpha.apk
+          if-no-files-found: error
+      - name: Upload separate instrumentation APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TS7-Alpha-Instrumentation
+          path: dist/TS7-CarPlay-Lite-v0.1-alpha-instrumented.apk
+          if-no-files-found: error
+
+  android-81-surface:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: TS7-Alpha-Instrumentation
+          path: dist
+      - name: Enable KVM
+        run: |
+          sudo chmod 666 /dev/kvm
+      - name: Actual API 27 MediaCodec Surface test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 27
+          arch: x86_64
+          target: default
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
+          script: ./receiver/ci-smoke.sh
+      - name: Upload renderer evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TS7-API27-Surface-evidence
+          path: |
+            dist/renderer-smoke.txt
+            dist/renderer-smoke.png
+            dist/renderer-logcat.txt
+          if-no-files-found: warn
