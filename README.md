@@ -1,6 +1,6 @@
 # TS7 CarPlay Lite
 
-**Latest diagnostic APK:** [GitHub Releases](https://github.com/nnnc8/ts7-carplay-lite/releases/latest) · [repository copy](downloads/TS7-Diagnostic-v0.1.apk)
+**Latest diagnostic APK:** [GitHub Releases](https://github.com/nnnc8/ts7-carplay-lite/releases/latest) · [repository copy](downloads/TS7-Diagnostic-v0.2.apk)
 
 針對低階 Android 車機 **TS7 / SL8141E / Android 8.1 / 2 GB RAM / 32 GB storage** 的極簡 CarPlay Receiver 研究與實作專案。
 
@@ -33,42 +33,44 @@
 已完成：
 
 - `TS7 Diagnostic v0.1` APK
-- Android 8.1 / 32-bit ARM 專用 NativeActivity 診斷工具
-- CPU / ABI、RAM、儲存空間、解析度 / DPI、OpenGL ES、Wi‑Fi、Bluetooth、USB 與 H.264 / AVC MediaCodec 探測
-- 不要求 INTERNET 權限，不上傳資料
-- 可重現的命令列 build script 與 GitHub Actions workflow
+- `TS7 Diagnostic v0.2` reliability redesign with a normal Android `Activity`
+- Android 8.1 / 32-bit ARM 專用 Android framework 診斷工具
+- Background-isolated CPU / ABI、RAM、儲存空間、解析度 / DPI、OpenGL ES、Wi‑Fi、Bluetooth、USB 與 H.264 / AVC MediaCodec 探測
+- Sanitized public report copy/save and explicit HTTPS upload relay for Issue #5
+- Backend schema/rate-limit/duplicate tests and a reproducible Android build script with GitHub Actions
 
 尚待完成：
 
-1. 在目標 TS7 安裝並執行診斷 APK。
+1. 在目標 TS7 安裝並執行 v0.2 診斷 APK，確認啟動後先出現 UI。
 2. 在有線 CarPlay 與必要時無線 CarPlay 的平常狀態下保存完整報告。
-3. 依 decoder、USB、Wi‑Fi 與 RAM 結果決定 CarPlay Lite v0.1 pipeline。
+3. 由使用者確認後，將 sanitized public report 上傳到 Issue #5。
+4. 依 decoder、USB、Wi‑Fi 與 RAM 結果決定 CarPlay Lite v0.1 pipeline。
 
 完整進度見 [`PROJECT_STATUS.md`](PROJECT_STATUS.md)，階段見 [`ROADMAP.md`](ROADMAP.md)，待辦與 GitHub Issue 種子見 [`docs/BACKLOG.md`](docs/BACKLOG.md)。
 
 ## 4. Current Diagnostic APK
 
 - [Latest diagnostic APK — GitHub Releases](https://github.com/nnnc8/ts7-carplay-lite/releases/latest)
-- [Repository copy — `TS7-Diagnostic-v0.1.apk`](downloads/TS7-Diagnostic-v0.1.apk)
+- [Repository copy — `TS7-Diagnostic-v0.2.apk`](downloads/TS7-Diagnostic-v0.2.apk)
 
-這是 sideload 測試 APK，使用本地測試憑證簽署；目前尚未在目標 TS7 實機驗證。
+這是 sideload 測試 APK，使用本地測試憑證簽署；v0.2 的 UI、probe timeout 與實機上傳流程仍待目標 TS7 驗證。
 
 ## 5. How to install APK
 
-1. 從 Releases 下載 `TS7-Diagnostic-v0.1.apk`。
+1. 從 Releases 下載 `TS7-Diagnostic-v0.2.apk`。
 2. 將 APK 複製到 TS7，允許這一次的未知來源安裝，或在已開啟 USB debugging 時執行：
 
    ```sh
    adb install -r TS7-Diagnostic-v0.1.apk
    ```
 
-3. 開啟 `TS7 Diagnostic`。若要檢查 USB CarPlay，請先接上平常使用的 iPhone 與 USB 線；若要檢查無線狀態，維持平常的 Wi‑Fi / Bluetooth 狀態。
+3. 開啟 `TS7 Diagnostic`。啟動後應先看到 UI，再逐項看到 probe 狀態。若要檢查 USB CarPlay，請先接上平常使用的 iPhone 與 USB 線；若要檢查無線狀態，維持平常的 Wi‑Fi / Bluetooth 狀態。
 
 ## 6. How to submit diagnostic results
 
-1. 等待報告完整顯示；工具會複製到剪貼簿並嘗試儲存為 `Download/TS7-Diagnostic.txt`。
-2. 提交前移除 IMEI、序號、SSID、BSSID、帳號名稱與其他私人識別資訊。
-3. 使用 GitHub 的 [diagnostic result issue template](https://github.com/nnnc8/ts7-carplay-lite/issues/new?template=diagnostic-result.yml)，或把完整的 sanitized report 貼回開發對話。
+1. 等待基本診斷完成；按 `Save local report` 保存較完整的本機報告，或按 `Copy public report` 複製已去識別化內容。
+2. 車機有網路時，只有在使用者按下 `Upload report to GitHub` 並確認 Dialog 後，才會透過 HTTPS relay 寫入 [Issue #5](https://github.com/nnnc8/ts7-carplay-lite/issues/5)。
+3. 若沒有網路，報告仍可本機保存或複製；不會背景自動上傳。
 4. 同時註明 APK 版本、測試時的有線 / 無線狀態，以及是否發生 freeze、black screen 或 disconnect。
 
 ## 7. Architecture direction
@@ -116,6 +118,8 @@ MediaCodec → Bitmap → CPU conversion → UI
 
 ```text
 diagnostic/                  Native diagnostic source and build tools
+diagnostic-app/              Android Activity v0.2 app and privacy tests
+backend/                     HTTPS server-side GitHub relay and tests
 docs/                        Target, architecture, report guide, backlog
 downloads/                   Current sideload APK
 reports/                     Local-only sanitized report staging area
@@ -129,30 +133,34 @@ reports/                     Local-only sanitized report staging area
 
 ## 11. Build instructions
 
-需求：`python3`、支援 Android ARM target 的 `clang`、`ld.lld`、`zip`、`keytool`、`jarsigner`。
+v0.2 需求：Android SDK（platform、build-tools）、JDK 8+、`javac`、`python3`、`zip`、`keytool`。若要執行 relay tests，另需 Node.js 18+。
 
 在 repository root 執行：
 
 ```sh
-./diagnostic/scripts/build.sh
+./diagnostic-app/test.sh
+TS7_DIAGNOSTIC_UPLOAD_URL=https://<deployment-domain>/api/diagnostics ./diagnostic-app/build.sh
+npm --prefix backend test
 ```
 
-輸出為 `dist/TS7-Diagnostic-v0.1.apk`。本地測試憑證會產生在 ignored `build/` 內；不要把正式 release signing key 放進 repository。macOS 若 `ld.lld` 不在 PATH，可安裝 LLVM/LLD 後重試；Ubuntu CI workflow 會自行安裝 `clang` 與 `lld`。
+輸出為 `dist/TS7-Diagnostic-v0.2.apk`。本地測試憑證會產生在 ignored `build/` 內；不要把正式 release signing key 或 GitHub credential 放進 repository。v0.1 的 NativeActivity build script 保留在 `diagnostic/scripts/build.sh` 作為歷史重現用途。
 
 ## 12. Known limitations
 
-- 尚未在真實 TS7 上執行診斷或驗證 CarPlay session。
+- v0.1 在真實 TS7 上可安裝、可啟動，但已觀察到啟動後黑屏；v0.2 尚未在真實 TS7 驗證。
+- 尚未驗證 v0.2 的實機 UI、probe timeout、H.264 advanced test 或 HTTPS upload。
 - Display resolution、CPU ABI、實際 RAM、H.264 decoder、USB topology、Wi‑Fi chipset/behavior 仍有 UNKNOWN 項目。
 - 目前沒有 CarPlay protocol、audio、microphone、touch 或 wireless receiver implementation。
 - APK 使用測試憑證，不是 production signing。
-- `WRITE_EXTERNAL_STORAGE`、Bluetooth、Wi‑Fi 等舊 Android 權限只用於診斷；工具不含 INTERNET permission。
+- v0.2 的 `INTERNET` permission 只用於使用者主動觸發的 sanitized report upload；沒有 background telemetry 或 analytics。
 
 ## 13. Releases
 
 - [GitHub Releases](https://github.com/nnnc8/ts7-carplay-lite/releases/latest)
+- [`diagnostic-v0.2.0` — TS7 Diagnostic v0.2](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/diagnostic-v0.2.0)
 - [`diagnostic-v0.1.0` — TS7 Diagnostic v0.1](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/diagnostic-v0.1.0)
-- [Direct APK download](https://github.com/nnnc8/ts7-carplay-lite/releases/download/diagnostic-v0.1.0/TS7-Diagnostic-v0.1.apk)
+- [Direct v0.2 APK download](https://github.com/nnnc8/ts7-carplay-lite/releases/download/diagnostic-v0.2.0/TS7-Diagnostic-v0.2.apk)
 
 ## 安全與授權
 
-`TS7 Diagnostic` 不會上傳裝置資訊，也不含帳號或 analytics。提交報告前仍須自行檢查私人資料。整個 repository 尚未授予統一開源 license；`diagnostic/native/jni.h` 保留 OpenJDK 原始版權與授權聲明。未來整合 DiPlay 或其他 CarPlay receiver code 前，必須先記錄 upstream URL、exact revision、license 與 attribution obligations。
+`TS7 Diagnostic v0.2` 只會在使用者主動確認後，上傳經過本機與 server-side sanitizer 的硬體診斷資料；不含 GitHub token、帳號或 analytics，也沒有 background telemetry。整個 repository 尚未授予統一開源 license；`diagnostic/native/jni.h` 保留 OpenJDK 原始版權與授權聲明。未來整合 DiPlay 或其他 CarPlay receiver code 前，必須先記錄 upstream URL、exact revision、license 與 attribution obligations。

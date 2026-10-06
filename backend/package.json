@@ -1,0 +1,12 @@
+{
+  "name": "ts7-diagnostic-relay",
+  "private": true,
+  "version": "0.2.0",
+  "description": "Server-side HTTPS relay for sanitized TS7 Diagnostic v0.2 reports",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

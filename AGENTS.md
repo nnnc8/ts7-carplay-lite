@@ -77,4 +77,4 @@ For code changes:
 
 ## Current highest-priority task
 
-Do not start implementing the full CarPlay receiver yet. First obtain and analyze the **TS7 Diagnostic v0.1 real-device report**. See `PROJECT_STATUS.md`.
+Do not start implementing the full CarPlay receiver yet. First validate **TS7 Diagnostic v0.2** on the real TS7, collect the sanitized report, and use it to choose the decoder and transport path. See `PROJECT_STATUS.md`.

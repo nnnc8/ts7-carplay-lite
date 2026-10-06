@@ -13,6 +13,10 @@
 - Verified the first GitHub Actions run builds and uploads the diagnostic APK artifact.
 - Created tag `diagnostic-v0.1.0` and the `TS7 Diagnostic v0.1` GitHub Release with the APK asset.
 - Clarified the GitHub repository as the single source of truth and documented the stable-main branch workflow and next diagnostic gate.
+- Replaced the v0.1 blocking NativeActivity startup path with a Java Android Activity that renders UI before diagnostics.
+- Added isolated background probes, per-probe statuses/timeouts and safe MediaCodec enumeration without startup decoder initialization.
+- Added local/public report separation, privacy tests and explicit offline-safe copy/save/upload controls.
+- Added a server-side Vercel relay with fixed Issue #5 destination, strict schema, 32 KB limit, rate limiting, Markdown escaping and duplicate suppression.
 
 ## 0.1 — 2026-10-06
 
