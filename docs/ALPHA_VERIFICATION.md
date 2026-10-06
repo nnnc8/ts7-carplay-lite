@@ -60,3 +60,17 @@ exact tag/commit/run evidence in release notes. CI test keys are ephemeral per r
 signed bytes are not reproducible across runs. Use the fixed published APK for the
 device round; differently signed later builds may require uninstall/reinstall,
 losing only local app settings. No production-signing claim.
+
+## Published artifact
+
+- Final PR CI [37496018107](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37496018107) PASS.
+- Main alpha/Surface [37496485921](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37496485921) PASS.
+- Main diagnostic [37496485898](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37496485898) PASS.
+- PR #14 MERGED, source f4a7020c95c602935ffa20b5dfcf85b5f0454aac.
+- [Preview prerelease/tag](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v0.1.0-alpha-preview) points to that source; functional carplay-v0.1.0-alpha tag intentionally NOT created.
+- Normal APK: 176624 bytes, SHA-256 5a2461ce16324b793425aa3fa287840c64f55a9980f95385044839bd252b26da.
+- Test certificate SHA-256: 99a7f72aa1e82e64e76a3c6a3e35c3dad0dc990dd5c1602b95026f6936f03167.
+
+GitHub digest read back; published APK/checksum downloaded again and checksum OK.
+Only normal APK/checksum attached. Main emulator structured PASS/code -1 checked,
+OMX.google.h264.decoder. Not a real TS7 or actual CarPlay test.

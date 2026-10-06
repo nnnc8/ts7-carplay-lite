@@ -54,7 +54,7 @@ UNKNOWN: full wireless session compatibility, legal authentication mechanism, su
 | Local alpha APK | PASS: API 27, Java-only ARMv7-compatible, signed, generated asset inspected |
 | Actual API 27 MediaCodec Surface | PASS emulator: 90+ frames, 720p, stream-reset recovery and stop; OMX.google.h264.decoder, NOT SPRD/TS7 |
 | PR CI | PASS [37495146916](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37495146916); preserved diagnostic [37495147056](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37495147056) PASS |
-| main CI | Runs on merge; final release notes record verified main run and APK checksum |
+| main CI | PASS [alpha + Surface 37496485921](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37496485921) / [diagnostic 37496485898](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37496485898), release source f4a7020 |
 | Real TS7 alpha rendering | NOT YET |
 | Real wireless CarPlay | BLOCKED: lawful authentication/core |
 | Real audio/touch/Siri | NOT YET / Siri deferred |
@@ -68,6 +68,9 @@ JVM tests mean IMPLEMENTED / LOCAL TESTED, not hardware VERIFIED. API 27 screens
 - Branch: feature/wireless-carplay-alpha from 44b688a. Independent receiver/runtime review completed; identified callback/retry/fallback/touch/lifecycle issues repaired, no residual blocking findings.
 - [Alpha test issue #13](https://github.com/nnnc8/ts7-carplay-lite/issues/13).
 - [PR #14](https://github.com/nnnc8/ts7-carplay-lite/pull/14); [lawful wireless core #15](https://github.com/nnnc8/ts7-carplay-lite/issues/15), [state validation #16](https://github.com/nnnc8/ts7-carplay-lite/issues/16), [recovery #17](https://github.com/nnnc8/ts7-carplay-lite/issues/17).
+- PR #14 MERGED; merge/source f4a7020c95c602935ffa20b5dfcf85b5f0454aac. Final PR CI [37496018107](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37496018107) PASS.
+- Published prerelease/tag [carplay-v0.1.0-alpha-preview](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v0.1.0-alpha-preview), explicitly TECHNICAL PREVIEW / NOT YET A FUNCTIONAL CARPLAY RECEIVER.
+- [Normal alpha APK](https://github.com/nnnc8/ts7-carplay-lite/releases/download/carplay-v0.1.0-alpha-preview/TS7-CarPlay-Lite-v0.1-alpha.apk), 176624 bytes, SHA-256 5a2461ce16324b793425aa3fa287840c64f55a9980f95385044839bd252b26da. Published download checksum/permission/asset/signature inspection PASS; no instrumentation.
 - Diagnostic endpoint: https://ts7-carplay-lite-relay.vercel.app/api/diagnostics. User upload succeeded; token configured server-side only.
 - Alpha endpoint: https://ts7-carplay-lite-relay.vercel.app/api/carplay-diagnostics; Vercel production deployment dpl_CQPYaboA5wGxM1Zj8KdUKU7qTyDX READY. Both routes return safe GET 405 and invalid-schema POST 400; alpha successful GitHub-write behavior tested locally, real alpha user upload pending.
 - Preserved [diagnostic-v0.2.0](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/diagnostic-v0.2.0), APK SHA-256 87dc5f08a1d0d5562720b834d460329a4cbc008f10072778d8e7f81540497a34.
@@ -75,7 +78,7 @@ JVM tests mean IMPLEMENTED / LOCAL TESTED, not hardware VERIFIED. API 27 screens
 
 ## Next
 
-1. Prove API 27 Surface playback before publishing the technical preview.
+1. This round delivered the proven API 27 Surface technical preview; functional Phase 1 remains incomplete/auth-blocked.
 2. TS7: synthetic 5/15-minute runs for all profiles; copy/upload decoder/fps/drops/RAM/recovery evidence to #13.
 3. Keep #4 open until sustained real-device decoding is captured.
 4. Obtain an authorized authentication provider; review/port compatible upstream core. No vendor identity extraction or verification bypass.

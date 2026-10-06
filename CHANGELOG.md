@@ -1,8 +1,6 @@
 # Changelog
 
-## Unreleased
-
-### CarPlay Lite v0.1-alpha technical preview — 2026-10-06
+## CarPlay Lite v0.1-alpha technical preview — 2026-10-07
 
 - Advanced to wireless-only Phase 1 after captured Diagnostic v0.2 report; wired/USB issues remain deferred.
 - Added original API 27 Java shell and evidence-gated session states; lawful authentication boundary fails closed.
@@ -14,6 +12,15 @@
 - Added reproducible inspected APK build and separate API 27 Surface instrumentation CI.
 - Pinned upstream/API/ABI/license/auth research; no core, proprietary binary or Apple identity imported.
 - Wireless CarPlay BLOCKED; real TS7 alpha rendering/reconnect/long runs NOT YET VERIFIED. **TECHNICAL PREVIEW / NOT YET A FUNCTIONAL CARPLAY RECEIVER**.
+
+### Validation / publication
+
+- Merged PR #14; preview tag carplay-v0.1.0-alpha-preview at f4a7020.
+- PR/main alpha/diagnostic CI PASS; API27 emulator Surface output, stream-reset recovery and stop PASS (OMX.google.h264.decoder, not SPRD evidence).
+- Published normal APK, SHA-256 5a2461ce16324b793425aa3fa287840c64f55a9980f95385044839bd252b26da.
+- Independent runtime/backend security reviews cleared; no embedded credential, proprietary receiver or Apple authentication identity.
+
+## Unreleased
 
 ### Changed
 

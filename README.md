@@ -10,10 +10,11 @@
 
 ## Downloads
 
-- 技術預覽 APK：[`TS7-CarPlay-Lite-v0.1-alpha.apk` Actions artifact](https://github.com/nnnc8/ts7-carplay-lite/actions/workflows/build-carplay-alpha.yml)。Release 下載連結在 CI／renderer 驗證後公布。
+- 技術預覽 APK：[下載 `TS7-CarPlay-Lite-v0.1-alpha.apk`](https://github.com/nnnc8/ts7-carplay-lite/releases/download/carplay-v0.1.0-alpha-preview/TS7-CarPlay-Lite-v0.1-alpha.apk) · [Release／checksum／驗證紀錄](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v0.1.0-alpha-preview)。**還不能連線 iPhone／使用 CarPlay。**
 - 保留的診斷工具：[`TS7-Diagnostic-v0.2.apk`](https://github.com/nnnc8/ts7-carplay-lite/releases/download/diagnostic-v0.2.0/TS7-Diagnostic-v0.2.apk)，另有 [repository copy](downloads/TS7-Diagnostic-v0.2.apk)。不會被 receiver APK 覆蓋。
 
 兩者使用測試簽章，僅供 sideload，非 production signing。
+Alpha APK 來自通過的 [main CI](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37496485921)，176624 bytes，SHA-256：`5a2461ce16324b793425aa3fa287840c64f55a9980f95385044839bd252b26da`。API 27 模擬器實際畫面／重置恢復／停止 PASS，不等於 TS7 實機驗證。
 
 ## Target evidence
 

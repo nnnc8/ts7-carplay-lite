@@ -4,6 +4,9 @@ This first build is a **TECHNICAL PREVIEW — NOT YET A FUNCTIONAL CARPLAY RECEI
 Its lawful authentication provider is unavailable. The developer pattern is not iPhone video.
 Phase 1 is wireless-only. Diagnostic v0.2 and its Issue #5 endpoint stay available.
 
+[Download normal APK](https://github.com/nnnc8/ts7-carplay-lite/releases/download/carplay-v0.1.0-alpha-preview/TS7-CarPlay-Lite-v0.1-alpha.apk) · [Preview release / checksum](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v0.1.0-alpha-preview).
+API27 emulator Surface/recovery/stop PASS; real TS7 alpha output not yet verified.
+
 ## Before testing
 
 Park the car. Install `TS7-CarPlay-Lite-v0.1-alpha.apk` alongside TS7 Diagnostic.
@@ -22,7 +25,7 @@ This local pattern needs no iPhone, account, hotspot or network permission promp
 - [ ] Note freeze, black screen, unexpected stop, decoder restart and recovery outcome.
 - [ ] Try Balanced (25 fps), then Stability (20 fps), with playback stopped first.
 - [ ] Stop, background/foreground, and restart; no idle decoder or runaway worker remains.
-- [ ] Turn Wi-Fi off/on; only the Wi-Fi stage changes during the offline pattern.
+- [ ] Turn Wi-Fi off/on without backgrounding the app; only radio observation changes during the offline pattern. System settings intentionally stops playback; restart manually afterward.
 - [ ] Open system Bluetooth settings; adapter/link observations never claim an iPhone session.
 - [ ] Copy diagnostics offline; upload only after reviewing and confirming.
 - [ ] Uploaded alpha report goes to this new debugging issue, never Phase 0 Issue #5.

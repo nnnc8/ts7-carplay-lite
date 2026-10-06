@@ -110,6 +110,9 @@ handshake is rejected, not silently queued without bounds. Input is copied once 
 compressed bytes into reusable slots before returning; source ownership remains with
 the provider. Callbacks never retain arbitrary source buffers or secrets.
 
+Core entry points must return promptly; a future adapter owns background network/auth
+work and must not block the UI/codec thread on transport or hardware calls.
+
 Input contract: complete Annex-B access units, monotonic microsecond PTS, packet
 ≤256 KiB, progressive 8-bit AVC ≤1280×720, bounded parameter sets with matching
 PPS→SPS. A future core supplies packet reassembly/AVCC conversion; no incomplete
