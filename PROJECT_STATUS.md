@@ -15,7 +15,7 @@ Repository preparation, initial GitHub publication, tag and Release are complete
 ## GitHub publication
 
 - Repository: [nnnc8/ts7-carplay-lite](https://github.com/nnnc8/ts7-carplay-lite)
-- Visibility: PRIVATE
+- Visibility: PUBLIC
 - Default branch: `main`
 - Initial commit: `43a3be62b4c092acf04a557fc483b6d441d7dcb9`
 - First Actions run: [37448438159](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37448438159) — SUCCESS, including APK artifact upload.
