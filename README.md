@@ -161,6 +161,12 @@ npm --prefix backend test
 - [`diagnostic-v0.1.0` — TS7 Diagnostic v0.1](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/diagnostic-v0.1.0)
 - [Direct v0.2 APK download](https://github.com/nnnc8/ts7-carplay-lite/releases/download/diagnostic-v0.2.0/TS7-Diagnostic-v0.2.apk)
 
+## 14. Diagnostic upload relay
+
+The v0.2 app uses the public endpoint [`https://ts7-carplay-lite-relay.vercel.app/api/diagnostics`](https://ts7-carplay-lite-relay.vercel.app/api/diagnostics) only after the user confirms an upload. The Vercel function validates and sanitizes the report again, then writes a comment only to [Issue #5](https://github.com/nnnc8/ts7-carplay-lite/issues/5).
+
+The relay is deployed, but its production `GITHUB_TOKEN` is intentionally not stored in this repository or APK. Before expecting a successful GitHub upload, configure Vercel `GITHUB_TOKEN` with a fine-grained PAT limited to this repository and Issues **Read and write** permission. See [`backend/README.md`](backend/README.md).
+
 ## 安全與授權
 
 `TS7 Diagnostic v0.2` 只會在使用者主動確認後，上傳經過本機與 server-side sanitizer 的硬體診斷資料；不含 GitHub token、帳號或 analytics，也沒有 background telemetry。整個 repository 尚未授予統一開源 license；`diagnostic/native/jni.h` 保留 OpenJDK 原始版權與授權聲明。未來整合 DiPlay 或其他 CarPlay receiver code 前，必須先記錄 upstream URL、exact revision、license 與 attribution obligations。

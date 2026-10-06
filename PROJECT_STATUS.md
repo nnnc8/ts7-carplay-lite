@@ -21,7 +21,16 @@ Repository preparation, public GitHub publication, v0.1 tag/Release and the v0.2
 - First Actions run: [37448438159](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37448438159) — SUCCESS, including APK artifact upload.
 - Release/tag: [`diagnostic-v0.1.0`](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/diagnostic-v0.1.0)
 - Release APK: [`TS7-Diagnostic-v0.1.apk`](https://github.com/nnnc8/ts7-carplay-lite/releases/download/diagnostic-v0.1.0/TS7-Diagnostic-v0.1.apk)
-- v0.2 Release/tag: pending branch CI, merge and release completion.
+- v0.2 branch CI: [37479300420](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37479300420) — SUCCESS, including APK signature and credential scan.
+- v0.2 APK SHA-256: `87dc5f08a1d0d5562720b834d460329a4cbc008f10072778d8e7f81540497a34`
+- v0.2 Release/tag: pending PR merge and release completion.
+
+## Diagnostic upload relay
+
+- Production endpoint: `https://ts7-carplay-lite-relay.vercel.app/api/diagnostics`
+- Deployment: READY on Vercel; GET/invalid-JSON contract checks return safe 405/400 responses.
+- GitHub credential: **NOT CONFIGURED**. The production Vercel environment still needs `GITHUB_TOKEN`; no token is in source, APK, CI artifact or release asset.
+- Required token scope: fine-grained PAT restricted to this repository with Issues **Read and write** only.
 
 Created issue seeds: #1 Wi-Fi/Bluetooth, #2 performance telemetry, #3 wireless feasibility, #4 H.264 decoder, #5 first diagnostic report, #6 60-minute stability, #7 30-minute stability, #8 display resolution, #9 Surface prototype, #10 USB topology, #11 wired transport.
 
@@ -63,6 +72,8 @@ Created issue seeds: #1 Wi-Fi/Bluetooth, #2 performance telemetry, #3 wireless f
 - [x] Added local/public report separation and client-side privacy sanitizer.
 - [x] Added fixed Issue #5 HTTPS relay source, server-side validation/sanitization, rate limiting, Markdown escaping and duplicate suppression.
 - [x] Added backend tests and JVM ReportSanitizer tests.
+- [x] GitHub Actions built `TS7-Diagnostic-v0.2.apk` with the public relay URL and no embedded credential.
+- [x] Vercel relay deployed; production GitHub credential remains intentionally unconfigured.
 
 ## Evidence labels
 
@@ -123,5 +134,5 @@ If only software AVC decoding is available or hardware decode is unstable, lower
 | Version | Artifact | Status |
 |---|---|---|
 | Diagnostic v0.1 | `downloads/TS7-Diagnostic-v0.1.apk` | Built, not yet validated on target hardware |
-| Diagnostic v0.2 | `dist/TS7-Diagnostic-v0.2.apk` / release asset | Built and CI-verified on branch; real-device validation pending |
+| Diagnostic v0.2 | `downloads/TS7-Diagnostic-v0.2.apk` / release asset | Built and CI-verified; relay credential and real-device validation pending |
 | CarPlay Lite v0.1 | — | Not started; gated on diagnostic result |
