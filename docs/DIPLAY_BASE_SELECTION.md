@@ -56,4 +56,3 @@ It is an unfinished research checkpoint, not a tested/releasable core.
 Auth contracts, bounded gate tests and renderer-lock may be reused; xcertplay-only
 primary adapter/source are not brought forward. Main baseline:
 4e98000c1652ed7e1bc4c9668ff10b37a779f78b.
-

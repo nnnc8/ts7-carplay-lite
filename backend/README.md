@@ -24,6 +24,10 @@ production `GITHUB_TOKEN` secret; do not copy it into local files or Android bui
 Run Vercel CLI linking/deployment from the **repository root**, not from `backend`,
 because Vercel applies the configured root directory itself:
 
+Root .vercelignore allowlists backend only (and excludes env/node_modules); SDK,
+compiler jars, APKs and local test signing keys must never be sent in a CLI deployment.
+This follows the official [.vercelignore allowlist](https://vercel.com/docs/deployments/vercel-ignore).
+
 ```sh
 vercel link --scope ncnc8 --project ts7-carplay-lite-relay --yes
 vercel deploy --prod --yes --scope ncnc8

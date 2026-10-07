@@ -37,6 +37,7 @@ cp "$TASK_ROOT/receiver/src/main/assets/ts7-pattern.h264" "$TASK_BUILD/assets/"
 cp "$TASK_ROOT/third_party/diplay-base/LICENSE" "$TASK_BUILD/assets/licenses/DiPlay-GPL-3.0.txt"
 cp "$TASK_ROOT/third_party/diplay-base/docs/licenses/dependencies/"*.txt "$TASK_BUILD/assets/licenses/"
 cp "$TASK_ROOT/THIRD_PARTY_NOTICES.md" "$TASK_BUILD/assets/licenses/TS7-NOTICES.md"
+cp "$TASK_ROOT/third_party/diplay-base/docs/THIRD_PARTY_NOTICES.md" "$TASK_BUILD/assets/licenses/DiPlay-UPSTREAM-NOTICES.md"
 cp "$TASK_CORE/native/armeabi-v7a/liblocal_hotspot_radio.so" "$TASK_BUILD/lib/armeabi-v7a/"
 cp "$TASK_CORE/native/x86_64/liblocal_hotspot_radio.so" "$TASK_BUILD/lib/x86_64/"
 "$TASK_TOOLS/aapt2" link -I "$TASK_JAR" --manifest "$TASK_BUILD/AndroidManifest.xml" \

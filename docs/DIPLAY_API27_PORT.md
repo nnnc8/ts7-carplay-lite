@@ -48,8 +48,12 @@ https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6030102288
 
 ## Verification gates
 
-Pending: exact-source verification; API27 compile; ARMv7 native ELF/API checks;
-API27 emulator normal startup + fail-closed auth + protocol/crypto/native runtime;
-existing Surface/reset/recovery smoke; host/diagnostic/backend tests; CI pass;
-published source/APK checksum. Replace each pending item only after actual evidence.
-
+PASS:71 exact file hashes, GPL/dependency notices, API27 SDK/JVM8 compile,
+source-built ELF32 ARM JNI with Android API27 .note.android.ident,9 frozen renderer
+hashes,2047 receiver +24auth +30gate +444DiPlay host fixtures,diagnostic sanitizer,
+16 backend tests, signed/inspected normal APK.
+Initial v0.2 API27 normal startup/authblocked/BCcrypto/JNI+Surface/reset/stop PASS
+at87e9901, PR CI37604670362 and push37604605337; screenshots inspected.
+Final binding/buffer cleanup hardening will rerun at the exact release source.
+See DIPLAY_PORT_VERIFICATION.md for final CI/release/download proof; do not treat
+emulator x86_64 as real TS7 ARMv7 or actual iPhone verification.

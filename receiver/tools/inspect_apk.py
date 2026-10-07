@@ -34,6 +34,9 @@ with zipfile.ZipFile(apk) as archive:
     assert x86[:5] == b"\x7fELF\x02" and int.from_bytes(x86[18:20], "little") == 62
     assert not any(re.search(r"(?i)(tlink|zlink|offline-mfi|[.](pk8|p7b|pem|key|p12|pfx|jks|keystore)$)", name) for name in names)
     assert "assets/licenses/DiPlay-GPL-3.0.txt" in names and "assets/licenses/TS7-NOTICES.md" in names
+    assert "assets/licenses/DiPlay-UPSTREAM-NOTICES.md" in names
+    notices = archive.read("assets/licenses/TS7-NOTICES.md")
+    assert b"c8884adcc75bfda3c134db63877bd6c6f83beb74" in notices
     dex = b"".join(archive.read(name) for name in names if re.fullmatch(r"classes\d*[.]dex", name))
     for core in (b"CarPlayController;", b"DiPlayReceiverCore;", b"CarPlayMediaEngine;", b"DiPlayMediaBridge;"):
         assert core in dex, "Missing actual DiPlay core/renderer seam"

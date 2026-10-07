@@ -21,6 +21,8 @@ UPSTREAM-README.md is upstream README.md renamed as reference, NOT auth instruct
   slf4j-nop / no raw logs. RFCOMM/tunnel bounded producers notified after consumption.
 - AirPlaySession: SAP + verified pairing + encryption required for SETUP/RECORD;
   bounded RTSP/control/event. NTP/event/keepalive bound to session local address.
+  Event peer/timeout checked, repeated timing setup refused, max three distinct
+  advertised stream types, no repeated active stream replacement or listener leak.
 - MediaEngine/Screen/Audio/IapTunnel: main H264, LPCM media only; exact AP/peer;
   no wildcard/secondary listeners/capture. Packets bounded; replaced tunnels closed.
 - Bplist/RTSP: reject cycles/depth/object/reference/offset/length overflow/duplicate

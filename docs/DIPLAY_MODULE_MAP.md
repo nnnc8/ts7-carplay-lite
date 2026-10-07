@@ -30,4 +30,3 @@ Scope: TS7, Android8.1/API27, ARM32/2GB, wireless first.
 No code import precedes this map. Actual included/modified files and original hashes
 are machine-readable in third_party/diplay-base/SOURCE_MANIFEST.json; audit source
 and APK independently. No hidden feature framework or additional default workers.
-

@@ -14,13 +14,13 @@ Compile != runtime != iPhone != authentication != video.
 | Source/license/no blobs | PASS71 fixed file digests/originalGitblobs/GPL/dependency notices |
 | Renderer preserved | PASS9 baseline hashes, including asset and PCM/touch |
 | Local receiver | PASS2047 fixtures |
-| Auth/gate/DiPlay | PASS24+30+436 fixtures; fake provider test sources only |
+| Auth/gate/DiPlay | PASS24+30+444 fixtures; fake provider test sources only; tunnel loopback is not radio/phone proof |
 | Diagnostic privacy | PASS ReportSanitizerTest; diagnostic code/workflow unchanged |
 | Both backend routes | PASS16 unit tests; v0.1/v0.2 fixed13, diagnostic fixed5, privacy/auth deny |
 | Normal APK inspect | PASSAPI27/version0.2-alpha/permissions/actualARMv7/DiPlaypresence/no credentials/signature |
-| Android8.1 emulator | PENDING new normal startup +authgate +BC crypto +native link +originalSurface/reset/stop |
-| Hosted CI | PENDING exact feature commit |
-| Production relay | PENDING v0.2 deployment; preserve both route checks and server-only secret |
+| Android8.1 emulator | PASS initial87e9901: normal startup/authgate/BCcrypto/native link/originalSurface/reset/stop; final source rerun pending |
+| Hosted CI | PASS initial PR37604670362 / push37604605337; Diagnostic37604670078; final source rerun pending |
+| Production relay | READY dpl_3eDB7nymbC7ug9LoeeENwf82JLJ1, staged both GET405/invalidPOST400 then promoted; both public routes retested PASS |
 | New release download | PENDING publish/hash/readback |
 
 ## Runtime smoke scope
@@ -42,6 +42,19 @@ NOT YET VERIFIED. Siri/microphone and wired receiver deferred.
 No stolen credentials or proprietary receiver downloaded/copied. Provider unavailable.
 
 ## Review
+
+Initial CI normal activity startStatusOK/677ms; screenshot shows DiPlayv0.2Preview
+and Waiting for iPhone/authentication blocked/DiPlay ready. Instrumentation:
+BC crypto/native empty-name load PASS; OMX.google.h264.decoder720p90+frames,
+reset/recovery/stop PASS. Initial exactsource87e9901; final hardened source rerun needed.
+
+Relay backend source is unchanged from87e9901 (16 tests). CLI upload was stopped
+when unexpected build artifacts were selected; .vercelignore added to allow backend
+only. Replacement deployment contains9 files/two functions, no SDK/APK/signing files.
+No GitHub issue comment created by smoke checks (invalid payload only).
+Post-promotion error-log query last15min returned no entries; logging/monitoring/drains
+not otherwise audited. Real v0.2 device-to-GitHub positive upload still user verification.
+Production secret untouched/server-only. No APK contains that GitHub credential.
 
 Independent upstream wireless source review identified raw auth/WiFi traces, producer
 wakeup, interface/binding and service/socket cleanup risks; fixed in this port.

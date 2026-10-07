@@ -38,8 +38,11 @@ class ScreenStream(private val key: ByteArray, private val onDiagnostic: (String
     fun listen(listener: Listener, bindAddress: InetAddress, expectedPeer: InetAddress?): Int {
         this.listener = listener
         val bound = ServerSocket()
-        bound.reuseAddress = true
-        bound.bind(InetSocketAddress(bindAddress, 0))
+        try {
+            require(!bindAddress.isAnyLocalAddress && expectedPeer != null) { "SCREEN_INTERFACE_PEER_REQUIRED" }
+            bound.reuseAddress = true
+            bound.bind(InetSocketAddress(bindAddress, 0))
+        } catch (error: Exception) { safeClose(bound); throw error }
         server = bound
         thread = Thread({ accept(bound, expectedPeer) }, "airplay-screen").apply { isDaemon = true; start() }
         return bound.localPort

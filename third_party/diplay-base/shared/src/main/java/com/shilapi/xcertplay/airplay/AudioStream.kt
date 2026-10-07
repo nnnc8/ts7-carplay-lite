@@ -54,8 +54,10 @@ class AudioStream(
     private var started = false
 
     fun listen(listener: Listener, bindAddress: InetAddress, expectedPeer: InetAddress?): Pair<Int, Int> {
+        require(!bindAddress.isAnyLocalAddress && expectedPeer != null) { "AUDIO_INTERFACE_PEER_REQUIRED" }
         val data = bindAnyPort(bindAddress)
-        val control = bindAnyPort(bindAddress)
+        val control = try { bindAnyPort(bindAddress) }
+            catch (error: Exception) { data.close(); throw error }
         dataSocket = data
         controlSocket = control
         dataThread = Thread({ runData(data, listener, expectedPeer) }, "airplay-audio-rx").apply {
@@ -157,8 +159,10 @@ class AudioStream(
 
     private fun bindAnyPort(bindAddress: InetAddress): DatagramSocket {
         val socket = DatagramSocket(null)
-        socket.reuseAddress = true
-        socket.bind(InetSocketAddress(bindAddress, 0))
+        try {
+            socket.reuseAddress = true
+            socket.bind(InetSocketAddress(bindAddress, 0))
+        } catch (error: Exception) { socket.close(); throw error }
         return socket
     }
 

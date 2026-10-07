@@ -62,9 +62,11 @@ Legal provider is separate from source license; external interface READY, unavai
 See [DiPlay verification ledger](docs/DIPLAY_PORT_VERIFICATION.md) for exact results.
 Local: API27 source compile PASS; native ARMv7/x86_64 build PASS; APK/signature/ABI/
 credentials/license inspection PASS;71 source hash +9 renderer-lock PASS.
-Host: receiver2047, authentication24, gate30, DiPlay436 fixtures PASS;
+Host: receiver2047, authentication24, gate30, DiPlay444 fixtures PASS;
 Diagnostic sanitizer PASS; backend16 tests PASS.
-Android8.1 normal startup/crypto/JNI/Surface and remote CI: pending until captured.
+Initial87e9901 Android8.1 normal startup/authblocked/crypto/JNI/Surface PASS,
+PR CI37604670362/push37604605337 PASS, Diagnostic37604670078 PASS.
+Final hardened source rerun pending; release only after exact final CI passes.
 Do not reuse v0.1 emulator/CI results as v0.2 proof.
 
 Independent upstream network/privacy review completed; identified log/binding/queue/
@@ -80,6 +82,10 @@ but reviewer unavailable (usage limit); do not claim a complete final independen
 - Production relay: https://ts7-carplay-lite-relay.vercel.app;RootDirectory backend.
   Preserve secret server-side. Version2 support deployment/live checks recorded in ledger.
 - Issue15 stays OPEN;Issues10/11 DEFERRED;Issue4 stays OPEN. Main not overwritten by experiment.
+- [PR18](https://github.com/nnnc8/ts7-carplay-lite/pull/18) OPEN/unmerged;
+  high-priority [port issue19](https://github.com/nnnc8/ts7-carplay-lite/issues/19).
+- Relay v0.2-compatible backend READY/promoted dpl_3eDB7nymbC7ug9LoeeENwf82JLJ1;
+  both public routes GET405/invalidPOST400 PASS. No smoke comments/private uploads.
 
 ## Next blocker / next device check
 

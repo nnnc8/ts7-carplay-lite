@@ -66,6 +66,7 @@ class AirPlaySession(
     internal val pairVerify = PairVerify(identity, pairings)
     internal var cipher: ControlCipher? = null
     @Volatile private var sapAuthenticated = false
+    private var sessionSetup = false
     val authenticatedForMedia: Boolean
         get() = sapAuthenticated && cipher != null && pairVerify.verifiedControllerId != null
     internal var encBuf = ByteArray(0)
@@ -420,6 +421,10 @@ class AirPlaySession(
         Unit
         val streams = dict["streams"] as? List<*>
         if (streams != null) {
+            val types = streams.map { long(asMap(it)?.get("type")) }
+            if (streams.size !in 1..3 || types.any { it !in listOf(100L, 110L, 130L) } ||
+                types.distinct().size != types.size || types.any { it?.toInt() in activeStreams })
+                return RtspMessage.Response(status = 400)
             val responseStreams = handleStreams(streams)
             Unit
             val body = BplistCodec.encode(linkedMapOf("streams" to responseStreams))
@@ -427,6 +432,8 @@ class AirPlaySession(
             return RtspMessage.Response(headers = mapOf("Content-Type" to PLIST_CONTENT_TYPE), body = body)
         }
 
+        if (sessionSetup) return RtspMessage.Response(status = 400)
+        sessionSetup = true
         val name = string(dict["name"])
         val deviceId = string(dict["deviceID"])
         val wifiMac = string(dict["macAddress"]).lowercase()
@@ -543,8 +550,10 @@ class AirPlaySession(
 
     private fun openKeepAlive(): Int {
         val socket = DatagramSocket(null)
-        socket.reuseAddress = true
-        socket.bind(InetSocketAddress(requireNotNull(localAddress), 0))
+        try {
+            socket.reuseAddress = true
+            socket.bind(InetSocketAddress(requireNotNull(localAddress), 0))
+        } catch (error: Exception) { socket.close(); throw error }
         keepAliveSocket = socket
         keepAliveThread = Thread({ runKeepAlive(socket) }, "airplay-keepalive").apply {
             isDaemon = true
@@ -565,7 +574,7 @@ class AirPlaySession(
     }
 
     private fun openEvent(): Int {
-        val server = ServerSocket(0, 50, InetAddress.getByName("::"))
+        val server = ServerSocket(0, 1, requireNotNull(localAddress))
         eventServer = server
         spawnEvent("airplay-event-accept") { acceptEvent(server) }
         return server.localPort
@@ -589,6 +598,10 @@ class AirPlaySession(
     private fun acceptEvent(server: ServerSocket) {
         try {
             val socket = server.accept()
+            if (closed.get() || remoteAddress == null || socket.inetAddress != remoteAddress) {
+                safeClose(socket); close(); return
+            }
+            socket.soTimeout = 15_000
             socket.setSoLinger(true, 0)
             Unit
             eventSocket = socket

@@ -40,6 +40,8 @@ for base in roots:
         assert not re.search(r"class\s+(?:FakeAuthenticationProvider|OfflineMfiAuthenticator|LocalMfiAuthenticator|Baidu[A-Za-z]*|Byd[A-Za-z]*)\b", data), str(path)
         if base == VENDOR / "shared":
             assert not re.search(r"\bLog\.(?:v|d|i|w|e)\s*\(", data), str(path)
+            assert 'InetAddress.getByName("0.0.0.0")' not in data, str(path)
+            assert 'InetAddress.getByName("::")' not in data, str(path)
 appmk = (VENDOR / "shared/src/main/jni/Application.mk").read_text()
 assert "APP_PLATFORM := android-27" in appmk
 assert "APP_ABI := armeabi-v7a x86_64" in appmk

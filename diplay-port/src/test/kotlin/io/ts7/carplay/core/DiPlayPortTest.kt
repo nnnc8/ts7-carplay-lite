@@ -80,6 +80,33 @@ fun main() {
     expect(AirPlayCrypto.chachaOpen(key, nonce, sealed).contentEquals(byteArrayOf(9)))
     rejects { AirPlayCrypto.chachaOpen(key, nonce, sealed.also { it[0] = (it[0].toInt() xor 1).toByte() }) }
 
+    // Actual source tunnel on loopback only; no Android radios, phone or authentication claim.
+    val loop = java.net.InetAddress.getByName("127.0.0.1")
+    val packetReceived = CountDownLatch(1)
+    var received: ByteArray? = null
+    val tunnel = IapTunnel(ByteArray(32) { 4 }, loop, loop)
+    val port = tunnel.listen(object : IapTunnel.Listener {
+        override fun onIap(bytes: ByteArray) { received = bytes; packetReceived.countDown() }
+    })
+    java.net.Socket(loop, port).use { socket ->
+        expect(tunnel.awaitPeerConnection(2000))
+        val plain = ByteArray(34); plain[3] = 34
+        "comm".toByteArray().copyInto(plain, 16); plain[32] = 5; plain[33] = 6
+        val header = byteArrayOf(34, 0)
+        val encrypted = AirPlayCrypto.chachaSeal(ByteArray(32) { 4 }, AirPlayCrypto.nonce64(0), plain, header)
+        socket.getOutputStream().write(header + encrypted)
+        expect(packetReceived.await(2, TimeUnit.SECONDS))
+        expect(received!!.contentEquals(byteArrayOf(5, 6)))
+    }
+    tunnel.close()
+    val wrongPeer = IapTunnel(ByteArray(32), loop, java.net.InetAddress.getByName("127.0.0.2"))
+    val peerPort = wrongPeer.listen(object : IapTunnel.Listener {})
+    java.net.Socket(loop, peerPort).use { socket -> socket.soTimeout = 2000; expect(socket.getInputStream().read() == -1) }
+    expect(!wrongPeer.awaitPeerConnection(10)); wrongPeer.close()
+    rejects { IapTunnel(ByteArray(32), java.net.InetAddress.getByName("0.0.0.0"), loop) }
+    rejects { AudioStream(ByteArray(32)).listen(object : AudioStream.Listener {}, loop, null) }
+    rejects { ScreenStream(ByteArray(32)).listen(object : ScreenStream.Listener {}, loop, null) }
+
     val avcc = byteArrayOf(1, 66, 0, 30, -1, -31, 0, 2, 0x67, 0x11, 1, 0, 2, 0x68, 0x22)
     expect(AvcParameterSets.annexB(avcc).contentEquals(byteArrayOf(0,0,0,1,0x67,0x11,0,0,0,1,0x68,0x22)))
     rejects { AvcParameterSets.annexB(avcc.copyOf(9)) }

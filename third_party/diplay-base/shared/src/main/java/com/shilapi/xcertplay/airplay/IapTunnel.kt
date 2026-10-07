@@ -32,7 +32,7 @@ class IapTunnel(
 
     private val closed = AtomicBoolean(false)
     private val readCounter = AtomicLong(0)
-    init { require(!bindAddress.isAnyLocalAddress) { "TUNNEL_INTERFACE_REQUIRED" } }
+    init { require(!bindAddress.isAnyLocalAddress && expectedPeer != null) { "TUNNEL_INTERFACE_PEER_REQUIRED" } }
     private val servers = mutableListOf<ServerSocket>()
     private var socket: Socket? = null
     private val threads = mutableListOf<Thread>()
