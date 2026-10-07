@@ -10,6 +10,10 @@ javac --release 8 -d "$TASK_TEST" \
   "$TASK_SOURCE/VideoQueue.java" "$TASK_SOURCE/AvcConfig.java" "$TASK_SOURCE/SessionMachine.java" \
   "$TASK_SOURCE/ReceiverCore.java" "$TASK_ROOT/receiver/src/test/java/io/ts7/carplay/ReceiverTest.java" \
   "$TASK_SOURCE/PlatformReadiness.java" "$TASK_SOURCE/PlatformReadinessRunner.java" \
-  "$TASK_ROOT/receiver/src/test/java/io/ts7/carplay/PlatformReadinessTest.java"
+  "$TASK_SOURCE/PlatformResourceGuard.java" \
+  "$TASK_ROOT/receiver/src/test/java/io/ts7/carplay/PlatformReadinessTest.java" \
+  "$TASK_ROOT/receiver/src/test/java/io/ts7/carplay/PlatformCleanupTest.java"
 java -cp "$TASK_TEST" io.ts7.carplay.ReceiverTest "$TASK_ROOT/receiver/src/main/assets/ts7-pattern.h264"
 java -cp "$TASK_TEST" io.ts7.carplay.PlatformReadinessTest
+java -cp "$TASK_TEST" io.ts7.carplay.PlatformCleanupTest immediate
+java -cp "$TASK_TEST" io.ts7.carplay.PlatformCleanupTest late

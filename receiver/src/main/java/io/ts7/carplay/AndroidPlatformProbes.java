@@ -83,7 +83,10 @@ public final class AndroidPlatformProbes implements PlatformReadinessRunner.Prob
             core.initialize();
             return "DIPLAY_CORE_READY_AUTH_BLOCKED".equals(core.initializationStatus()) && !core.hasLawfulAuthentication()
                 ? NONE : CORE_INIT_FAILED;
-        } finally { core.close(); }
+        } finally {
+            try { core.close(); }
+            catch (Throwable error) { throw releaseFailed(core); }
+        }
     }
 
     private PlatformReadiness.Code nativeLoad() {
@@ -110,7 +113,7 @@ public final class AndroidPlatformProbes implements PlatformReadinessRunner.Prob
             "TS7 Platform Probe", UUID.fromString("5e922b87-3b18-4fa3-9144-d3257c77667e"));
         if (socket == null) return RFCOMM_CREATE_FAILED;
         try { return NONE; }
-        finally { try { socket.close(); } catch (IOException error) { throw new ReleaseFailure(); } }
+        finally { try { socket.close(); } catch (Throwable error) { throw releaseFailed(socket); } }
     }
 
     private PlatformReadiness.Code hotspot(PlatformReadinessRunner.Cancellation cancel) throws InterruptedException {
@@ -139,7 +142,10 @@ public final class AndroidPlatformProbes implements PlatformReadinessRunner.Prob
                     // Never read getWifiConfiguration(): it contains SSID/password.
                     if (reservation == null) result = HOTSPOT_START_FAILED;
                     else reservation.close(); // Also release late reservations after cancel/timeout.
-                } catch (Throwable error) { result = RESOURCE_RELEASE_FAILED; }
+                } catch (Throwable error) {
+                    PlatformResourceGuard.quarantine(reservation);
+                    result = RESOURCE_RELEASE_FAILED;
+                }
                 finally { finish(result); }
             }
             @Override public void onFailed(int reason) {
@@ -185,8 +191,8 @@ public final class AndroidPlatformProbes implements PlatformReadinessRunner.Prob
         } finally {
             try {
                 if (lock.isHeld()) lock.release();
-                if (lock.isHeld()) throw new ReleaseFailure();
-            } catch (RuntimeException error) { throw new ReleaseFailure(); }
+                if (lock.isHeld()) throw releaseFailed(lock);
+            } catch (Throwable error) { throw releaseFailed(lock); }
         }
     }
 
@@ -196,7 +202,10 @@ public final class AndroidPlatformProbes implements PlatformReadinessRunner.Prob
             socket.setReuseAddress(true);
             socket.bind(new InetSocketAddress(5353));
             return socket.isBound() ? NONE : MDNS_BIND_FAILED;
-        } finally { socket.close(); }
+        } finally {
+            try { socket.close(); }
+            catch (Throwable error) { throw releaseFailed(socket); }
+        }
     }
 
     private PlatformReadiness.Code tcp() throws IOException {
@@ -204,7 +213,7 @@ public final class AndroidPlatformProbes implements PlatformReadinessRunner.Prob
         try {
             socket.bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 1);
             return socket.isBound() ? NONE : TCP_BIND_FAILED;
-        } finally { try { socket.close(); } catch (IOException error) { throw new ReleaseFailure(); } }
+        } finally { try { socket.close(); } catch (Throwable error) { throw releaseFailed(socket); } }
     }
 
     private PlatformReadiness.Code udp() throws IOException {
@@ -212,7 +221,10 @@ public final class AndroidPlatformProbes implements PlatformReadinessRunner.Prob
         try {
             socket.bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
             return socket.isBound() ? NONE : UDP_BIND_FAILED;
-        } finally { socket.close(); }
+        } finally {
+            try { socket.close(); }
+            catch (Throwable error) { throw releaseFailed(socket); }
+        }
     }
 
     private PlatformReadiness.Code network() throws IOException {
@@ -220,11 +232,21 @@ public final class AndroidPlatformProbes implements PlatformReadinessRunner.Prob
         if (manager == null) return SERVICE_UNAVAILABLE;
         Network network = manager.getActiveNetwork();
         if (network == null) return NETWORK_UNAVAILABLE;
-        try (Socket tcp = new Socket(); DatagramSocket udp = new DatagramSocket(null)) {
+        Socket tcp = new Socket();
+        DatagramSocket udp = null;
+        try {
+            udp = new DatagramSocket(null);
             tcp.getReuseAddress(); // Allocate the TCP descriptor without connecting or sending anything.
             network.bindSocket(tcp);
             network.bindSocket(udp);
             return NONE;
+        } finally {
+            boolean failed = false;
+            try { tcp.close(); }
+            catch (Throwable error) { PlatformResourceGuard.quarantine(tcp); failed = true; }
+            if (udp != null) try { udp.close(); }
+            catch (Throwable error) { PlatformResourceGuard.quarantine(udp); failed = true; }
+            if (failed) throw new ReleaseFailure();
         }
     }
 
@@ -241,7 +263,7 @@ public final class AndroidPlatformProbes implements PlatformReadinessRunner.Prob
             AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT, buffer, AudioTrack.MODE_STREAM);
         try { return track.getState() == AudioTrack.STATE_INITIALIZED ? NONE : AUDIO_CREATE_FAILED; }
         finally {
-            try { track.release(); } catch (RuntimeException error) { throw new ReleaseFailure(); }
+            try { track.release(); } catch (Throwable error) { throw releaseFailed(track); }
         }
     }
 
@@ -260,6 +282,11 @@ public final class AndroidPlatformProbes implements PlatformReadinessRunner.Prob
             case audioTrack: return AUDIO_CREATE_FAILED;
             default: return PROBE_FAILED;
         }
+    }
+
+    private static ReleaseFailure releaseFailed(Object handle) {
+        PlatformResourceGuard.quarantine(handle);
+        return new ReleaseFailure();
     }
 
     private static final class ReleaseFailure extends RuntimeException {}

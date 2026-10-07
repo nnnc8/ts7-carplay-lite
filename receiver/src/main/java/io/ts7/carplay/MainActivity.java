@@ -536,7 +536,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     private void confirmReadiness() {
         if (readiness.isBusy()) {
             new AlertDialog.Builder(this).setTitle("Previous platform probe still running")
-                .setMessage("A vendor call or hotspot cleanup has not returned. Further tests are blocked to avoid accumulating resources. You can copy/upload the current fixed results. If it remains stuck, save results first, then Force stop this app in Android settings before retrying.")
+                .setMessage("A vendor call or resource cleanup is unfinished or failed. Further tests are blocked to avoid accumulating resources. You can copy/upload the current fixed results. Save results first, then Force stop this app in Android settings before retrying.")
                 .setPositiveButton("View results", (dialog, which) -> showReadiness(false)).show();
             return;
         }
@@ -577,7 +577,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
 
     private String readinessDisplay() {
         return readiness.snapshot().display() + (readiness.isRunning() ? "\n\nTesting… Close cancels unfinished checks."
-            : readiness.isBusy() ? "\n\nVendor cleanup pending. A repeat run is blocked." : "");
+            : readiness.isBusy() ? "\n\nVendor call/cleanup unfinished or failed. Repeat run blocked; save report then Force stop." : "");
     }
 
     private void updateReadiness() {

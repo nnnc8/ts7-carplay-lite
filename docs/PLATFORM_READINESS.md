@@ -31,9 +31,13 @@ Diagnostic v0.2 is a different app and is not replaced.
 7. Share the resulting [Issue #13 comment](https://github.com/nnnc8/ts7-carplay-lite/issues/13).
    Do not upload screenshots/system logs containing names, SSIDs, addresses or credentials.
 
-If a vendor call ignores cancellation or never returns a hotspot callback, subsequent probes
+If a vendor call ignores cancellation, never returns a hotspot callback, or any resource release
+throws, subsequent probes
 still run, but another full run is blocked while the old resources may be outstanding.
-This guard survives Activity recreation. Save results first, then Android Settings → Apps →
+This guard survives Activity recreation. Failed cleanup quarantines the process and retains a
+bounded number of owned handles without inspecting/serializing them; no in-app reset bypass.
+Even a late close failure after a timeout keeps the quarantine, while the captured timeout result
+remains unchanged. Save results first, then Android Settings → Apps →
 TS7 CarPlay Lite → Force stop before retrying. Reopening the Activity alone is not a reset.
 Java interruption is not a promise to forcibly terminate a stuck vendor/native call.
 

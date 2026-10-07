@@ -54,7 +54,10 @@ public final class PlatformReadinessRunner {
 
     public PlatformReadiness snapshot() { return report; }
     public boolean isRunning() { return running; }
-    public boolean isBusy() { return RUNS.get() != 0 || WORKERS.get() != 0 || probes.hasPendingResources(); }
+    public boolean isBusy() {
+        return PlatformResourceGuard.isQuarantined() || RUNS.get() != 0 || WORKERS.get() != 0
+            || probes.hasPendingResources();
+    }
 
     public void cancel() {
         cancelled = true;

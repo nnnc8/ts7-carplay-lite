@@ -1,6 +1,6 @@
 # Project Status
 
-Updated: 2026-10-07.
+Updated: 2026-10-08.
 
 ## Current phase
 
@@ -48,7 +48,7 @@ Legal provider is separate from source license; external interface READY, unavai
 
 - User-triggered Developer platform readiness: 12 independent real local API probes,
   fixed typed status/duration/error codes, bounded workers/cancel/late-reservation cleanup,
-  process-wide repeat-run guard, no phone/session/authentication/credential reads.
+  process-wide repeat-run/failed-cleanup quarantine guard, no phone/session/authentication/credential reads.
 - Strict `0.2.1-platform` report extension on fixed Issue13; old alpha reports and fixed5 unchanged.
   [Exact operations / privacy / emulator limits](docs/PLATFORM_READINESS.md).
 
@@ -72,7 +72,7 @@ Local: API27 source compile PASS; native ARMv7/x86_64 build PASS; APK/signature/
 credentials/license inspection PASS;71 source hash +9 renderer-lock PASS.
 Host: receiver2047, authentication24, gate30, DiPlay478 fixtures PASS;
 Diagnostic sanitizer PASS; backend16 tests PASS.
-v0.2.1 local delta: readiness121 assertions, existing receiver2047/auth24/gate30/DiPlay478,
+v0.2.1 local delta: readiness121 + immediate/late cleanup21 assertions, existing receiver2047/auth24/gate30/DiPlay478,
 Diagnostic sanitizer, backend27 PASS; source/license71 + frozen renderer9 PASS; normal and
 separate instrumented API27 APK builds/inspections PASS. Hosted readiness CI and release
 acceptance are recorded against the final exact commit in the v0.2.1 release notes; do not

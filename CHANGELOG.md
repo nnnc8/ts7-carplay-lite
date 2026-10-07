@@ -3,7 +3,7 @@
 ## TS7 Platform Readiness Preview v0.2.1 — 2026-10-07
 
 - Added Settings → Developer → Test platform readiness: 12 independent actual core/JNI/Bluetooth/RFCOMM/hotspot/multicast/mDNS/TCP/UDP/Network/Surface/AudioTrack checks.
-- Added immutable fixed status/duration/error-code results, per-probe watchdog/cancel, late hotspot reservation cleanup and process-wide repeat-run guards.
+- Added immutable fixed status/duration/error-code results, per-probe watchdog/cancel, late hotspot reservation cleanup and process-wide repeat-run/failed-cleanup quarantine guards.
 - No iPhone/session/authentication/credential access; silent AudioTrack, local binds only, no app-level packet exchange. Hotspot interruption warning is explicit.
 - Extended sanitized fixed Issue13 relay for 0.2.1-platform with strict 12-probe nested schema; old clients and Diagnostic v0.2/fixed5 preserved.
 - Added API27 actual readiness instrumentation and Android-to-backend public-JSON verification, alongside existing H.264 Surface smoke; nine renderer/audio/touch/asset files unchanged.
