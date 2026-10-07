@@ -65,7 +65,7 @@ class CarPlayMediaEngine(
     }
 
     override fun onScreen(session: AirPlaySession, type: Int, stream: Map<String, Any?>): Int? {
-        if (!session.authenticatedForMedia) return null
+        if (!session.authenticatedControl) return null
         val key = outputKey(session, stream) ?: return null
         val streamKey = StreamKey(session, type)
         Unit
@@ -109,7 +109,7 @@ class CarPlayMediaEngine(
     }
 
     override fun onAudio(session: AirPlaySession, type: Int, stream: Map<String, Any?>): Map<String, Any?>? {
-        if (!session.authenticatedForMedia || type != 100) return null
+        if (!session.authenticatedControl || type != 100) return null
         val streamKey = StreamKey(session, type)
         streams.remove(streamKey)?.close()
         audioMeta.remove(type)
@@ -167,7 +167,7 @@ class CarPlayMediaEngine(
     }
 
     override fun onDataStream(session: AirPlaySession, stream: Map<String, Any?>): Map<String, Any?>? {
-        if (!session.authenticatedForMedia) return null
+        if (!session.authenticatedControl) return null
         val uuid = (stream["clientTypeUUID"] as? String)?.uppercase() ?: return null
         if (uuid != IAP_DATASTREAM_UUID) return null
         val shared = session.sharedSecret ?: return null

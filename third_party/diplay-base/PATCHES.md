@@ -22,6 +22,8 @@ UPSTREAM-README.md is upstream README.md renamed as reference, NOT auth instruct
 - AirPlaySession: SAP + verified pairing + encryption required for SETUP/RECORD;
   request encryption provenance fixed per parsed batch. Reject complete or partial
   plaintext following final pair-verify; encrypted RECORD is explicit media proof.
+  Separate authenticated control SETUP eligibility from RECORD/streaming proof;
+  stream ports may be established before RECORD, but TS7 sink remains gated.
   Event write failures release the writer lock before media/owner teardown callbacks.
   bounded RTSP/control/event. NTP/event/keepalive bound to session local address.
   Event peer/timeout checked, repeated timing setup refused, max three distinct
@@ -48,3 +50,5 @@ Final adapter lifecycle review fixes: recovery/render callbacks outside media/ow
 locks; captured-epoch failure invalidation; retain only profile/listener retry intent
 until explicit stop. Retain one early audio format (not PCM), activate only after
 authenticated session and UI sink acknowledgment. Nine frozen files remain unchanged.
+Asynchronous proof/failure callbacks carry attempt validity through final UI delivery;
+late bridge cleanup or queued notifications cannot interrupt a replacement attempt.

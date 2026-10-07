@@ -14,7 +14,7 @@ Compile != runtime != iPhone != authentication != video.
 | Source/license/no blobs | PASS71 fixed file digests/originalGitblobs/GPL/dependency notices |
 | Renderer preserved | PASS9 baseline hashes, including asset and PCM/touch |
 | Local receiver | PASS2047 fixtures |
-| Auth/gate/DiPlay | PASS24+30+467 fixtures; fake provider test sources only; tunnel loopback is not radio/phone proof |
+| Auth/gate/DiPlay | PASS24+30+478 fixtures; fake provider test sources only; tunnel loopback is not radio/phone proof |
 | Diagnostic privacy | PASS ReportSanitizerTest; diagnostic code/workflow unchanged |
 | Both backend routes | PASS16 unit tests; v0.1/v0.2 fixed13, diagnostic fixed5, privacy/auth deny |
 | Normal APK inspect | PASSAPI27/version0.2-alpha/permissions/actualARMv7/DiPlaypresence/no credentials/signature |
@@ -66,5 +66,8 @@ wakeup, interface/binding and service/socket cleanup risks; fixed in this port.
 Final new-port independent review identified five authorized-path issues: recovery/write
 lock inversion, plaintext RECORD provenance, stale rejection, lost reconnect intent and
 one-shot early audio readiness. Corrected in source with bounded regression fixtures;
-follow-up independent delta review is required before publication. Not an authentication
+follow-up review also caught SETUP-before-RECORD eligibility and late UI delivery.
+Both corrected and independently rechecked: no remaining P1/P2 blockers in the
+bounded code delta. Generated host PairVerify + AEAD SETUP/RECORD and delayed-clear
+UI delivery fixtures PASS; SAP completion is explicitly host-test-only. Not an authentication
 certification or full upstream security audit.

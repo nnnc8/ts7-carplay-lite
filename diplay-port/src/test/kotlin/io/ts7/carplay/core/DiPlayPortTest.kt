@@ -141,6 +141,67 @@ fun main() {
     expect(!writeSession.sendCommand(mapOf("type" to "forceKeyFrame")) && closureOutsideWriteLock)
     expect(!writeSession.authenticatedForMedia)
 
+    // Actual encrypted SETUP -> RECORD with generated host pairing keys, not an iPhone/MFi test.
+    java.net.ServerSocket(0, 1, loop).use { server ->
+        java.net.Socket(loop, server.localPort).use { client ->
+            val accepted = server.accept()
+            val testPairings = PairingStore()
+            val phoneSigning = AirPlayCrypto.ed25519Generate()
+            val phoneEphemeral = AirPlayCrypto.x25519Generate()
+            val controllerId = "host-fixture".toByteArray()
+            testPairings.save(controllerId.toString(Charsets.UTF_8), phoneSigning.publicKey)
+            var activations = 0
+            val engine = CarPlayMediaEngine(object : MediaSink {})
+            val setupSession = AirPlaySession(accepted, AirPlayConfig("fixture", "02:00:00:00:00:01",
+                "02:00:00:00:00:01", "220.68", AirPlayDisplayConfig(1280, 720)),
+                AirPlayIdentity.generate(), testPairings, null, object : AirPlaySessionListener {
+                    override fun onSessionActive(session: AirPlaySession) { activations++ }
+                }, engine)
+            try {
+                val verification = sessionField("pairVerify").get(setupSession) as PairVerify
+                val m2 = Tlv8Codec.decode(verification.handle(Tlv8Codec.encode(listOf(
+                    Tlv8Item(6, byteArrayOf(1)), Tlv8Item(3, phoneEphemeral.publicKey)))))
+                val accessoryEphemeral = m2[3]!!
+                val shared = AirPlayCrypto.x25519Shared(phoneEphemeral.privateKey, accessoryEphemeral)
+                val verifyKey = AirPlayCrypto.hkdfSha512(shared, "Pair-Verify-Encrypt-Salt".toByteArray(),
+                    "Pair-Verify-Encrypt-Info".toByteArray())
+                val signature = AirPlayCrypto.ed25519Sign(phoneSigning.privateKey,
+                    phoneEphemeral.publicKey + controllerId + accessoryEphemeral)
+                val proof = Tlv8Codec.encode(listOf(Tlv8Item(1, controllerId), Tlv8Item(10, signature)))
+                val m4 = Tlv8Codec.decode(verification.handle(Tlv8Codec.encode(listOf(
+                    Tlv8Item(6, byteArrayOf(3)), Tlv8Item(5,
+                        AirPlayCrypto.chachaSeal(verifyKey, AirPlayCrypto.nonceLabel("PV-Msg03"), proof))))))
+                expect(m4[6]!!.contentEquals(byteArrayOf(4)) && verification.verifiedControllerId != null)
+                val keys = verification.controlKeys!!
+                val accessoryCipher = ControlCipher(keys.readKey, keys.writeKey)
+                val phoneCipher = ControlCipher(keys.writeKey, keys.readKey)
+                sessionField("cipher").set(setupSession, accessoryCipher)
+                // Only host test injects SAP completion; no fake provider/credential ships in APK.
+                sessionField("sapAuthenticated").setBoolean(setupSession, true)
+                expect(setupSession.authenticatedControl && !setupSession.authenticatedForMedia)
+                val handle = AirPlaySession::class.java.getDeclaredMethod("handle",
+                    RtspMessage.Request::class.java, java.lang.Boolean.TYPE).apply { isAccessible = true }
+                val body = BplistCodec.encode(mapOf("streams" to listOf(mapOf("type" to 110L, "streamConnectionID" to 1L))))
+                val setupWire = "SETUP / RTSP/1.0\r\nCSeq: 3\r\nContent-Length: ${body.size}\r\n\r\n".toByteArray() + body
+                fun dispatch(wire: ByteArray, encrypted: Boolean): RtspMessage.Response {
+                    val plain = if (encrypted) accessoryCipher.decrypt(phoneCipher.encrypt(wire)).data else wire
+                    return handle.invoke(setupSession, RtspMessage.parseMessages(plain).messages.single(), encrypted) as RtspMessage.Response
+                }
+                expect(dispatch(setupWire, false).status == 403)
+                val setupResponse = dispatch(setupWire, true)
+                val responseBody = BplistCodec.decode(setupResponse.body) as Map<*, *>
+                val returnedStream = (responseBody["streams"] as List<*>).single() as Map<*, *>
+                expect((setupResponse.status ?: 200) == 200 && (returnedStream["dataPort"] as Number).toInt() > 0)
+                expect(!setupSession.authenticatedForMedia && activations == 0)
+                expect(dispatch(record, false).status == 403 && activations == 0)
+                expect(dispatch(record, true).status == 200 && setupSession.authenticatedForMedia && activations == 1)
+            } finally {
+                setupSession.close(); accepted.close()
+                phoneSigning.privateKey.fill(0); phoneEphemeral.privateKey.fill(0); testPairings.clear()
+            }
+        }
+    }
+
     val avcc = byteArrayOf(1, 66, 0, 30, -1, -31, 0, 2, 0x67, 0x11, 1, 0, 2, 0x68, 0x22)
     expect(AvcParameterSets.annexB(avcc).contentEquals(byteArrayOf(0,0,0,1,0x67,0x11,0,0,0,1,0x68,0x22)))
     rejects { AvcParameterSets.annexB(avcc.copyOf(9)) }
@@ -236,5 +297,30 @@ fun main() {
     earlyBridge.onAudioStopped(100); earlyBridge.onAudioRtp(100, format, rtp, 0)
     expect(earlyPcm == 1)
     earlyGate.stop(); earlyBridge.clear()
+
+    // A delayed retired-bridge clear/notification and a queued UI callback are epoch scoped.
+    val deliveryGate = ProtocolGate(); deliveryGate.begin(FakeAuthenticationProvider())
+    deliveryGate.stop(); val stoppedEpoch = deliveryGate.epoch()
+    val queued = ArrayList<() -> Unit>(); var failuresDelivered = 0
+    val deferred = object : ReceiverCore.Listener by listener {
+        override fun disconnected(reason: SessionMachine.Reason, attemptCurrent: java.util.function.BooleanSupplier) {
+            queued.add { if (attemptCurrent.getAsBoolean()) failuresDelivered++ }
+        }
+    }
+    val clearEntered = CountDownLatch(1); val clearContinue = CountDownLatch(1)
+    val delayedFailure = Thread {
+        clearEntered.countDown(); check(clearContinue.await(2, TimeUnit.SECONDS))
+        deferred.disconnected(SessionMachine.Reason.SESSION_LOST) { deliveryGate.epoch() == stoppedEpoch }
+    }.apply { isDaemon = true }
+    delayedFailure.start(); expect(clearEntered.await(2, TimeUnit.SECONDS))
+    val replacementEpoch = deliveryGate.begin(FakeAuthenticationProvider())
+    clearContinue.countDown(); delayedFailure.join(3000)
+    expect(!delayedFailure.isAlive)
+    queued.forEach { it() }; queued.clear()
+    expect(failuresDelivered == 0 && deliveryGate.current(replacementEpoch))
+    deliveryGate.stop(); val currentStoppedEpoch = deliveryGate.epoch()
+    deferred.disconnected(SessionMachine.Reason.SESSION_LOST) { deliveryGate.epoch() == currentStoppedEpoch }
+    queued.forEach { it() }; queued.clear()
+    expect(failuresDelivered == 1)
     println("DiPlay port PASS: $checks bounded parser/crypto/privacy/media/lifecycle fixtures; not iPhone evidence")
 }

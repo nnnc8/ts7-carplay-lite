@@ -26,6 +26,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.nio.ByteBuffer;
+import java.util.function.BooleanSupplier;
 import io.ts7.carplay.core.DiPlayReceiverCore;
 import io.ts7.carplay.auth.UnavailableAuthenticationProvider;
 
@@ -378,21 +379,24 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
 
     private ReceiverCore.Listener coreListener(final int expected) {
         return new ReceiverCore.Listener() {
-            public void bluetoothBootstrapConfirmed() {
+            public void bluetoothBootstrapConfirmed() { bluetoothBootstrapConfirmed(() -> true); }
+            public void bluetoothBootstrapConfirmed(BooleanSupplier attemptCurrent) {
                 main.post(() -> {
-                    if (connectionCurrent(expected) && session.state() == SessionMachine.State.BT_DISCOVERY)
+                    if (attemptCurrent.getAsBoolean() && connectionCurrent(expected) && session.state() == SessionMachine.State.BT_DISCOVERY)
                         session.bootstrapConfirmed();
                 });
             }
-            public void wifiSessionLinkConfirmed() {
+            public void wifiSessionLinkConfirmed() { wifiSessionLinkConfirmed(() -> true); }
+            public void wifiSessionLinkConfirmed(BooleanSupplier attemptCurrent) {
                 main.post(() -> {
-                    if (connectionCurrent(expected) && session.state() == SessionMachine.State.WIFI_CONNECTING)
+                    if (attemptCurrent.getAsBoolean() && connectionCurrent(expected) && session.state() == SessionMachine.State.WIFI_CONNECTING)
                         session.sessionWifiConfirmed();
                 });
             }
-            public void authenticatedSessionStarted() {
+            public void authenticatedSessionStarted() { authenticatedSessionStarted(() -> true); }
+            public void authenticatedSessionStarted(BooleanSupplier attemptCurrent) {
                 main.post(() -> {
-                    if (!connectionCurrent(expected)) return;
+                    if (!attemptCurrent.getAsBoolean() || !connectionCurrent(expected)) return;
                     SessionMachine.State state = session.state();
                     if (state != SessionMachine.State.CARPLAY_NEGOTIATING && state != SessionMachine.State.RECOVERING) return;
                     if (session.authenticated()) return; // Duplicate provider callback, not a new session.
@@ -414,8 +418,9 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                 if (expected == connectionGeneration && coreActive && "CARPLAY".equals(mode) && current != null)
                     current.streamReset();
             }
-            public void disconnected(SessionMachine.Reason reason) {
-                main.post(() -> handleDisconnect(expected, reason));
+            public void disconnected(SessionMachine.Reason reason) { disconnected(reason, () -> true); }
+            public void disconnected(SessionMachine.Reason reason, BooleanSupplier attemptCurrent) {
+                main.post(() -> { if (attemptCurrent.getAsBoolean()) handleDisconnect(expected, reason); });
             }
             public boolean audioFormat(int sampleRate, int channels) {
                 if (!connectionCurrent(expected) || !session.authenticated() || !"CARPLAY".equals(mode)) return false;

@@ -77,9 +77,12 @@ class AirPlaySession(
     @Volatile private var sapAuthenticated = false
     @Volatile private var encryptedRecordAccepted = false
     private var sessionSetup = false
-    val authenticatedForMedia: Boolean
+    /** SETUP occurs before RECORD; the dispatcher separately requires AEAD request provenance. */
+    val authenticatedControl: Boolean
         get() = !closed.get() && sapAuthenticated && cipher != null &&
-            pairVerify.verifiedControllerId != null && encryptedRecordAccepted
+            pairVerify.verifiedControllerId != null
+    val authenticatedForMedia: Boolean
+        get() = authenticatedControl && encryptedRecordAccepted
     internal var encBuf = ByteArray(0)
     internal var deviceBtMac = ""
     internal val activeStreams = linkedSetOf<Int>()

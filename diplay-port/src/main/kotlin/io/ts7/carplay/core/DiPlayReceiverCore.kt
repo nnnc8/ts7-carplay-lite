@@ -141,7 +141,7 @@ class DiPlayReceiverCore @JvmOverloads constructor(
                 if (gate.current(captured)) when (status) {
                     CarPlayStatus.BluetoothBootstrapAuthenticated -> {
                         bluetoothReady = true
-                        if (gate.bootstrapConfirmed(captured)) listener?.bluetoothBootstrapConfirmed()
+                        if (gate.bootstrapConfirmed(captured)) listener?.bluetoothBootstrapConfirmed { gate.current(captured) }
                         advance(captured)
                     }
                     CarPlayStatus.WifiTunnelAuthenticated -> { tunnelReady = true; advance(captured) }
@@ -153,10 +153,10 @@ class DiPlayReceiverCore @JvmOverloads constructor(
     }
     private fun advance(captured: Long) {
         if (!gate.current(captured) || !bluetoothReady || !tunnelReady) return
-        if (gate.carplayNetworkReady(captured)) listener?.wifiSessionLinkConfirmed()
+        if (gate.carplayNetworkReady(captured)) listener?.wifiSessionLinkConfirmed { gate.current(captured) }
         gate.authenticationSucceeded(captured) // tunnel onReady follows real AA05, not provider success text.
         if (activeSession?.authenticatedForMedia == true && gate.sessionEstablished(captured))
-            listener?.authenticatedSessionStarted()
+            listener?.authenticatedSessionStarted { gate.current(captured) }
     }
     override fun videoSinkReady() {
         val sink = synchronized(lock) { if (gate.videoSinkReady(epoch)) bridge else null }
@@ -180,10 +180,11 @@ class DiPlayReceiverCore @JvmOverloads constructor(
             // Check and invalidate atomically: a late parser/transport failure cannot stop a new epoch.
             if (captured != epoch || listener == null) return
             val notify = listener!!
-            notify to invalidateLocked()
+            val retired = invalidateLocked()
+            Triple(notify, retired, epoch)
         }
         stopped.second?.clear()
-        stopped.first.disconnected(reason)
+        stopped.first.disconnected(reason) { gate.epoch() == stopped.third }
     }
     /** Caller owns lock; no bridge callbacks and no event-write lock acquisition here. */
     private fun invalidateLocked(): DiPlayMediaBridge? {

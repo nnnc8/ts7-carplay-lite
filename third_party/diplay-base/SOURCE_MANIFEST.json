@@ -281,7 +281,7 @@
       "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlaySession.kt",
       "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlaySession.kt",
       "upstreamGitBlob": "9f44d6a85df3f6cc562ce789b50a42ba1fc3d188",
-      "portedSha256": "72b7e611cec595a94c75dccbdef0ddb365d8c81626f2a438cad55fc1fc01728d",
+      "portedSha256": "88e7236c544b7d4d3ab59f6947ea62a356f29b4174b14646593b1371758d87b7",
       "modified": true,
       "license": "GPL-3.0"
     },
@@ -377,7 +377,7 @@
       "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/CarPlayMediaEngine.kt",
       "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/CarPlayMediaEngine.kt",
       "upstreamGitBlob": "e1ae26c5aae01d1f676366a68282d1a411487744",
-      "portedSha256": "121e0e82f476278af926f6d02e07375242cf18113fdd8dac94061ca654d2a99f",
+      "portedSha256": "7ff241bbda1b944f5f855785c0aa05e8d689eb458e2e27cd754772789aead1a0",
       "modified": true,
       "license": "GPL-3.0"
     },

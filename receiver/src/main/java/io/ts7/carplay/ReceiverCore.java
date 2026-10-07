@@ -1,5 +1,6 @@
 package io.ts7.carplay;
 import java.nio.ByteBuffer;
+import java.util.function.BooleanSupplier;
 
 /** Integration contract only. A legal core must provide real protocol evidence, not simulated states. */
 public interface ReceiverCore {
@@ -12,6 +13,19 @@ public interface ReceiverCore {
         boolean videoAccessUnit(byte[] bytes, int offset, int length, long timestampUs);
         void streamReset();
         void disconnected(SessionMachine.Reason reason);
+        // Async listeners must check attemptCurrent when delivering, not merely when posting.
+        default void bluetoothBootstrapConfirmed(BooleanSupplier attemptCurrent) {
+            if (attemptCurrent.getAsBoolean()) bluetoothBootstrapConfirmed();
+        }
+        default void wifiSessionLinkConfirmed(BooleanSupplier attemptCurrent) {
+            if (attemptCurrent.getAsBoolean()) wifiSessionLinkConfirmed();
+        }
+        default void authenticatedSessionStarted(BooleanSupplier attemptCurrent) {
+            if (attemptCurrent.getAsBoolean()) authenticatedSessionStarted();
+        }
+        default void disconnected(SessionMachine.Reason reason, BooleanSupplier attemptCurrent) {
+            if (attemptCurrent.getAsBoolean()) disconnected(reason);
+        }
         default boolean audioFormat(int sampleRate, int channels) { return false; }
         default int audioPcm(ByteBuffer pcm, int bytes) { return 0; }
         default void audioStopped() {}
