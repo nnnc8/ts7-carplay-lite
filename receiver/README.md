@@ -1,4 +1,4 @@
-# TS7 CarPlay Lite DiPlay v0.2-alpha receiver
+# TS7 CarPlay Lite DiPlay v0.2.1 platform preview
 
 **NOT YET A FUNCTIONAL CARPLAY RECEIVER.**
 Minimal framework Activity + actual selected GPL DiPlay Legacy core,
@@ -15,7 +15,7 @@ TS7_CARPLAY_UPLOAD_URL=https://ts7-carplay-lite-relay.vercel.app/api/carplay-dia
 python3 diplay-port/tools/verify_source.py
 ```
 
-Normal output: dist/TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk.
+Normal output: dist/TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk.
 Native read-only AP radio JNI built from source for API27 ARMv7 +x86_64 emulator.
 Separate --instrumented build includes CI-only Instrumentation, never published as normal.
 Ignored local test signing key; CI ephemeral test key. Separate builds may need
@@ -35,3 +35,9 @@ Diagnostic v0.2 separate APK/Issue5 unchanged.
 LPCM44.1/48k1/2channels/media and normalized touch adapter fixture-tested;
 real iPhone/bootstrap/auth/video/audio/touch NOT YET. Siri/wired deferred.
 GPL corresponding source/licenses/patches/build instructions supplied with release.
+
+Settings → Developer → Test platform readiness is explicit, auth-independent and phone-free.
+Twelve actual local probes export only typed status/duration/fixed code. Hotspot start/close may
+briefly interrupt Wi-Fi; warning precedes testing. A hung call cannot short-circuit later probes;
+pending vendor calls/cleanup block reruns across Activity recreation. Copy before force-stopping.
+See [platform test operations, exact schema and emulator limits](../docs/PLATFORM_READINESS.md).

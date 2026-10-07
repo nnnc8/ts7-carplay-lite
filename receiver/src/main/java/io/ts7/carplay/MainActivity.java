@@ -56,6 +56,9 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     private boolean uploading;
     private boolean fullscreen;
     private TextView diagnosticText;
+    private PlatformReadinessRunner readiness;
+    private TextView readinessText;
+    private AlertDialog readinessDialog;
     private SessionMachine.Reason playbackReason = SessionMachine.Reason.NONE;
     private boolean touchPressed;
     private int touchPointer;
@@ -78,7 +81,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.BLACK);
-        heading = text("TS7 CarPlay Lite · DiPlay v0.2 Preview", 20);
+        heading = text("TS7 CarPlay Lite · v0.2.1 Platform Preview", 20);
         heading.setGravity(Gravity.CENTER);
         root.addView(heading, new LinearLayout.LayoutParams(-1, 44));
         surface = new SurfaceView(this);
@@ -108,6 +111,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         button(bar, "Diagnostics", this::diagnostics);
         root.addView(bar, new LinearLayout.LayoutParams(-1, 54));
         setContentView(root); // No probes, assets or MediaCodec work precede visible UI.
+        readiness = new PlatformReadinessRunner(new AndroidPlatformProbes(this, surface.getHolder()));
         events.add(EventCode.APP_OPEN);
         radio = new RadioMonitor(this, session);
         core = new DiPlayReceiverCore(this, new UnavailableAuthenticationProvider());
@@ -129,6 +133,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         resumed = false;
         main.removeCallbacks(monitor);
         radio.stop();
+        readiness.cancel();
         // Start stopping before Android destroys the Surface during a background transition.
         if (coreActive || !"IDLE".equals(mode)) stopPlayback(SessionMachine.Reason.USER_STOP);
         super.onPause();
@@ -140,6 +145,8 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     }
 
     @Override protected void onDestroy() {
+        readiness.cancel();
+        if (readinessDialog != null) readinessDialog.dismiss();
         stopPlayback(SessionMachine.Reason.USER_STOP);
         core.close();
         main.removeCallbacksAndMessages(null);
@@ -169,7 +176,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
             "System Wi-Fi settings", "Video profile: " + profile.name(),
             "Developer test mode: " + (developer ? "ON" : "OFF"),
             "Start developer H.264 pattern", "Stop playback",
-            "Wireless discovery permission", "Select paired iPhone"};
+            "Wireless discovery permission", "Select paired iPhone", "Developer"};
         new AlertDialog.Builder(this).setTitle("Settings · Technical preview")
             .setItems(options, (dialog, index) -> {
                 if (index == 0) connect();
@@ -184,6 +191,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                 if (index == 6) stopPlayback(SessionMachine.Reason.USER_STOP);
                 if (index == 7) discoveryPermission();
                 if (index == 8) selectIphone();
+                if (index == 9) developer();
             }).setNegativeButton("Close", null).show();
     }
 
@@ -495,7 +503,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         if (uploading) return;
         final String publicReport = report();
         new AlertDialog.Builder(this).setTitle("Upload public diagnostics to Issue #13?")
-            .setMessage("This sends only the displayed counters, radio metrics and fixed event codes to the public TS7 alpha testing issue. Test-pattern playback is clearly labeled. No automatic uploads.")
+            .setMessage("This publicly uploads the displayed counters, radio metrics, fixed event codes and platform readiness status/duration/error codes to Issue #13. No identifiers, hotspot credentials or raw exceptions. No automatic uploads.")
             .setPositiveButton("Upload", (dialog, which) -> {
                 uploading = true;
                 new Thread(() -> {
@@ -513,8 +521,79 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     }
 
     private String report() {
-        return Diagnostics.report(this, session, radio, renderer, profile, mode, playbackReason, reconnectCount, audio, events);
+        return Diagnostics.report(this, session, radio, renderer, profile, mode, playbackReason, reconnectCount,
+            audio, events, readiness.snapshot());
     }
+
+    private void developer() {
+        new AlertDialog.Builder(this).setTitle("Developer")
+            .setItems(new String[]{"Test platform readiness", "View platform readiness"}, (dialog, index) -> {
+                if (index == 0) confirmReadiness();
+                else showReadiness(false);
+            }).setNegativeButton("Close", null).show();
+    }
+
+    private void confirmReadiness() {
+        if (readiness.isBusy()) {
+            new AlertDialog.Builder(this).setTitle("Previous platform probe still running")
+                .setMessage("A vendor call or hotspot cleanup has not returned. Further tests are blocked to avoid accumulating resources. You can copy/upload the current fixed results. If it remains stuck, save results first, then Force stop this app in Android settings before retrying.")
+                .setPositiveButton("View results", (dialog, which) -> showReadiness(false)).show();
+            return;
+        }
+        new AlertDialog.Builder(this).setTitle("Test TS7 platform readiness?")
+            .setMessage("No iPhone needed. No CarPlay session, authentication or credential access. Tests create and release temporary sockets, a multicast lock and a silent AudioTrack; no app-level data is sent or received. The hotspot check may briefly interrupt Wi-Fi and needs the optional discovery permission. Bluetooth is not enabled automatically. Active test-pattern playback will stop. A stuck vendor call cannot stop later checks. Results remain local unless you choose Upload.")
+            .setPositiveButton("Run tests", (dialog, which) -> showReadiness(true))
+            .setNegativeButton("Cancel", null).show();
+    }
+
+    private void showReadiness(boolean run) {
+        if (run) {
+            stopPlayback(SessionMachine.Reason.USER_STOP);
+            startReadiness();
+        }
+        ScrollView scroll = new ScrollView(this);
+        readinessText = text(readinessDisplay(), 15);
+        readinessText.setTextIsSelectable(true);
+        scroll.addView(readinessText);
+        readinessDialog = new AlertDialog.Builder(this).setTitle("TS7 Platform Readiness")
+            .setView(scroll).setPositiveButton("Copy report", (dialog, which) -> {
+                ((ClipboardManager) getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(
+                    ClipData.newPlainText("TS7 public platform readiness", report()));
+            }).setNeutralButton("Upload to Issue #13", (dialog, which) -> confirmUpload())
+            .setNegativeButton("Close / cancel", (dialog, which) -> readiness.cancel()).create();
+        readinessDialog.setOnDismissListener(dialog -> {
+            if (readiness.isRunning()) readiness.cancel();
+            readinessText = null;
+            readinessDialog = null;
+        });
+        readinessDialog.show();
+        updateReadiness();
+    }
+
+    private boolean startReadiness() {
+        return readiness.start(report -> main.post(() -> { if (!isDestroyed()) updateReadiness(); }),
+            () -> main.post(() -> { if (!isDestroyed()) updateReadiness(); }));
+    }
+
+    private String readinessDisplay() {
+        return readiness.snapshot().display() + (readiness.isRunning() ? "\n\nTesting… Close cancels unfinished checks."
+            : readiness.isBusy() ? "\n\nVendor cleanup pending. A repeat run is blocked." : "");
+    }
+
+    private void updateReadiness() {
+        if (readinessText != null) readinessText.setText(readinessDisplay());
+        if (readinessDialog != null) {
+            readinessDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(!readiness.isRunning());
+            readinessDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(!readiness.isRunning());
+        }
+    }
+
+    boolean startReadinessForTest() { return startReadiness(); }
+    boolean readinessRunningForTest() { return readiness.isRunning(); }
+    boolean readinessBusyForTest() { return readiness.isBusy(); }
+    PlatformReadiness readinessForTest() { return readiness.snapshot(); }
+    void showReadinessForTest() { showReadiness(false); }
+    String reportForTest() { return report(); }
 
     private void updateStatus() {
         if (status == null) return;

@@ -1,5 +1,15 @@
 # Changelog
 
+## TS7 Platform Readiness Preview v0.2.1 — 2026-10-07
+
+- Added Settings → Developer → Test platform readiness: 12 independent actual core/JNI/Bluetooth/RFCOMM/hotspot/multicast/mDNS/TCP/UDP/Network/Surface/AudioTrack checks.
+- Added immutable fixed status/duration/error-code results, per-probe watchdog/cancel, late hotspot reservation cleanup and process-wide repeat-run guards.
+- No iPhone/session/authentication/credential access; silent AudioTrack, local binds only, no app-level packet exchange. Hotspot interruption warning is explicit.
+- Extended sanitized fixed Issue13 relay for 0.2.1-platform with strict 12-probe nested schema; old clients and Diagnostic v0.2/fixed5 preserved.
+- Added API27 actual readiness instrumentation and Android-to-backend public-JSON verification, alongside existing H.264 Surface smoke; nine renderer/audio/touch/asset files unchanged.
+- ARMv7 native runtime and TS7 radios/vendor services remain unverified until real-device report; x86 reports JNI NOT_TESTED/ABI_NOT_ARMV7.
+- Prerelease carplay-v0.2.1-platform-preview; APK TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk. PR18 remains OPEN/unmerged; further CarPlay and authentication hardware work paused.
+
 ## CarPlay Lite DiPlay v0.2-alpha port preview — 2026-10-07
 
 - Pivoted primary development to TS7-specific DiPlay Android8.1/Legacy GPL core, exact c8884ad; preserved old lawful-core branch801d99e.

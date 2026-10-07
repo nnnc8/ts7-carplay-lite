@@ -14,7 +14,7 @@ TASK_CORE="$TASK_ROOT/build/diplay-port"
 TASK_LIBS="$TASK_CORE/core.jar:$TASK_CORE/kotlin-stdlib.jar:$TASK_CORE/bcprov.jar:$TASK_CORE/jmdns.jar:$TASK_CORE/slf4j-api.jar:$TASK_CORE/slf4j-nop.jar"
 mkdir -p "$TASK_ROOT/build/receiver" "$TASK_ROOT/build/receiver-signing" "$TASK_ROOT/dist"
 TASK_BUILD="$(mktemp -d "$TASK_ROOT/build/receiver/build.XXXXXX")"
-TASK_NAME="TS7-CarPlay-Lite-DiPlay-v0.2-alpha"
+TASK_NAME="TS7-CarPlay-Lite-DiPlay-v0.2.1-platform"
 mkdir -p "$TASK_BUILD/classes" "$TASK_BUILD/dex" "$TASK_BUILD/generated/io/ts7/carplay"
 python3 "$TASK_ROOT/receiver/tools/build_config.py" \
   "$TASK_BUILD/generated/io/ts7/carplay/BuildConfig.java" "${TS7_CARPLAY_UPLOAD_URL:-}"

@@ -9,6 +9,25 @@ const FIELDS = [
   "networkConnected", "wifiRssiDbm", "wifiLinkSpeedMbps", "wifiFrequencyMHz", "audioSampleRate", "audioChannels",
   "audioUnderruns", "events",
 ];
+const PLATFORM_READINESS_FIELDS = [
+  "coreInitialization", "jni", "bluetoothApi", "rfcomm", "localOnlyHotspot", "multicast",
+  "mdns", "tcpBind", "udpBind", "networkBinding", "surface", "audioTrack",
+];
+const FIELDS_WITH_READINESS = [...FIELDS, "platformReadiness"];
+const READINESS_ERROR_CODES = {
+  PASS: ["NONE"],
+  PERMISSION_DENIED: ["PERMISSION_MISSING"],
+  UNAVAILABLE: [
+    "API_UNAVAILABLE", "SERVICE_UNAVAILABLE", "HARDWARE_UNAVAILABLE", "RADIO_DISABLED", "NETWORK_UNAVAILABLE",
+    "HOTSPOT_UNSUPPORTED", "HOTSPOT_INCOMPATIBLE", "HOTSPOT_DISALLOWED", "SURFACE_UNAVAILABLE",
+  ],
+  FAIL: [
+    "PROBE_FAILED", "PROBE_TIMEOUT", "CORE_INIT_FAILED", "JNI_LOAD_FAILED", "RFCOMM_CREATE_FAILED",
+    "HOTSPOT_START_FAILED", "MULTICAST_FAILED", "MDNS_BIND_FAILED", "TCP_BIND_FAILED", "UDP_BIND_FAILED",
+    "NETWORK_BIND_FAILED", "SURFACE_INVALID", "AUDIO_CREATE_FAILED", "RESOURCE_RELEASE_FAILED",
+  ],
+  NOT_TESTED: ["NOT_RUN", "TEST_CANCELLED", "ABI_NOT_ARMV7", "PREVIOUS_PROBE_RUNNING"],
+};
 const STATES = ["IDLE", "BT_DISCOVERY", "BT_CONNECTED", "WIFI_CONNECTING", "WIFI_CONNECTED", "CARPLAY_NEGOTIATING", "STREAMING", "RECOVERING", "ERROR"];
 const REASONS = ["NONE", "BLOCKED_BY_AUTHENTICATION_REQUIREMENT", "NETWORK_LOSS", "SESSION_LOST", "DECODER_ERROR", "VIDEO_STALL", "RECOVERY_EXHAUSTED", "SURFACE_LOST", "USER_STOP", "INPUT_REJECTED"];
 const EVENTS = new Set([
@@ -25,16 +44,18 @@ function exactKeys(value, fields) {
     && fields.every((field) => Object.prototype.hasOwnProperty.call(value, field));
 }
 function validate(payload) {
-  if (!exactKeys(payload, FIELDS)) return ["missing or unknown field"];
+  if (!exactKeys(payload, FIELDS) && !exactKeys(payload, FIELDS_WITH_READINESS)) return ["missing or unknown field"];
   const errors = [];
   if (payload.schemaVersion !== 1 || payload.reportType !== "carplay-alpha"
-      || !["0.1-alpha", "0.2-alpha"].includes(payload.appVersion)) errors.push("unsupported report version");
+      || !["0.1-alpha", "0.2-alpha", "0.2.1-platform"].includes(payload.appVersion)) errors.push("unsupported report version");
+  if (Object.prototype.hasOwnProperty.call(payload, "platformReadiness")) validatePlatformReadiness(payload.platformReadiness, errors);
+  else if (payload.appVersion === "0.2.1-platform") errors.push("missing platform readiness");
   if (typeof payload.timestamp !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(payload.timestamp)
       || !Number.isFinite(Date.parse(payload.timestamp))) errors.push("invalid timestamp");
   if (!["IDLE", "TEST_PATTERN", "CARPLAY"].includes(payload.mode) || !STATES.includes(payload.carplayState)) errors.push("invalid session state");
   if (!["OFF", "IDLE", "DISCOVERING", "LINK_OBSERVED", "BOOTSTRAP_CONFIRMED"].includes(payload.bluetoothState)) errors.push("invalid Bluetooth state");
   if (!["DISCONNECTED", "NETWORK_OBSERVED", "SESSION_LINK_CONFIRMED"].includes(payload.wifiState)) errors.push("invalid Wi-Fi state");
-  // Both previews lack an authorized authentication provider: cannot report a real session.
+  // All previews lack an authorized authentication provider; readiness cannot authorize a session.
   if (payload.authentication !== "BLOCKED_BY_AUTHENTICATION_REQUIREMENT" || payload.mode === "CARPLAY"
       || payload.carplayState === "STREAMING") errors.push("authentication boundary");
   if (!REASONS.includes(payload.lastDisconnectReason)) errors.push("invalid disconnect reason");
@@ -62,9 +83,32 @@ function validate(payload) {
   return errors;
 }
 
+function validatePlatformReadiness(value, errors) {
+  if (!exactKeys(value, PLATFORM_READINESS_FIELDS)) {
+    errors.push("invalid platform readiness fields");
+    return;
+  }
+  for (const field of PLATFORM_READINESS_FIELDS) {
+    const result = value[field];
+    if (!exactKeys(result, ["status", "durationMs", "errorCode"])
+        || typeof result.status !== "string" || !Object.prototype.hasOwnProperty.call(READINESS_ERROR_CODES, result.status)
+        || !READINESS_ERROR_CODES[result.status].includes(result.errorCode)
+        || !Number.isInteger(result.durationMs) || result.durationMs < 0 || result.durationMs > 60000) {
+      errors.push(`invalid platform readiness result: ${field}`);
+    }
+  }
+}
+
 function sanitize(payload) {
-  return Object.fromEntries(FIELDS.map((field) => [field, field === "events"
+  const report = Object.fromEntries(FIELDS.map((field) => [field, field === "events"
     ? payload.events.map(({ elapsedMs, code, value }) => ({ elapsedMs, code, value })) : payload[field]]));
+  if (Object.prototype.hasOwnProperty.call(payload, "platformReadiness")) {
+    report.platformReadiness = Object.fromEntries(PLATFORM_READINESS_FIELDS.map((field) => {
+      const { status, durationMs, errorCode } = payload.platformReadiness[field];
+      return [field, { status, durationMs, errorCode }];
+    }));
+  }
+  return report;
 }
 
 function format(payload) {
@@ -72,6 +116,15 @@ function format(payload) {
     "**TECHNICAL PREVIEW — NOT YET A FUNCTIONAL CARPLAY RECEIVER**", "",
     "The TEST_PATTERN is synthetic H.264, not iPhone/CarPlay video.", ""];
   for (const field of FIELDS) if (field !== "events") lines.push(`- ${field}: ${payload[field]}`);
+  if (payload.platformReadiness) {
+    lines.push("", "### Platform readiness", "",
+      "Local probe results are independent of authentication. PASS does not authorize CARPLAY/STREAMING.", "",
+      "| Probe | Status | Duration (ms) | Error code |", "| --- | --- | ---: | --- |");
+    for (const field of PLATFORM_READINESS_FIELDS) {
+      const { status, durationMs, errorCode } = payload.platformReadiness[field];
+      lines.push(`| ${field} | ${status} | ${durationMs} | ${errorCode} |`);
+    }
+  }
   lines.push("", "### Bounded event log (newest 200)", "", "```text");
   for (const event of payload.events) lines.push(`${event.elapsedMs}ms ${event.code} ${event.value}`);
   lines.push("```", "", "Only allowlisted metrics and fixed event/error codes are included. Uploaded by explicit user action.");
@@ -82,4 +135,4 @@ const handleCarplayDiagnostics = createHandler({
   namespace: "carplay-alpha", validate, sanitize, format,
   destination: Object.freeze({ owner: "nnnc8", repo: "ts7-carplay-lite", issue: 13 }),
 });
-module.exports = { handleCarplayDiagnostics, validate, EVENTS, FIELDS };
+module.exports = { handleCarplayDiagnostics, validate, sanitize, EVENTS, FIELDS };

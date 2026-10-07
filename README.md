@@ -3,22 +3,32 @@
 **NOT YET A FUNCTIONAL CARPLAY RECEIVER.**
 
 主線：**TS7-specific DiPlay Android8.1 port**，Phase1 IN_PROGRESS。
+本輪只做 v0.2.1 平台能力檢查；新增 CarPlay 功能與認證硬體工作暫停，PR #18 不合併。
 已移植固定 DiPlay Legacy GPL 核心；合法認證 provider 尚未取得，
 目前安全停在 BLOCKED_BY_AUTHENTICATION_REQUIREMENT，不會假裝已連 iPhone。
 
 ## Downloads / install
 
-新版：[直接下載 TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk](https://github.com/nnnc8/ts7-carplay-lite/releases/download/carplay-v0.2.0-diplay-preview/TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk)。
+新版：[直接下載 TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk](https://github.com/nnnc8/ts7-carplay-lite/releases/download/carplay-v0.2.1-platform-preview/TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk)。
+[TS7 Platform Readiness 操作與驗證範圍](docs/PLATFORM_READINESS.md)／
+[v0.2.1 prerelease](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v0.2.1-platform-preview)。
+保留 v0.2 DiPlay port：
 [v0.2 verification](docs/DIPLAY_PORT_VERIFICATION.md)／
 [TS7 CarPlay Lite v0.2 Alpha — DiPlay Port Preview](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v0.2.0-diplay-preview)，
 對應 GPL source、patches、
 完整 notices/build scripts 隨同 release 提供；不使用上游 APK 或認證資料。
 
-安裝後應看到「TS7 CarPlay Lite · DiPlay v0.2 Preview」、
+安裝新版後應看到「TS7 CarPlay Lite · v0.2.1 Platform Preview」、
 「Waiting for iPhone · authentication blocked · DiPlay ready」。
 等待畫面中央沒有影片是正常；不是 CarPlay 黑屏故障。
 若顯示 port initialization failed，開 Diagnostics 複製固定錯誤碼。
 現在不要測 iPhone連線；認證缺失時 Connect 只顯示 BLOCKED。
+
+請停車後操作 Settings → Developer → Test platform readiness。
+逐項建立、綁定、檢查、釋放12項資源；不啟動CarPlay、不讀認證資料。
+熱點檢查可能短暫中斷Wi-Fi，需要可選的discovery權限；沒有權限仍會完成其他檢查。
+結束後Copy report，或恢復網路後主動Upload到Issue #13；Authentication BLOCKED是預期。
+不是要12項硬判PASS：FAIL、PERMISSION_DENIED、UNAVAILABLE、NOT_TESTED都必須如實保留。
 
 保留：
 [v0.1-alpha APK](https://github.com/nnnc8/ts7-carplay-lite/releases/download/carplay-v0.1.0-alpha-preview/TS7-CarPlay-Lite-v0.1-alpha.apk)
@@ -93,9 +103,10 @@ TS7_CARPLAY_UPLOAD_URL=https://ts7-carplay-lite-relay.vercel.app/api/carplay-dia
 python3 diplay-port/tools/verify_source.py
 ```
 
-Output: dist/TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk。
+Output: dist/TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk。
 [Receiver build](receiver/README.md) / [port build](diplay-port/README.md)。
 CI獨立驗證normal API27啟動、authblocked、crypto/JNI、原Surface90+frames/reset/stop，
+並新增12項readiness實際API測試、權限不足隔離及Android→backend公開JSON契約檢查，
 並保留Diagnostic CI。Emulator不是SPRD/TS7硬體驗證。
 [Project status](PROJECT_STATUS.md)、[verification ledger](docs/DIPLAY_PORT_VERIFICATION.md)、
 [roadmap](ROADMAP.md)、[agent handoff](AGENTS.md)。

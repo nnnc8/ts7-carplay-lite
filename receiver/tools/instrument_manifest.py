@@ -12,4 +12,8 @@ ET.SubElement(tree.getroot(), "instrumentation", {
     android + "name": "io.ts7.carplay.RendererInstrumentation",
     android + "targetPackage": "io.ts7.carplay",
 })
+ET.SubElement(tree.getroot(), "instrumentation", {
+    android + "name": "io.ts7.carplay.ReadinessInstrumentation",
+    android + "targetPackage": "io.ts7.carplay",
+})
 tree.write(path, encoding="utf-8", xml_declaration=True)

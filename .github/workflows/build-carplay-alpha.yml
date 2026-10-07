@@ -1,4 +1,4 @@
-name: Build TS7 DiPlay API27 preview
+name: Build TS7 Platform Readiness API27 preview
 
 on:
   push:
@@ -40,21 +40,21 @@ jobs:
           ./receiver/test.sh
           ./diagnostic-app/test.sh
           npm --prefix backend test
-      - name: Build and inspect alpha APKs
+      - name: Build and inspect platform APKs
         run: |
           TS7_SKIP_CORE_BUILD=1 ./receiver/build.sh
           TS7_SKIP_CORE_BUILD=1 ./receiver/build.sh --instrumented
-      - name: Upload requested alpha APK
+      - name: Upload requested platform APK
         uses: actions/upload-artifact@v4
         with:
-          name: TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk
-          path: dist/TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk
+          name: TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk
+          path: dist/TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk
           if-no-files-found: error
       - name: Upload separate instrumentation APK
         uses: actions/upload-artifact@v4
         with:
           name: TS7-Alpha-Instrumentation
-          path: dist/TS7-CarPlay-Lite-DiPlay-v0.2-alpha-instrumented.apk
+          path: dist/TS7-CarPlay-Lite-DiPlay-v0.2.1-platform-instrumented.apk
           if-no-files-found: error
 
   android-81-surface:
@@ -63,9 +63,12 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - uses: actions/download-artifact@v4
         with:
-          name: TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk
+          name: TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk
           path: dist
       - uses: actions/download-artifact@v4
         with:
@@ -74,7 +77,7 @@ jobs:
       - name: Enable KVM
         run: |
           sudo chmod 666 /dev/kvm
-      - name: Actual API27 DiPlay normal startup, auth gate, crypto/JNI and preserved Surface test
+      - name: Actual API27 platform probes, normal startup, auth gate and preserved Surface test
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 27
@@ -83,7 +86,7 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
           script: ./receiver/ci-smoke.sh
-      - name: Upload renderer evidence
+      - name: Upload readiness and renderer evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -95,4 +98,6 @@ jobs:
             dist/normal-startup.txt
             dist/normal-startup.xml
             dist/normal-startup.png
+            dist/platform-readiness-smoke.txt
+            dist/platform-readiness-smoke.png
           if-no-files-found: warn

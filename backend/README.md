@@ -3,7 +3,7 @@
 These Vercel Node.js Serverless Functions accept only strict sanitized reports and create comments on fixed public destinations:
 
 - POST /api/diagnostics: Diagnostic v0.2 → nnnc8/ts7-carplay-lite #5 (preserved).
-- POST /api/carplay-diagnostics: CarPlay Lite v0.1-alpha / DiPlay v0.2-alpha → same repository #13.
+- POST /api/carplay-diagnostics: CarPlay Lite v0.1-alpha / DiPlay v0.2-alpha / v0.2.1-platform reports → same repository #13.
 
 Production base URL: https://ts7-carplay-lite-relay.vercel.app.
 
@@ -49,11 +49,53 @@ a static deployment, producing 404 for both routes. Setting Root Directory to
 npm test
 ```
 
-Tests cover both destinations, 32 KiB, sensitive/unknown fields, Markdown escaping, safe GitHub failure, rate limits and duplicates. Alpha accepts only fixed-code/numeric metrics and newest 200 events, never arbitrary error text, IP/MAC/SSID/accounts/credentials. The current no-auth binary cannot submit a CARPLAY/STREAMING claim.
+Tests cover both fixed destinations, old alpha compatibility, complete 12-probe readiness reports, malformed/missing/extra fields, duration bounds, status/code mismatches, private fixtures rejected before GitHub, sanitized Markdown tables, 32 KiB, Markdown escaping, safe GitHub failure, rate limits and duplicates. GitHub calls are mocked; running tests creates no production comments. Alpha accepts only fixed-code/numeric metrics and newest 200 events, never arbitrary error text, IP/MAC/SSID/accounts/credentials. The current no-auth binary cannot submit a CARPLAY/STREAMING claim.
 
 ## Runtime contract
 
 POST with Content-Type: application/json and the route's exact schema. HTTPS, server sanitization, finite GitHub timeout, no-store safe JSON responses. Alpha comments prominently label TECHNICAL PREVIEW / NOT YET A FUNCTIONAL CARPLAY RECEIVER; TEST_PATTERN is synthetic, not iPhone video.
+
+## Platform readiness report contract
+
+The existing alpha fields, `schemaVersion: 1` and `reportType: "carplay-alpha"` are preserved. `platformReadiness` is required for `appVersion: "0.2.1-platform"` and optional for `"0.1-alpha"` and `"0.2-alpha"`. Old reports that omit it retain their existing validation and Markdown format. When present on any supported version, it must be an object with exactly these 12 keys:
+
+```text
+coreInitialization, jni, bluetoothApi, rfcomm, localOnlyHotspot, multicast,
+mdns, tcpBind, udpBind, networkBinding, surface, audioTrack
+```
+
+Each probe is an object with exactly `status`, `durationMs`, `errorCode`; for example:
+
+```json
+{"status":"NOT_TESTED","durationMs":0,"errorCode":"NOT_RUN"}
+```
+
+`durationMs` must be a finite integer from 0 through 60000 inclusive. Status and error code must be exact strings from this status-specific allowlist, without coercion or arbitrary text:
+
+```json
+{
+  "PASS": ["NONE"],
+  "PERMISSION_DENIED": ["PERMISSION_MISSING"],
+  "UNAVAILABLE": [
+    "API_UNAVAILABLE", "SERVICE_UNAVAILABLE", "HARDWARE_UNAVAILABLE",
+    "RADIO_DISABLED", "NETWORK_UNAVAILABLE", "HOTSPOT_UNSUPPORTED",
+    "HOTSPOT_INCOMPATIBLE", "HOTSPOT_DISALLOWED", "SURFACE_UNAVAILABLE"
+  ],
+  "FAIL": [
+    "PROBE_FAILED", "PROBE_TIMEOUT", "CORE_INIT_FAILED", "JNI_LOAD_FAILED",
+    "RFCOMM_CREATE_FAILED", "HOTSPOT_START_FAILED", "MULTICAST_FAILED",
+    "MDNS_BIND_FAILED", "TCP_BIND_FAILED", "UDP_BIND_FAILED", "NETWORK_BIND_FAILED",
+    "SURFACE_INVALID", "AUDIO_CREATE_FAILED", "RESOURCE_RELEASE_FAILED"
+  ],
+  "NOT_TESTED": ["NOT_RUN", "TEST_CANCELLED", "ABI_NOT_ARMV7", "PREVIOUS_PROBE_RUNNING"]
+}
+```
+
+Unknown or private fields at any depth are rejected before a GitHub call, including SSID/BSSID/MAC/IP, peer/device identifiers, credentials, certificates and raw exceptions. The relay rebuilds the validated readiness object from the allowlisted fields and renders all 12 results in a Markdown table on fixed Issue #13. Readiness results are included in duplicate detection. Diagnostic v0.2 and its fixed Issue #5 relay are unchanged.
+
+`authentication` remains exactly `"BLOCKED_BY_AUTHENTICATION_REQUIREMENT"`. This expected value does not skip readiness results: valid `FAIL`, `PERMISSION_DENIED`, `UNAVAILABLE` and `NOT_TESTED` probe outcomes can be submitted and displayed. Even all-`PASS` readiness does not authorize `mode: "CARPLAY"`, `carplayState: "STREAMING"` or any authentication success claim. Probe results describe local platform checks, not an authenticated CarPlay session or verified TS7/iPhone behavior.
+
+## Relay limits and upload consent
 
 Rate limit defaults to 10 requests per 15 minutes per SHA-256 hashed client address (never written to GitHub/logs). Buckets are capped at 4096. Duplicate window is 24 hours, capped at 2048 entries with expired/oldest eviction. Both are **best-effort process-local warm-instance protections**, not durable/global guarantees across Vercel instances or cold starts; use a deployment edge limiter for production abuse control. No public diagnostic payload logging.
 

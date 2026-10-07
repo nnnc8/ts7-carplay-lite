@@ -9,6 +9,8 @@ Primary strategy: **TS7-specific DiPlay Android 8.1 port**.
 Protocol: DiPlay-derived port IN_PROGRESS.
 Authentication: **BLOCKED_BY_AUTHENTICATION_REQUIREMENT**.
 Preview: **NOT YET A FUNCTIONAL CARPLAY RECEIVER**.
+Scoped deliverable: **v0.2.1 TS7 Platform Readiness Preview**; no new CarPlay features,
+no merge of PR18 and no authentication hardware work pending physical TS7 evidence.
 xcertplay remains fallback/auth-hardware architecture reference, not primary work.
 
 ## Preserved real TS7 evidence
@@ -44,6 +46,12 @@ Legal provider is separate from source license; external interface READY, unavai
 
 ## Implemented
 
+- User-triggered Developer platform readiness: 12 independent real local API probes,
+  fixed typed status/duration/error codes, bounded workers/cancel/late-reservation cleanup,
+  process-wide repeat-run guard, no phone/session/authentication/credential reads.
+- Strict `0.2.1-platform` report extension on fixed Issue13; old alpha reports and fixed5 unchanged.
+  [Exact operations / privacy / emulator limits](docs/PLATFORM_READINESS.md).
+
 - Actual DiPlay Controller wireless lifecycle + Bonjour/iAP2/AirPlay/media core.
 - API27 LOHS callback/WifiConfiguration, explicit AP/peer sockets and selected paired
   Bluetooth phone. Permission optional/explained; no GPS/location collection/upload.
@@ -64,6 +72,11 @@ Local: API27 source compile PASS; native ARMv7/x86_64 build PASS; APK/signature/
 credentials/license inspection PASS;71 source hash +9 renderer-lock PASS.
 Host: receiver2047, authentication24, gate30, DiPlay478 fixtures PASS;
 Diagnostic sanitizer PASS; backend16 tests PASS.
+v0.2.1 local delta: readiness121 assertions, existing receiver2047/auth24/gate30/DiPlay478,
+Diagnostic sanitizer, backend27 PASS; source/license71 + frozen renderer9 PASS; normal and
+separate instrumented API27 APK builds/inspections PASS. Hosted readiness CI and release
+acceptance are recorded against the final exact commit in the v0.2.1 release notes; do not
+reuse v0.2 or local compile results as hosted or physical runtime proof.
 Initial87e9901 Android8.1 normal startup/authblocked/crypto/JNI/Surface PASS,
 PR CI37604670362/push37604605337 PASS, Diagnostic37604670078 PASS.
 Hardened77ef5cb PR37605750814/push37605744850 and Diagnostic37605750770 PASS.
@@ -97,7 +110,10 @@ does not constitute an authentication certification or complete upstream securit
 
 Authorized AuthenticationProvider + realTS7 Bluetooth/LOHS/multicast/channel/SELinux
 compatibility and actual iPhone bootstrap remain unverified.
-Install the new release APK; expected DiPlayv0.2Preview +Waiting for iPhone +
+Install the platform release APK; expected v0.2.1PlatformPreview +Waiting for iPhone +
 authentication blocked +DiPlay ready. Empty central Surface is expected in waiting mode.
 Do not claim connected/session/streaming. Copy diagnostics or explicitly upload to13.
 No driving-time testing. Further5/15-minute renderer tests remain optional separate evidence.
+Next required check: Settings → Developer → Test platform readiness, then Copy/explicit Upload
+to fixed13. No iPhone needed. Restore Internet after temporary hotspot check; see platform guide.
+Real TS7 readiness is still UNKNOWN; emulator radios and x86 JNI cannot fulfill that evidence gate.

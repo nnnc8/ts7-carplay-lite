@@ -9,7 +9,7 @@ import zipfile
 apk = pathlib.Path(sys.argv[1])
 badging = subprocess.check_output([sys.argv[2], "dump", "badging", str(apk)], text=True)
 assert re.search(r"(?:minSdkVersion|sdkVersion):'27'", badging) and "targetSdkVersion:'27'" in badging
-assert "package: name='io.ts7.carplay'" in badging and "versionName='0.2-alpha'" in badging
+assert "package: name='io.ts7.carplay'" in badging and "versionName='0.2.1-platform'" in badging and "versionCode='3'" in badging
 assert set(re.search(r"native-code: (.*)", badging).group(1).replace("'", "").split()) == {"armeabi-v7a", "x86_64"}
 assert "launchable-activity: name='io.ts7.carplay.MainActivity'" in badging
 permissions = set(re.findall(r"uses-permission: name='([^']+)'", badging))
@@ -43,6 +43,9 @@ with zipfile.ZipFile(apk) as archive:
     for excluded in (b"LocalMfiAuthenticationClient;", b"RemoteMfiAuthenticationClient;", b"BydNavigationOutputs;", b"DiPlayActivity;", b"FakeAuthenticationProvider;"):
         assert excluded not in dex, "Excluded upstream/test-only code was packaged"
     assert instrumented == (b"Lio/ts7/carplay/RendererInstrumentation;" in dex), "Test entry point must be CI-only"
+    assert instrumented == (b"Lio/ts7/carplay/ReadinessInstrumentation;" in dex), "Readiness test entry point must be CI-only"
+    for readiness in (b"PlatformReadiness;", b"PlatformReadinessRunner;", b"AndroidPlatformProbes;"):
+        assert readiness in dex, "Missing platform readiness implementation"
     assert not re.search(rb"ghp_|github_pat_|GITHUB_TOKEN|BEGIN [A-Z ]*PRIVATE KEY", dex)
     for forbidden in (b"Landroid/graphics/Bitmap;", b"Landroid/webkit/WebView;", b"Landroid/graphics/Canvas;",
                       b"Landroid/location/LocationManager;", b"Landroid/telephony/TelephonyManager;",
