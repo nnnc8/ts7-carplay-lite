@@ -50,7 +50,7 @@ https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6030102288
 
 PASS:71 exact file hashes, GPL/dependency notices, API27 SDK/JVM8 compile,
 source-built ELF32 ARM JNI with Android API27 .note.android.ident,9 frozen renderer
-hashes,2047 receiver +24auth +30gate +444DiPlay host fixtures,diagnostic sanitizer,
+hashes,2047 receiver +24auth +30gate +467DiPlay host fixtures,diagnostic sanitizer,
 16 backend tests, signed/inspected normal APK.
 Initial v0.2 API27 normal startup/authblocked/BCcrypto/JNI+Surface/reset/stop PASS
 at87e9901, PR CI37604670362 and push37604605337; screenshots inspected.
@@ -60,3 +60,11 @@ has not run. Android masked local BT MAC returns LOCAL_BLUETOOTH_ADDRESS_UNAVAIL
 a future legally supported hardware/API solution is required, no invented fallback.
 See DIPLAY_PORT_VERIFICATION.md for final CI/release/download proof; do not treat
 emulator x86_64 as real TS7 ARMv7 or actual iPhone verification.
+
+Final control boundary: only AEAD-decrypted SETUP/RECORD requests may activate media;
+reject complete/partial plaintext pipelined after final pair-verify. A sender must
+wait for the final plaintext verify response before sending encrypted control traffic.
+This strict boundary is fail-closed, not a tested iPhone interoperability claim.
+Event I/O and media callback invocation stay outside owner/media locks. Explicit stop
+clears reconnect intent; failures retain only listener/profile for the existing finite
+retry budget. Audio retains one format until UI sink acknowledgment, never early PCM.

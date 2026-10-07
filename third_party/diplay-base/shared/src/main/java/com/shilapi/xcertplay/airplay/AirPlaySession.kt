@@ -16,6 +16,15 @@ import java.net.Socket
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
+/** A plaintext batch cannot acquire encrypted provenance midway through parsing. */
+object ControlRequestProof {
+    fun requireCleanTransition(remainingRequests: Int, plaintextRemainderBytes: Int) {
+        require(remainingRequests == 0 && plaintextRemainderBytes == 0) { "CONTROL_ENCRYPTION_BOUNDARY" }
+    }
+    fun mediaAllowed(encrypted: Boolean, sap: Boolean, verifiedPairing: Boolean): Boolean =
+        encrypted && sap && verifiedPairing
+}
+
 data class AirPlayDeviceInfo(
     val name: String,
     val deviceId: String,
@@ -64,11 +73,13 @@ class AirPlaySession(
 ) : Closeable {
     internal val pairSetup = PairSetup(identity, pairings)
     internal val pairVerify = PairVerify(identity, pairings)
-    internal var cipher: ControlCipher? = null
+    @Volatile internal var cipher: ControlCipher? = null
     @Volatile private var sapAuthenticated = false
+    @Volatile private var encryptedRecordAccepted = false
     private var sessionSetup = false
     val authenticatedForMedia: Boolean
-        get() = sapAuthenticated && cipher != null && pairVerify.verifiedControllerId != null
+        get() = !closed.get() && sapAuthenticated && cipher != null &&
+            pairVerify.verifiedControllerId != null && encryptedRecordAccepted
     internal var encBuf = ByteArray(0)
     internal var deviceBtMac = ""
     internal val activeStreams = linkedSetOf<Int>()
@@ -91,6 +102,7 @@ class AirPlaySession(
     private var keepAliveSocket: DatagramSocket? = null
     private var keepAliveThread: Thread? = null
     private val eventWriteLock = Any()
+    private val eventWriteFailed = AtomicBoolean(false)
     private val eventThreads = CopyOnWriteArrayList<Thread>()
 
     val host: String = socket.inetAddress?.hostAddress ?: ""
@@ -143,8 +155,14 @@ class AirPlaySession(
             sendCommand(mapOf("type" to "forceKeyFrame", "params" to mapOf("uuid" to uuid)))
     }
 
-    fun sendCommand(command: Map<String, Any?>): Boolean = synchronized(eventWriteLock) {
+    fun sendCommand(command: Map<String, Any?>): Boolean = eventWrite {
         sendCommandLocked(command)
+    }
+
+    /** Teardown may call media/owner callbacks; it must never execute under eventWriteLock. */
+    private fun <T> eventWrite(body: () -> T): T {
+        try { return synchronized(eventWriteLock) { body() } }
+        finally { if (eventWriteFailed.get()) close() }
     }
 
     private fun sendCommandLocked(command: Map<String, Any?>): Boolean {
@@ -165,7 +183,7 @@ class AirPlaySession(
             true
         } catch (error: Exception) {
             Unit
-            close()
+            eventWriteFailed.set(true)
             false
         }
     }
@@ -219,7 +237,7 @@ class AirPlaySession(
 
         val deadlineNanos = System.nanoTime() + timeoutMillis * NANOS_PER_MILLISECOND
         while (true) {
-            val sent = synchronized(eventWriteLock) {
+            val sent = eventWrite {
                 if (eventSocket == null || eventCipher == null) {
                     null
                 } else {
@@ -244,7 +262,7 @@ class AirPlaySession(
         }
     }
 
-    fun setNightMode(night: Boolean): Boolean = synchronized(eventWriteLock) {
+    fun setNightMode(night: Boolean): Boolean = eventWrite {
         pendingNightMode = night
         sendPendingNightModeLocked()
     }
@@ -300,7 +318,7 @@ class AirPlaySession(
                 accumulated += plaintext
                 val parsed = RtspMessage.parseMessages(accumulated)
                 accumulated = parsed.rest
-                for (request in parsed.messages) {
+                for ((index, request) in parsed.messages.withIndex()) {
                     val cseq = request.headers["cseq"] ?: "-"
                     val path = request.path.lowercase()
                     val showInDebugOverlay =
@@ -309,7 +327,9 @@ class AirPlaySession(
                     Unit
                     Unit
                     val response = try {
-                        handle(request)
+                        // Provenance is fixed for this entire parsed batch, not inferred from
+                        // a cipher that a previous plaintext pair-verify request just installed.
+                        handle(request, activeCipher != null)
                     } catch (error: Exception) {
                         Unit
                         RtspMessage.Response(status = 500)
@@ -319,6 +339,7 @@ class AirPlaySession(
                     Unit
                     output.write(cipher?.encrypt(wire) ?: wire)
                     if (cipher == null && pairVerify.controlKeys != null) {
+                        ControlRequestProof.requireCleanTransition(parsed.messages.size - index - 1, accumulated.size)
                         val keys = pairVerify.controlKeys!!
                         cipher = ControlCipher(keys.readKey, keys.writeKey)
                         Unit
@@ -336,12 +357,15 @@ class AirPlaySession(
         }
     }
 
-    private fun handle(request: RtspMessage.Request): RtspMessage.Response {
+    private fun handle(request: RtspMessage.Request, encrypted: Boolean): RtspMessage.Response {
+        val mediaAllowed = !closed.get() && ControlRequestProof.mediaAllowed(encrypted, sapAuthenticated,
+            cipher != null && pairVerify.verifiedControllerId != null)
         when (request.method) {
-            "SETUP" -> return if (authenticatedForMedia) handleSetup(request)
+            "SETUP" -> return if (mediaAllowed) handleSetup(request)
                 else RtspMessage.Response(status = 403)
             "RECORD" -> {
-                if (!authenticatedForMedia) return RtspMessage.Response(status = 403)
+                if (!mediaAllowed) return RtspMessage.Response(status = 403)
+                encryptedRecordAccepted = true
                 listener.onSessionActive(this)
                 return RtspMessage.Response(status = 200)
             }
@@ -360,6 +384,7 @@ class AirPlaySession(
             )
             path.endsWith("/auth-setup") -> {
                 sapAuthenticated = false
+                encryptedRecordAccepted = false
                 val body = mfi?.let { MfiSapAuthSetup.handle(request.body, it) }
                 if (body == null) RtspMessage.Response(status = 400)
                 else {
@@ -625,7 +650,7 @@ class AirPlaySession(
                 32,
             )
             eventCipher = ControlCipher(readKey, writeKey)
-            synchronized(eventWriteLock) {
+            eventWrite {
                 sendPendingNightModeLocked()
             }
             runEventRead(socket)

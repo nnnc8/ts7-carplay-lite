@@ -14,7 +14,7 @@ Compile != runtime != iPhone != authentication != video.
 | Source/license/no blobs | PASS71 fixed file digests/originalGitblobs/GPL/dependency notices |
 | Renderer preserved | PASS9 baseline hashes, including asset and PCM/touch |
 | Local receiver | PASS2047 fixtures |
-| Auth/gate/DiPlay | PASS24+30+444 fixtures; fake provider test sources only; tunnel loopback is not radio/phone proof |
+| Auth/gate/DiPlay | PASS24+30+467 fixtures; fake provider test sources only; tunnel loopback is not radio/phone proof |
 | Diagnostic privacy | PASS ReportSanitizerTest; diagnostic code/workflow unchanged |
 | Both backend routes | PASS16 unit tests; v0.1/v0.2 fixed13, diagnostic fixed5, privacy/auth deny |
 | Normal APK inspect | PASSAPI27/version0.2-alpha/permissions/actualARMv7/DiPlaypresence/no credentials/signature |
@@ -47,8 +47,9 @@ Initial CI normal activity startStatusOK/677ms; screenshot shows DiPlayv0.2Previ
 and Waiting for iPhone/authentication blocked/DiPlay ready. Instrumentation:
 BC crypto/native empty-name load PASS; OMX.google.h264.decoder720p90+frames,
 reset/recovery/stop PASS. Initial exactsource87e9901 and hardened77ef5cb rerun PASS.
-Final documentation refresh is not a code/API change; release gates still require
-CI passing that final source before the normal APK is published. Do not infer ARM/phone
+Final lifecycle/authentication fixes add plaintext-boundary, writer-lock, stale-callback
+and early-audio regressions. Release gates require CI passing the exact final source
+before the normal APK is published; release notes record those final runs. Do not infer ARM/phone
 runtime from x86_64. Local BT MAC may be masked/unavailable and fails explicitly;
 authorized authentication alone does not prove TS7 Bluetooth/hotspot compatibility.
 
@@ -62,5 +63,8 @@ Production secret untouched/server-only. No APK contains that GitHub credential.
 
 Independent upstream wireless source review identified raw auth/WiFi traces, producer
 wakeup, interface/binding and service/socket cleanup risks; fixed in this port.
-Final new-port independent review unavailable due reviewer usage limit.
-Main-agent implementation review and regression tests run; not a full independent audit.
+Final new-port independent review identified five authorized-path issues: recovery/write
+lock inversion, plaintext RECORD provenance, stale rejection, lost reconnect intent and
+one-shot early audio readiness. Corrected in source with bounded regression fixtures;
+follow-up independent delta review is required before publication. Not an authentication
+certification or full upstream security audit.

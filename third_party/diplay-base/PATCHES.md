@@ -20,6 +20,9 @@ UPSTREAM-README.md is upstream README.md renamed as reference, NOT auth instruct
 - Bonjour: explicit interface, bounded queues/status line, multicast/socket cleanup;
   slf4j-nop / no raw logs. RFCOMM/tunnel bounded producers notified after consumption.
 - AirPlaySession: SAP + verified pairing + encryption required for SETUP/RECORD;
+  request encryption provenance fixed per parsed batch. Reject complete or partial
+  plaintext following final pair-verify; encrypted RECORD is explicit media proof.
+  Event write failures release the writer lock before media/owner teardown callbacks.
   bounded RTSP/control/event. NTP/event/keepalive bound to session local address.
   Event peer/timeout checked, repeated timing setup refused, max three distinct
   advertised stream types, no repeated active stream replacement or listener leak.
@@ -40,3 +43,8 @@ touch/asset files frozen by renderer-lock.json. API27 SDK / Kotlin JVM8 compile.
 Compare exact upstream commit against each manifest path to reproduce diff; renamed
 UPSTREAM-README maps to README.md. Never download upstream APK/auth assets.
 Host fixtures are not iPhone/auth evidence. Default provider unavailable before radios.
+
+Final adapter lifecycle review fixes: recovery/render callbacks outside media/owner
+locks; captured-epoch failure invalidation; retain only profile/listener retry intent
+until explicit stop. Retain one early audio format (not PCM), activate only after
+authenticated session and UI sink acknowledgment. Nine frozen files remain unchanged.

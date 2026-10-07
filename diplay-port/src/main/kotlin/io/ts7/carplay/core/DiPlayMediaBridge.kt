@@ -16,6 +16,8 @@ class DiPlayMediaBridge(
     private var recovery: (() -> Unit)? = null
     private var diagnostic: ((String) -> Unit)? = null
     private var audioReady = false
+    private var sinkReady = false
+    private var audioFormat: AudioFormat? = null
     private val pcm = ByteBuffer.allocate(4096)
 
     override fun onVideoCodec(type: Int, codec: VideoCodec) {
@@ -27,7 +29,7 @@ class DiPlayMediaBridge(
             val converted = AvcParameterSets.annexB(codecData)
             synchronized(this) { if (gate.current(epoch)) parameters = converted }
         }
-        catch (_: IllegalArgumentException) { reject() }
+        catch (_: IllegalArgumentException) { if (gate.current(epoch)) reject() }
     }
     @Synchronized override fun onVideoFrame(type: Int, naluBytes: ByteArray) {
         if (type != 110 || !gate.videoAllowed(epoch, naluBytes, 0, naluBytes.size)) return
@@ -46,23 +48,39 @@ class DiPlayMediaBridge(
     @Synchronized override fun setVideoDiagnosticHandler(type: Int, handler: (String) -> Unit) {
         if (gate.current(epoch) && type == 110) diagnostic = handler
     }
-    @Synchronized fun requestKeyframe(): Boolean {
-        if (!gate.current(epoch)) return false
-        val request = recovery ?: return false
+    fun requestKeyframe(): Boolean {
+        val request = synchronized(this) { if (gate.current(epoch)) recovery else null } ?: return false
         return try { request(); true } catch (_: Exception) { false }
     }
-    @Synchronized fun frameRendered(): Boolean {
-        if (!gate.renderedFrame(epoch)) return false
-        diagnostic?.invoke("first frame rendered")
+    fun frameRendered(): Boolean {
+        val callback = synchronized(this) {
+            if (!gate.renderedFrame(epoch)) return false
+            diagnostic
+        }
+        callback?.invoke("first frame rendered")
         return true
     }
     @Synchronized override fun onAudioStarted(type: Int, format: AudioFormat, firstSample: Int) {
-        if (!gate.current(epoch) || gate.state() !in listOf(ProtocolGate.State.SESSION, ProtocolGate.State.STREAMING) ||
-            !supportedAudio(format)) return
-        audioReady = listener.audioFormat(format.sampleRate, format.channels)
+        if (!gate.current(epoch) || type != 100 || !supportedAudio(format)) return
+        audioFormat = format // One bounded format only; never retain early PCM.
+        audioReady = false
+        prepareAudio()
+    }
+    /** Explicit UI acknowledgment, after authenticated session/renderer startup. */
+    @Synchronized fun mediaSinkReady() {
+        if (!gate.current(epoch)) return
+        sinkReady = true
+        prepareAudio()
+    }
+    private fun prepareAudio() {
+        val format = audioFormat ?: return
+        if (!audioReady && sinkReady && gate.current(epoch) &&
+            gate.state() in listOf(ProtocolGate.State.SESSION, ProtocolGate.State.STREAMING))
+            audioReady = listener.audioFormat(format.sampleRate, format.channels)
     }
     @Synchronized override fun onAudioRtp(type: Int, format: AudioFormat, rtp: ByteArray, sample: Int) {
-        if (!audioReady || !gate.current(epoch) || !supportedAudio(format) || rtp.size !in 14..4096) return
+        if (!audioReady || !sinkReady || !gate.current(epoch) || type != 100 || audioFormat != format ||
+            !supportedAudio(format) || rtp.size !in 14..4096) return
         // DiPlay/LIVI's decrypted audio wire has a 12-byte RTP header, big-endian S16 LPCM.
         if ((rtp[0].toInt() and 255) != 0x80) return // no unsupported CSRC/extension/padding.
         val size = rtp.size - 12
@@ -73,8 +91,9 @@ class DiPlayMediaBridge(
         listener.audioPcm(pcm, size) // nonblocking AudioTrack; no indefinite PCM backlog.
     }
     @Synchronized override fun onAudioStopped(type: Int) {
-        if (!gate.current(epoch)) return
+        if (!gate.current(epoch) || type != 100) return
         audioReady = false
+        audioFormat = null
         listener.audioStopped()
     }
     private fun supportedAudio(format: AudioFormat): Boolean =
@@ -82,6 +101,7 @@ class DiPlayMediaBridge(
             format.channels in 1..2 && format.audioType in listOf("default", "media")
     @Synchronized fun clear() {
         parameters = null; recovery = null; diagnostic = null; audioReady = false
+        sinkReady = false; audioFormat = null
         pcm.clear()
         while (pcm.hasRemaining()) pcm.put(0)
     }

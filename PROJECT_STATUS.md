@@ -62,18 +62,20 @@ Legal provider is separate from source license; external interface READY, unavai
 See [DiPlay verification ledger](docs/DIPLAY_PORT_VERIFICATION.md) for exact results.
 Local: API27 source compile PASS; native ARMv7/x86_64 build PASS; APK/signature/ABI/
 credentials/license inspection PASS;71 source hash +9 renderer-lock PASS.
-Host: receiver2047, authentication24, gate30, DiPlay444 fixtures PASS;
+Host: receiver2047, authentication24, gate30, DiPlay467 fixtures PASS;
 Diagnostic sanitizer PASS; backend16 tests PASS.
 Initial87e9901 Android8.1 normal startup/authblocked/crypto/JNI/Surface PASS,
 PR CI37604670362/push37604605337 PASS, Diagnostic37604670078 PASS.
 Hardened77ef5cb PR37605750814/push37605744850 and Diagnostic37605750770 PASS.
-Final release-source documentation refresh must also pass CI before publication;
+Final lifecycle/authentication repair source must also pass CI before publication;
 exact source/run/APK/download SHA256 proof is recorded in the release notes.
 Do not reuse v0.1 emulator/CI results as v0.2 proof.
 
 Independent upstream network/privacy review completed; identified log/binding/queue/
-producer-wakeup/cleanup issues repaired. A final fresh-context port review was attempted
-but reviewer unavailable (usage limit); do not claim a complete final independent audit.
+producer-wakeup/cleanup issues repaired. Final fresh-context port review identified
+five lock/provenance/stale-callback/reconnect/audio-readiness issues; fixes and regression
+fixtures added. Follow-up independent delta review required before publication; this
+does not constitute an authentication certification or complete upstream security audit.
 
 ## Releases / deployment preserved
 

@@ -27,18 +27,20 @@ class DiPlayReceiverCore @JvmOverloads constructor(
     private val pairings = PairingStore()
     private var bridge: DiPlayMediaBridge? = null
     private var listener: ReceiverCore.Listener? = null
+    private var desiredListener: ReceiverCore.Listener? = null
+    private var lastProfile = VideoProfile.DEFAULT
     private var activeSession: AirPlaySession? = null
     private var bluetoothReady = false
     private var tunnelReady = false
     private var selectedAddress: String? = null
     private var initialized = false
-    private var closed = false
+    @Volatile private var closed = false
     @Volatile private var initialization = "NOT_INITIALIZED"
 
     fun initializationStatus(): String = initialization
     /** Constructor/start smoke reaches upstream WaitingForMfi without radios, assets or bus access. */
     fun initialize() = synchronized(lock) {
-        if (closed || initialized) return
+        if (closed || initialized || controller != null) return
         try {
             createController(VideoProfile.DEFAULT, false).start()
             initialized = true
@@ -59,22 +61,43 @@ class DiPlayReceiverCore @JvmOverloads constructor(
     override fun hasLawfulAuthentication(): Boolean =
         !closed && provider.isAvailable && provider.info.isAuthorized && providerProtocolMajor in 1..255
 
-    override fun connect(profile: VideoProfile, listener: ReceiverCore.Listener) = synchronized(lock) {
-        disconnect()
-        lastProfile = profile
-        if (closed) return
-        epoch = gate.begin(provider)
-        this.listener = listener
-        if (!hasLawfulAuthentication()) { fail(SessionMachine.Reason.BLOCKED_BY_AUTHENTICATION_REQUIREMENT); return }
-        // Never let an old asynchronous service.detach() tear down a fresh controller.
-        // No UI-thread wait: reject reconnect until its predecessor has really closed.
-        if (closingController?.awaitClosed(0) == false) { fail(SessionMachine.Reason.SESSION_LOST); return }
-        closingController = null
-        if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
-            selectedAddress == null) { fail(SessionMachine.Reason.INPUT_REJECTED); return }
-        bridge = DiPlayMediaBridge(epoch, gate, listener) { fail(SessionMachine.Reason.INPUT_REJECTED) }
-        try { createController(profile, true).start() }
-        catch (_: Exception) { fail(SessionMachine.Reason.SESSION_LOST) }
+    override fun connect(profile: VideoProfile, listener: ReceiverCore.Listener) {
+        startConnection(profile, listener, false)
+    }
+    private fun startConnection(profile: VideoProfile, target: ReceiverCore.Listener, retry: Boolean): Boolean {
+        var pending: CarPlayController? = null
+        var error: SessionMachine.Reason? = null
+        val retired: DiPlayMediaBridge?
+        val captured: Long
+        synchronized(lock) {
+            if (closed || (retry && desiredListener !== target)) return false
+            retired = invalidateLocked()
+            desiredListener = target
+            lastProfile = profile
+            epoch = gate.begin(provider)
+            captured = epoch
+            listener = target
+            error = when {
+                !hasLawfulAuthentication() -> SessionMachine.Reason.BLOCKED_BY_AUTHENTICATION_REQUIREMENT
+                // No UI-thread wait; retain retry intent until the old service has detached.
+                closingController?.awaitClosed(0) == false -> SessionMachine.Reason.SESSION_LOST
+                context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                    selectedAddress == null -> SessionMachine.Reason.INPUT_REJECTED
+                else -> null
+            }
+            if (error == null) {
+                closingController = null
+                bridge = DiPlayMediaBridge(captured, gate, target) { fail(captured, SessionMachine.Reason.INPUT_REJECTED) }
+                try { pending = createController(profile, true) }
+                catch (_: Exception) { error = SessionMachine.Reason.SESSION_LOST }
+            }
+        }
+        // Never acquire a media monitor or perform event I/O under the connection-owner lock.
+        retired?.clear()
+        if (error != null) { fail(captured, error!!); return false }
+        try { pending?.start() }
+        catch (_: Exception) { fail(captured, SessionMachine.Reason.SESSION_LOST) }
+        return synchronized(lock) { gate.current(captured) }
     }
     private fun createController(profile: VideoProfile, authorized: Boolean): CarPlayController {
         val captured = epoch
@@ -103,15 +126,18 @@ class DiPlayReceiverCore @JvmOverloads constructor(
                         advance(captured)
                     }
                 }
-                override fun onSessionEnded(session: AirPlaySession) = synchronized(lock) {
-                    if (gate.current(captured) && activeSession === session) fail(SessionMachine.Reason.SESSION_LOST)
+                override fun onSessionEnded(session: AirPlaySession) {
+                    val ended = synchronized(lock) { gate.current(captured) && activeSession === session }
+                    if (ended) fail(captured, SessionMachine.Reason.SESSION_LOST)
                 }
-                override fun onTransportError(message: String) = synchronized(lock) {
-                    if (gate.current(captured)) fail(SessionMachine.Reason.NETWORK_LOSS)
+                override fun onTransportError(message: String) {
+                    fail(captured, SessionMachine.Reason.NETWORK_LOSS)
                 }
             },
             CarPlayMediaEngine(bridge ?: object : MediaSink {}, microphoneEnabled = false),
-            { status -> synchronized(lock) {
+            { status -> if (status is CarPlayStatus.Failed || status == CarPlayStatus.ControlEnded) {
+                fail(captured, SessionMachine.Reason.SESSION_LOST)
+            } else synchronized(lock) {
                 if (gate.current(captured)) when (status) {
                     CarPlayStatus.BluetoothBootstrapAuthenticated -> {
                         bluetoothReady = true
@@ -119,7 +145,6 @@ class DiPlayReceiverCore @JvmOverloads constructor(
                         advance(captured)
                     }
                     CarPlayStatus.WifiTunnelAuthenticated -> { tunnelReady = true; advance(captured) }
-                    is CarPlayStatus.Failed, CarPlayStatus.ControlEnded -> fail(SessionMachine.Reason.SESSION_LOST)
                     else -> Unit
                 }
             } },
@@ -133,37 +158,41 @@ class DiPlayReceiverCore @JvmOverloads constructor(
         if (activeSession?.authenticatedForMedia == true && gate.sessionEstablished(captured))
             listener?.authenticatedSessionStarted()
     }
-    override fun videoSinkReady() = synchronized(lock) {
-        if (gate.videoSinkReady(epoch)) bridge?.requestKeyframe()
-        Unit
+    override fun videoSinkReady() {
+        val sink = synchronized(lock) { if (gate.videoSinkReady(epoch)) bridge else null }
+        sink?.mediaSinkReady()
+        sink?.requestKeyframe()
     }
-    override fun frameRendered(): Boolean = synchronized(lock) { bridge?.frameRendered() ?: false }
-    override fun requestKeyframe(): Boolean = synchronized(lock) { bridge?.requestKeyframe() ?: false }
+    override fun frameRendered(): Boolean = synchronized(lock) { bridge }?.frameRendered() ?: false
+    override fun requestKeyframe(): Boolean = synchronized(lock) { bridge }?.requestKeyframe() ?: false
     override fun touch(action: Int, x: Float, y: Float): Boolean = synchronized(lock) {
         if (gate.state() != ProtocolGate.State.STREAMING || !x.isFinite() || !y.isFinite() ||
             x !in 0f..1f || y !in 0f..1f || action !in listOf(0, 1, 2)) return false
         controller?.sendTouch(listOf(AirPlayContact(0, x.toDouble(), y.toDouble(), action != 1))) ?: false
     }
-    override fun reconnect(): Boolean = synchronized(lock) {
-        val previousListener = listener ?: return false
+    override fun reconnect(): Boolean {
+        val retry = synchronized(lock) { desiredListener?.let { lastProfile to it } } ?: return false
         if (!hasLawfulAuthentication()) return false
-        // Current preview has no authorized provider. A future reconnect needs the selected profile.
-        connect(lastProfile, previousListener)
-        gate.current(epoch)
+        return startConnection(retry.first, retry.second, true)
     }
-    private var lastProfile = VideoProfile.DEFAULT
-    private fun fail(reason: SessionMachine.Reason) {
-        val notify = listener
-        disconnect()
-        notify?.disconnected(reason)
+    private fun fail(captured: Long, reason: SessionMachine.Reason) {
+        val stopped = synchronized(lock) {
+            // Check and invalidate atomically: a late parser/transport failure cannot stop a new epoch.
+            if (captured != epoch || listener == null) return
+            val notify = listener!!
+            notify to invalidateLocked()
+        }
+        stopped.second?.clear()
+        stopped.first.disconnected(reason)
     }
-    override fun disconnect() = synchronized(lock) {
+    /** Caller owns lock; no bridge callbacks and no event-write lock acquisition here. */
+    private fun invalidateLocked(): DiPlayMediaBridge? {
         gate.stop()
         epoch = gate.epoch()
         listener = null
         controller?.let { it.close(); closingController = it }
         controller = null
-        bridge?.clear()
+        val retired = bridge
         bridge = null
         identity?.privateKey?.fill(0)
         identity = null
@@ -172,6 +201,15 @@ class DiPlayReceiverCore @JvmOverloads constructor(
         bluetoothReady = false
         tunnelReady = false
         initialized = false
+        return retired
     }
-    override fun close() = synchronized(lock) { closed = true; disconnect(); provider.close() }
+    override fun disconnect() {
+        val retired = synchronized(lock) { desiredListener = null; invalidateLocked() }
+        retired?.clear()
+    }
+    override fun close() {
+        synchronized(lock) { closed = true }
+        disconnect()
+        provider.close()
+    }
 }

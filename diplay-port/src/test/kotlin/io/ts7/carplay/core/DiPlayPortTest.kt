@@ -54,6 +54,19 @@ fun main() {
     rejects { RtspMessage.parseMessages(ByteArray(16 * 1024 + 1) { 65 }) }
     rejects { RtspMessage.parseMessages(ByteArray(256 * 1024 + 1)) }
 
+    // Cipher availability cannot retroactively authenticate plaintext in a parsed batch.
+    val verify = "POST /pair-verify RTSP/1.0\r\nCSeq: 1\r\nContent-Length: 0\r\n\r\n".toByteArray()
+    val record = "RECORD / RTSP/1.0\r\nCSeq: 2\r\n\r\n".toByteArray()
+    val pipelined = RtspMessage.parseMessages(verify + record)
+    expect(pipelined.messages.size == 2)
+    rejects { ControlRequestProof.requireCleanTransition(pipelined.messages.size - 1, pipelined.rest.size) }
+    val partialRecord = RtspMessage.parseMessages(verify + record.copyOf(8))
+    expect(partialRecord.messages.size == 1 && partialRecord.rest.isNotEmpty())
+    rejects { ControlRequestProof.requireCleanTransition(0, partialRecord.rest.size) }
+    ControlRequestProof.requireCleanTransition(0, 0)
+    for (encrypted in listOf(false, true)) for (sap in listOf(false, true)) for (paired in listOf(false, true))
+        expect(ControlRequestProof.mediaAllowed(encrypted, sap, paired) == (encrypted && sap && paired))
+
     val pairing = PairingStore()
     val publicKey = ByteArray(32) { 7 }
     pairing.save("local", publicKey); publicKey[0] = 0
@@ -107,6 +120,27 @@ fun main() {
     rejects { AudioStream(ByteArray(32)).listen(object : AudioStream.Listener {}, loop, null) }
     rejects { ScreenStream(ByteArray(32)).listen(object : ScreenStream.Listener {}, loop, null) }
 
+    // Actual failed event writer must release its monitor before teardown callbacks.
+    var closureOutsideWriteLock = false
+    var writeLock: Any? = null
+    val failedSocket = object : java.net.Socket() {
+        override fun getOutputStream(): java.io.OutputStream = throw java.io.IOException("fixture write failure")
+    }
+    val writeSession = AirPlaySession(java.net.Socket(), AirPlayConfig("fixture", "02:00:00:00:00:01",
+        "02:00:00:00:00:01", "220.68", AirPlayDisplayConfig(1280, 720)),
+        AirPlayIdentity.generate(), PairingStore(), null, object : AirPlaySessionListener {},
+        object : AirPlayMediaHandler {
+            override fun onSessionClosed(session: AirPlaySession) {
+                closureOutsideWriteLock = !Thread.holdsLock(writeLock!!)
+            }
+        })
+    fun sessionField(name: String) = AirPlaySession::class.java.getDeclaredField(name).apply { isAccessible = true }
+    writeLock = sessionField("eventWriteLock").get(writeSession)
+    sessionField("eventSocket").set(writeSession, failedSocket)
+    sessionField("eventCipher").set(writeSession, ControlCipher(ByteArray(32), ByteArray(32)))
+    expect(!writeSession.sendCommand(mapOf("type" to "forceKeyFrame")) && closureOutsideWriteLock)
+    expect(!writeSession.authenticatedForMedia)
+
     val avcc = byteArrayOf(1, 66, 0, 30, -1, -31, 0, 2, 0x67, 0x11, 1, 0, 2, 0x68, 0x22)
     expect(AvcParameterSets.annexB(avcc).contentEquals(byteArrayOf(0,0,0,1,0x67,0x11,0,0,0,1,0x68,0x22)))
     rejects { AvcParameterSets.annexB(avcc.copyOf(9)) }
@@ -136,6 +170,9 @@ fun main() {
     val rtp = ByteArray(16); rtp[0] = 0x80.toByte()
     rtp[12] = 1; rtp[13] = 2; rtp[14] = 3; rtp[15] = 4
     bridge.onAudioRtp(100, format, rtp, 0)
+    expect(pcm == null) // Explicit UI acknowledgment is required even after protocol SESSION.
+    bridge.mediaSinkReady()
+    bridge.onAudioRtp(100, format, rtp, 0)
     expect(pcm!!.contentEquals(byteArrayOf(2,1,4,3)))
     gate.stop(); val before = videos; pcm = null
     bridge.onVideoFrame(110, idr); bridge.onAudioRtp(100, format, rtp, 0)
@@ -155,5 +192,49 @@ fun main() {
     val decoder = Thread { check(ownerReady.await(2, TimeUnit.SECONDS)); raceBridge.onVideoConfig(110, byteArrayOf(1)) }.apply { isDaemon = true }
     owner.start(); decoder.start(); owner.join(3000); decoder.join(3000)
     expect(!owner.isAlive && !decoder.isAlive && errors == 1)
+
+    // Recovery and rendered-frame callbacks also run outside the bridge monitor.
+    val recoverEntered = CountDownLatch(1); val recoverOwnerReady = CountDownLatch(1)
+    raceBridge.setVideoRecoveryHandler(110) {
+        recoverEntered.countDown(); synchronized(lock) { }
+    }
+    val recoverOwner = Thread { synchronized(lock) {
+        recoverOwnerReady.countDown(); check(recoverEntered.await(2, TimeUnit.SECONDS)); raceBridge.clear()
+    } }.apply { isDaemon = true }
+    val recoverWriter = Thread {
+        check(recoverOwnerReady.await(2, TimeUnit.SECONDS)); raceBridge.requestKeyframe()
+    }.apply { isDaemon = true }
+    recoverOwner.start(); recoverWriter.start(); recoverOwner.join(3000); recoverWriter.join(3000)
+    expect(!recoverOwner.isAlive && !recoverWriter.isAlive)
+    raceGate.bootstrapConfirmed(token); raceGate.carplayNetworkReady(token); raceGate.authenticationSucceeded(token)
+    raceGate.sessionEstablished(token); raceGate.videoSinkReady(token)
+    raceBridge.onVideoFrame(110, idr)
+    var diagnosticOutsideMonitor = false
+    raceBridge.setVideoDiagnosticHandler(110) { diagnosticOutsideMonitor = !Thread.holdsLock(raceBridge) }
+    expect(raceBridge.frameRendered() && diagnosticOutsideMonitor)
+    raceGate.stop(); raceGate.begin(FakeAuthenticationProvider())
+    raceBridge.onVideoConfig(110, byteArrayOf(1))
+    expect(errors == 1 && !raceBridge.requestKeyframe()) // Stale bridge cannot reject a replacement.
+
+    val earlyGate = ProtocolGate(); val earlyEpoch = earlyGate.begin(FakeAuthenticationProvider())
+    var uiReady = false; var formatAttempts = 0; var earlyPcm = 0
+    val earlyBridge = DiPlayMediaBridge(earlyEpoch, earlyGate, object : ReceiverCore.Listener by listener {
+        override fun audioFormat(sampleRate: Int, channels: Int): Boolean { formatAttempts++; return uiReady }
+        override fun audioPcm(buffer: ByteBuffer, bytes: Int): Int { earlyPcm++; return bytes }
+    }) { error("unexpected early-audio rejection") }
+    earlyBridge.onAudioStarted(100, format, 0)
+    earlyBridge.onAudioRtp(100, format, rtp, 0)
+    expect(formatAttempts == 0 && earlyPcm == 0)
+    earlyGate.bootstrapConfirmed(earlyEpoch); earlyGate.carplayNetworkReady(earlyEpoch)
+    earlyGate.authenticationSucceeded(earlyEpoch); earlyGate.sessionEstablished(earlyEpoch)
+    earlyBridge.onAudioRtp(100, format, rtp, 0)
+    expect(formatAttempts == 0 && earlyPcm == 0)
+    earlyBridge.mediaSinkReady()
+    expect(formatAttempts == 1 && earlyPcm == 0)
+    uiReady = true; earlyBridge.mediaSinkReady(); earlyBridge.onAudioRtp(100, format, rtp, 0)
+    expect(formatAttempts == 2 && earlyPcm == 1)
+    earlyBridge.onAudioStopped(100); earlyBridge.onAudioRtp(100, format, rtp, 0)
+    expect(earlyPcm == 1)
+    earlyGate.stop(); earlyBridge.clear()
     println("DiPlay port PASS: $checks bounded parser/crypto/privacy/media/lifecycle fixtures; not iPhone evidence")
 }
