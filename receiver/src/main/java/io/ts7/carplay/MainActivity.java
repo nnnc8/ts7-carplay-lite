@@ -2,6 +2,10 @@ package io.ts7.carplay;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.pm.PackageManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
@@ -22,12 +26,14 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.nio.ByteBuffer;
+import io.ts7.carplay.core.DiPlayReceiverCore;
+import io.ts7.carplay.auth.UnavailableAuthenticationProvider;
 
 public final class MainActivity extends Activity implements SurfaceHolder.Callback {
     private final Handler main = new Handler();
     private final EventRing events = new EventRing();
     private final SessionMachine session = new SessionMachine(events);
-    private final ReceiverCore core = new ReceiverCore.Unavailable();
+    private DiPlayReceiverCore core;
     private final RetryBudget reconnect = new RetryBudget();
     private final PcmAudioOutput audio = new PcmAudioOutput(events);
     private final float[] touch = new float[2];
@@ -71,7 +77,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.BLACK);
-        heading = text("TS7 CarPlay Lite · TECHNICAL PREVIEW", 20);
+        heading = text("TS7 CarPlay Lite · DiPlay v0.2 Preview", 20);
         heading.setGravity(Gravity.CENTER);
         root.addView(heading, new LinearLayout.LayoutParams(-1, 44));
         surface = new SurfaceView(this);
@@ -103,6 +109,11 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         setContentView(root); // No probes, assets or MediaCodec work precede visible UI.
         events.add(EventCode.APP_OPEN);
         radio = new RadioMonitor(this, session);
+        core = new DiPlayReceiverCore(this, new UnavailableAuthenticationProvider());
+        new Thread(() -> {
+            core.initialize();
+            main.post(() -> { if (!isDestroyed()) updateStatus(); });
+        }, "ts7-diplay-initialize").start();
     }
 
     @Override protected void onResume() {
@@ -129,6 +140,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
 
     @Override protected void onDestroy() {
         stopPlayback(SessionMachine.Reason.USER_STOP);
+        core.close();
         main.removeCallbacksAndMessages(null);
         super.onDestroy();
     }
@@ -155,7 +167,8 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         String[] options = {"Connect iPhone (authentication unavailable)", "System Bluetooth pairing",
             "System Wi-Fi settings", "Video profile: " + profile.name(),
             "Developer test mode: " + (developer ? "ON" : "OFF"),
-            "Start developer H.264 pattern", "Stop playback"};
+            "Start developer H.264 pattern", "Stop playback",
+            "Wireless discovery permission", "Select paired iPhone"};
         new AlertDialog.Builder(this).setTitle("Settings · Technical preview")
             .setItems(options, (dialog, index) -> {
                 if (index == 0) connect();
@@ -168,7 +181,46 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                 }
                 if (index == 5) startPattern();
                 if (index == 6) stopPlayback(SessionMachine.Reason.USER_STOP);
+                if (index == 7) discoveryPermission();
+                if (index == 8) selectIphone();
             }).setNegativeButton("Close", null).show();
+    }
+
+    private void discoveryPermission() {
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Wireless discovery permission granted. No location is collected.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        new AlertDialog.Builder(this).setTitle("Wi-Fi / Bluetooth discovery")
+            .setMessage("Android 8 requires this permission for Wi-Fi/Bluetooth discovery. TS7 CarPlay Lite does not collect or upload location.")
+            .setPositiveButton("Continue", (dialog, which) ->
+                requestPermissions(new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, 27))
+            .setNegativeButton("Cancel", null).show();
+    }
+
+    @SuppressWarnings("deprecation")
+    private void selectIphone() {
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if (adapter == null || !adapter.isEnabled()) {
+            Toast.makeText(this, "Enable Bluetooth and pair an iPhone in Android settings.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        final BluetoothDevice[] devices = adapter.getBondedDevices().toArray(new BluetoothDevice[0]);
+        if (devices.length == 0) {
+            Toast.makeText(this, "No paired device. Pair your iPhone in Android settings.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        String[] names = new String[devices.length];
+        for (int index = 0; index < devices.length; index++) {
+            String name = devices[index].getName();
+            names[index] = name == null ? "Paired device " + (index + 1) : name.substring(0, Math.min(64, name.length()));
+        }
+        new AlertDialog.Builder(this).setTitle("Select paired iPhone · local only")
+            .setItems(names, (dialog, index) -> {
+                stopPlayback(SessionMachine.Reason.USER_STOP);
+                core.selectPairedAddress(devices[index].getAddress());
+                Toast.makeText(this, "Selected locally; authentication remains blocked.", Toast.LENGTH_LONG).show();
+            }).setNegativeButton("Cancel", null).show();
     }
 
     private void profiles() {
@@ -199,6 +251,8 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     SurfaceRenderer rendererForTest() { return renderer; }
     String modeForTest() { return mode; }
     SessionMachine sessionForTest() { return session; }
+    String coreStatusForTest() { return core.initializationStatus(); }
+    boolean coreAuthForTest() { return core.hasLawfulAuthentication(); }
 
     void startPattern() {
         if (!getPreferences(0).getBoolean("developerPattern", false)) {
@@ -234,7 +288,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                 public void firstFrame() {
                     main.post(() -> {
                         if (generation != currentGeneration) return;
-                        if ("CARPLAY".equals(mode) && session.authenticated()) {
+                        if ("CARPLAY".equals(mode) && session.authenticated() && core.frameRendered()) {
                             if (session.state() == SessionMachine.State.CARPLAY_NEGOTIATING
                                     || session.state() == SessionMachine.State.RECOVERING) {
                                 session.firstCarPlayFrame();
@@ -363,6 +417,20 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
             public void disconnected(SessionMachine.Reason reason) {
                 main.post(() -> handleDisconnect(expected, reason));
             }
+            public boolean audioFormat(int sampleRate, int channels) {
+                if (!connectionCurrent(expected) || !session.authenticated() || !"CARPLAY".equals(mode)) return false;
+                try { audio.start(sampleRate, channels); return true; }
+                catch (Exception error) { events.add(EventCode.AUDIO_ERROR); return false; }
+            }
+            public int audioPcm(ByteBuffer pcm, int bytes) {
+                if (!connectionCurrent(expected) || !session.authenticated() || !"CARPLAY".equals(mode)) return 0;
+                int written = audio.write(pcm, bytes);
+                if (written != bytes) events.add(EventCode.AUDIO_ERROR, bytes - written);
+                return written;
+            }
+            public void audioStopped() {
+                if (expected == connectionGeneration) audio.stop();
+            }
         };
     }
 
@@ -409,7 +477,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         diagnosticText.setTextIsSelectable(true);
         ScrollView scroll = new ScrollView(this);
         scroll.addView(diagnosticText);
-        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Diagnostics · " + mode)
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Diagnostics · DiPlay · " + core.initializationStatus())
             .setView(scroll).setPositiveButton("Copy diagnostics", (ignored, which) -> {
                 ((ClipboardManager) getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("TS7 alpha diagnostics", report()));
             }).setNeutralButton("Upload diagnostics", (ignored, which) -> confirmUpload())
@@ -447,6 +515,8 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         if (status == null) return;
         SurfaceRenderer current = renderer;
         String line = "Waiting for iPhone · authentication blocked";
+        if ("DIPLAY_CORE_READY_AUTH_BLOCKED".equals(core.initializationStatus())) line += " · DiPlay ready";
+        else if ("DIPLAY_CORE_INITIALIZATION_FAILED".equals(core.initializationStatus())) line += " · port initialization failed";
         if ("TEST_PATTERN".equals(mode) && current != null) {
             line = "TEST PATTERN (not CarPlay) · " + profile.fps + " fps target · "
                 + String.format(java.util.Locale.US, "%.1f fps · q=%d", current.measuredFps(), current.queueDepth());

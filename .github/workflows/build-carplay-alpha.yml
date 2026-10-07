@@ -1,8 +1,8 @@
-name: Build TS7 CarPlay Lite alpha
+name: Build TS7 DiPlay API27 preview
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/diplay-ts7-port]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -29,7 +29,12 @@ jobs:
           packages: platform-tools
           log-accepted-android-sdk-licenses: false
       - name: Install pinned Android build tools
-        run: sdkmanager 'platforms;android-27' 'build-tools;35.0.0'
+        run: sdkmanager 'platforms;android-27' 'build-tools;35.0.0' 'ndk;25.2.9519653'
+      - name: DiPlay API27 and ARMv7 source build
+        run: |
+          ./diplay-port/build.sh
+          ./diplay-port/test.sh
+          python3 diplay-port/tools/verify_source.py
       - name: Core and privacy contracts
         run: |
           ./receiver/test.sh
@@ -37,19 +42,19 @@ jobs:
           npm --prefix backend test
       - name: Build and inspect alpha APKs
         run: |
-          ./receiver/build.sh
-          ./receiver/build.sh --instrumented
+          TS7_SKIP_CORE_BUILD=1 ./receiver/build.sh
+          TS7_SKIP_CORE_BUILD=1 ./receiver/build.sh --instrumented
       - name: Upload requested alpha APK
         uses: actions/upload-artifact@v4
         with:
-          name: TS7-CarPlay-Lite-v0.1-alpha.apk
-          path: dist/TS7-CarPlay-Lite-v0.1-alpha.apk
+          name: TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk
+          path: dist/TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk
           if-no-files-found: error
       - name: Upload separate instrumentation APK
         uses: actions/upload-artifact@v4
         with:
           name: TS7-Alpha-Instrumentation
-          path: dist/TS7-CarPlay-Lite-v0.1-alpha-instrumented.apk
+          path: dist/TS7-CarPlay-Lite-DiPlay-v0.2-alpha-instrumented.apk
           if-no-files-found: error
 
   android-81-surface:
@@ -60,12 +65,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
+          name: TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
           name: TS7-Alpha-Instrumentation
           path: dist
       - name: Enable KVM
         run: |
           sudo chmod 666 /dev/kvm
-      - name: Actual API 27 MediaCodec Surface test
+      - name: Actual API27 DiPlay normal startup, auth gate, crypto/JNI and preserved Surface test
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 27
@@ -83,4 +92,7 @@ jobs:
             dist/renderer-smoke.txt
             dist/renderer-smoke.png
             dist/renderer-logcat.txt
+            dist/normal-startup.txt
+            dist/normal-startup.xml
+            dist/normal-startup.png
           if-no-files-found: warn

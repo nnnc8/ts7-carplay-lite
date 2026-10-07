@@ -1,5 +1,16 @@
 # Changelog
 
+## CarPlay Lite DiPlay v0.2-alpha port preview — 2026-10-07
+
+- Pivoted primary development to TS7-specific DiPlay Android8.1/Legacy GPL core, exact c8884ad; preserved old lawful-core branch801d99e.
+- Imported selected pinned source/notices, API27 patches and source-built ARMv7 read-only radio JNI; no upstream UI/assets/APK/credentials.
+- Connected actual DiPlay wireless lifecycle and compressed-H264/LPCM/touch seams to preserved TS7 Surface pipeline; existing nine renderer files unchanged.
+- Added bounded parsers/discovery/tunnel queues, explicit AP/peer binding, private trace removal and fail-closed external authentication.
+- Minimal DiPlayready/waiting/authblocked UI, explained optional discovery/LOHS permission; no GPS/telemetry/microphone or fake session.
+- Preserved Diagnostic v0.2/fixed5 and extended fixed13 relay for v0.2-alpha without accepting simulated auth/streaming.
+- Added API27/ARMv7/provenance/licenses/privacy/crypto/JNI/startup and preserved Surface CI checks.
+- **NOT YET A FUNCTIONAL CARPLAY RECEIVER**. Real iPhone/TS7 wireless/auth/audio/touch unverified; Siri/wired deferred.
+
 ## CarPlay Lite v0.1-alpha technical preview — 2026-10-07
 
 - Advanced to wireless-only Phase 1 after captured Diagnostic v0.2 report; wired/USB issues remain deferred.

@@ -64,7 +64,7 @@ Phase 0 basic report gate complete. Prioritize wireless session, video, decoder,
 
 ## ADR-010 — Lawful-authentication boundary / technical preview
 
-Status: Accepted
+Status: Authentication boundary accepted; original shell-only strategy superseded by ADR-014.
 
 Research pinned five upstream projects. Current DiPlay/xcertplay require API 28; legacy fork is API-compatible but documented extracted credentials are not acceptable. No inspected project is a lawful ready-to-ship API 27 receiver for this TS7 with an available auth provider. Choose original Java shell/renderer, not a hand-written full protocol. Future hardware-auth core requires license review, legal provider and API 27 port. Shipping ReceiverCore.Unavailable always refuses connections.
 
@@ -89,3 +89,11 @@ Status: Accepted, real-device unverified
 One codec worker; finite 1/2/5 s retries, 3 s frame stall watchdog and vendor-call hang detection. Never spawn replacement while prior vendor worker is stuck. Surface teardown/lifecycle must cancel and prevent new rendering, with bounded wait instead of indefinite UI freeze. Unresponsive vendor calls cannot be force-killed safely; contain/report limitation.
 
 AudioTrack PCM sink and normalized single-finger touch are integration boundaries, not verified CarPlay delivery. No microphone permission; Siri postponed. Long-session/reconnect milestones require lawful real-device evidence.
+
+## ADR-014 — TS7-specific DiPlay Android8.1 primary port
+
+Status: Accepted by explicit user direction,2026-10-07.
+
+Preserve old lawful-core branch/checkpoint; main strategy now selected GPL DiPlay Legacy revision c8884adcc75bfda3c134db63877bd6c6f83beb74. CASKA live source inaccessible/currentSHA UNKNOWN. Retain actual Controller wireless/iAP2/AirPlay/network/media code; remove AGPL UI/site, restricted assets, vendor HUD/CAN/ADB/navigation, wired receiver and offline auth loaders. GPL corresponding source and source-built API27 ARMv7 radio JNI required.
+
+Small MediaSink bridge to the nine frozen TS7 renderer/audio/touch/asset files, not a new decoder. LOHS API26 callback and explicit AP/peer binding; permission explained/no GPS. Unavailable external provider stops before radios/listeners. Authenticated media requires real AA05/SAP/pair-verify/encrypted RECORD and accepted/rendered VCL; fixture states or generated test video never qualify. Core compile/runtime/real phone are separate evidence gates. See DiPlay base/module/API27 audit/verification documents.

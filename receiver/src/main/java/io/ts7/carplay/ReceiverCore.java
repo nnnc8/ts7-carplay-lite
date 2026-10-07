@@ -1,4 +1,5 @@
 package io.ts7.carplay;
+import java.nio.ByteBuffer;
 
 /** Integration contract only. A legal core must provide real protocol evidence, not simulated states. */
 public interface ReceiverCore {
@@ -11,6 +12,9 @@ public interface ReceiverCore {
         boolean videoAccessUnit(byte[] bytes, int offset, int length, long timestampUs);
         void streamReset();
         void disconnected(SessionMachine.Reason reason);
+        default boolean audioFormat(int sampleRate, int channels) { return false; }
+        default int audioPcm(ByteBuffer pcm, int bytes) { return 0; }
+        default void audioStopped() {}
     }
     boolean hasLawfulAuthentication();
     void connect(VideoProfile profile, Listener listener);
@@ -20,6 +24,7 @@ public interface ReceiverCore {
     boolean reconnect();
     boolean requestKeyframe();
     boolean touch(int action, float normalizedX, float normalizedY);
+    default boolean frameRendered() { return false; }
 
     final class Unavailable implements ReceiverCore {
         public boolean hasLawfulAuthentication() { return false; }

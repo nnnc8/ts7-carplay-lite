@@ -8,6 +8,8 @@ Captured v0.2 report confirms Android 8.1/API 27/ARMv7/2 GB/1280×720/radios/AVC
 
 ## Phase 1 — Wireless CarPlay minimal receiver — CURRENT
 
+Primary strategy: TS7-specific DiPlay Android8.1 fork (Legacy c8884ad), not xcertplay-primary. GPL protocol port IN_PROGRESS; external authentication provider BLOCKED. Deliver v0.2 DiPlay Port Preview and prove API27 startup first; actual iPhone bootstrap is a later real-device gate.
+
 Lightweight Java/framework shell, lawful-core integration boundary, separate Bluetooth/Wi-Fi/CarPlay states, H.264 → MediaCodec → Surface, telemetry, touch boundary, minimal PCM output and finite recovery.
 
 1280×720 @ 30 fps with 25/20 stability profiles. Prefer OMX.sprd.h264.decoder but record actual fallback. No Compose/WebView or decoded-frame copies.

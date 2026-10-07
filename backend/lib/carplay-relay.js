@@ -27,13 +27,14 @@ function exactKeys(value, fields) {
 function validate(payload) {
   if (!exactKeys(payload, FIELDS)) return ["missing or unknown field"];
   const errors = [];
-  if (payload.schemaVersion !== 1 || payload.reportType !== "carplay-alpha" || payload.appVersion !== "0.1-alpha") errors.push("unsupported report version");
+  if (payload.schemaVersion !== 1 || payload.reportType !== "carplay-alpha"
+      || !["0.1-alpha", "0.2-alpha"].includes(payload.appVersion)) errors.push("unsupported report version");
   if (typeof payload.timestamp !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(payload.timestamp)
       || !Number.isFinite(Date.parse(payload.timestamp))) errors.push("invalid timestamp");
   if (!["IDLE", "TEST_PATTERN", "CARPLAY"].includes(payload.mode) || !STATES.includes(payload.carplayState)) errors.push("invalid session state");
   if (!["OFF", "IDLE", "DISCOVERING", "LINK_OBSERVED", "BOOTSTRAP_CONFIRMED"].includes(payload.bluetoothState)) errors.push("invalid Bluetooth state");
   if (!["DISCONNECTED", "NETWORK_OBSERVED", "SESSION_LINK_CONFIRMED"].includes(payload.wifiState)) errors.push("invalid Wi-Fi state");
-  // Current binary contains no lawful authentication core: cannot report a real session.
+  // Both previews lack an authorized authentication provider: cannot report a real session.
   if (payload.authentication !== "BLOCKED_BY_AUTHENTICATION_REQUIREMENT" || payload.mode === "CARPLAY"
       || payload.carplayState === "STREAMING") errors.push("authentication boundary");
   if (!REASONS.includes(payload.lastDisconnectReason)) errors.push("invalid disconnect reason");
@@ -67,7 +68,7 @@ function sanitize(payload) {
 }
 
 function format(payload) {
-  const lines = ["## TS7 CarPlay Lite v0.1-alpha diagnostics", "",
+  const lines = [`## TS7 CarPlay Lite v${payload.appVersion} diagnostics`, "",
     "**TECHNICAL PREVIEW — NOT YET A FUNCTIONAL CARPLAY RECEIVER**", "",
     "The TEST_PATTERN is synthetic H.264, not iPhone/CarPlay video.", ""];
   for (const field of FIELDS) if (field !== "events") lines.push(`- ${field}: ${payload[field]}`);

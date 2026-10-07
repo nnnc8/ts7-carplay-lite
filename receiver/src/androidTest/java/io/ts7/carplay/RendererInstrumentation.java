@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
 import android.os.Bundle;
+import io.ts7.carplay.core.Api27RuntimeSmoke;
 
 /** Separate CI-only APK: actual Android 8.1 MediaCodec -> Surface smoke test. */
 public final class RendererInstrumentation extends Instrumentation {
@@ -16,7 +17,11 @@ public final class RendererInstrumentation extends Instrumentation {
             Intent launch = new Intent(getTargetContext(), MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             activity = (MainActivity) startActivitySync(launch);
             MainActivity app = activity;
-            Thread.sleep(1000);
+            long startupDeadline = System.currentTimeMillis() + 10000;
+            while ("NOT_INITIALIZED".equals(app.coreStatusForTest()) && System.currentTimeMillis() < startupDeadline) Thread.sleep(100);
+            require("DIPLAY_CORE_READY_AUTH_BLOCKED".equals(app.coreStatusForTest()), "Actual DiPlay controller failed to initialize");
+            require(!app.coreAuthForTest(), "Default provider must remain unavailable");
+            Api27RuntimeSmoke.run();
             require(app.rendererForTest() == null && "IDLE".equals(app.modeForTest()), "Idle startup must not initialize decoder");
             runOnMainSync(() -> { app.enableDeveloperTest(); app.startPattern(); });
             long deadline = System.currentTimeMillis() + 20000;
@@ -37,7 +42,7 @@ public final class RendererInstrumentation extends Instrumentation {
             deadline = System.currentTimeMillis() + 15000;
             while (renderer.renderedFrames() < previous + 30 && System.currentTimeMillis() < deadline) Thread.sleep(100);
             require(renderer.renderedFrames() >= previous + 30 && renderer.restartCount() >= 1, "Stream-reset recovery did not render again");
-            result.putString("result", "PASS: Android 8.1 idle startup, 1280x720 H.264 -> MediaCodec -> Surface, 90+ frames, stream-reset recovery, bounded queue; decoder=" + renderer.decoderName());
+            result.putString("result", "PASS: Android 8.1 DiPlay startup AUTH_BLOCKED, BC crypto, JNI load (no radio access), idle startup, 1280x720 H.264 -> MediaCodec -> Surface, 90+ frames, stream-reset recovery, bounded queue; decoder=" + renderer.decoderName());
             runOnMainSync(app::finish);
             deadline = System.currentTimeMillis() + 5000;
             while (!renderer.stopped() && System.currentTimeMillis() < deadline) Thread.sleep(100);

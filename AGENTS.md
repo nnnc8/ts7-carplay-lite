@@ -85,4 +85,6 @@ Lawful authentication/core is blocked. Ship only a clearly labeled technical pre
 
 Preserve Diagnostic v0.2 workflow/APK and fixed Issue #5 relay. Alpha uploads go to fixed #13 only after explicit confirmation, with codes/counters and no identifiers, arbitrary exception text or credentials. No client destination control.
 
-Inspect actual APK API 27, Java-only ARMv7 compatibility, permissions, secrets/proprietary scans, generated asset provenance and signature. Separate emulator evidence from TS7 evidence in release/handoff.
+Primary strategy: TS7-specific DiPlay Android8.1 port on feature/diplay-ts7-port. Preserve feature/lawful-carplay-core checkpoint; xcertplay is reference/fallback only. Read the DiPlay base/module/API27/verification docs.
+
+Inspect actual APK API27, source-built armeabi-v7a JNI, permissions, secrets/proprietary scans, GPL/source notices, generated asset provenance and signature. Source pin c8884adcc75bfda3c134db63877bd6c6f83beb74; no upstream UI/assets/APK or authentication identity. FINE_LOCATION is explicit explained discovery/LOHS opt-in, never GPS/data upload. Keep nine renderer-lock files unchanged. Separate emulator evidence from TS7 evidence in release/handoff.

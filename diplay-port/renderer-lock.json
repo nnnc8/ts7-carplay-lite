@@ -1,0 +1,14 @@
+{
+  "baseline": "4e98000c1652ed7e1bc4c9668ff10b37a779f78b",
+  "files": {
+    "receiver/src/main/java/io/ts7/carplay/SurfaceRenderer.java": "19951342a8c4fb6925bc4f8ae0484e2f5edd2620304aa1f88ba26430cd7acbde",
+    "receiver/src/main/java/io/ts7/carplay/AnnexB.java": "47b8034f76631d9d3794baf0f5f3198b70135172f7ccfa94b74024873781da90",
+    "receiver/src/main/java/io/ts7/carplay/AvcConfig.java": "efefec89f54b68f56103894e092e779df1fa634d875fb6555e41473f6ebb0a33",
+    "receiver/src/main/java/io/ts7/carplay/VideoQueue.java": "a17b7ec6ebdee252544204d46ea5c3a17a55246dabb987298cc79fae2b9de3e6",
+    "receiver/src/main/java/io/ts7/carplay/VideoProfile.java": "b33b79717da201c4ec929c4461ae0d958cd50b4874769a7ea8e2bf1b362fb55d",
+    "receiver/src/main/java/io/ts7/carplay/PatternSource.java": "f23d8d66cbba390e62069e49d518eafa5c88c0e1e5444c9237c3187c5b3a99cb",
+    "receiver/src/main/java/io/ts7/carplay/TouchMapper.java": "9e2ddaffbc066c95a27657058ee3569f390bcdd4b8916d5f8ea410fbb6ca66b0",
+    "receiver/src/main/java/io/ts7/carplay/PcmAudioOutput.java": "8bd72f55592bac27f8ff3eb8d043fb713daa442369e385d51026966d4e9fe58d",
+    "receiver/src/main/assets/ts7-pattern.h264": "97a807f52df8efbee7fa54ff57c86d03ea5c4463e303a9c97b2a09fffa75affc"
+  }
+}

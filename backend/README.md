@@ -3,7 +3,7 @@
 These Vercel Node.js Serverless Functions accept only strict sanitized reports and create comments on fixed public destinations:
 
 - POST /api/diagnostics: Diagnostic v0.2 → nnnc8/ts7-carplay-lite #5 (preserved).
-- POST /api/carplay-diagnostics: CarPlay Lite v0.1-alpha → same repository #13.
+- POST /api/carplay-diagnostics: CarPlay Lite v0.1-alpha / DiPlay v0.2-alpha → same repository #13.
 
 Production base URL: https://ts7-carplay-lite-relay.vercel.app.
 

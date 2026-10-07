@@ -62,6 +62,27 @@ test("rejects every private field and arbitrary destination before contacting Gi
   }
 });
 
+test("DiPlay v0.2 keeps the same strict schema and fixed Issue 13; old alpha remains compatible", async () => {
+  for (const appVersion of ["0.1-alpha", "0.2-alpha"]) {
+    resetTestState();
+    const payload = { ...validPayload(), appVersion };
+    global.fetch = async (url, options) => {
+      assert.equal(url, "https://api.github.com/repos/nnnc8/ts7-carplay-lite/issues/13/comments");
+      assert.ok(JSON.parse(options.body).body.includes(`v${appVersion} diagnostics`));
+      return { ok: true, json: async () => ({ html_url: "https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-1" }) };
+    };
+    assert.deepEqual(relay.validate(payload), []);
+    const res = response(); await relay.handleCarplayDiagnostics(request(payload), res);
+    assert.equal(res.statusCode, 201);
+    payload.ssid = "private-canary";
+    assert.ok(relay.validate(payload).length);
+    delete payload.ssid;
+    payload.carplayState = "STREAMING";
+    assert.ok(relay.validate(payload).includes("authentication boundary"));
+  }
+  assert.ok(relay.validate({ ...validPayload(), appVersion: "0.3" }).length);
+});
+
 test("rejects arbitrary event/decoder/error text", () => {
   for (const value of ["user@example.test", "192.0.2.1", "<script>", "00:11:22:33:44:55", "private SSID"]) {
     const payload = validPayload();

@@ -9,9 +9,12 @@ for task_tool in aapt2 d8 zipalign apksigner; do
 done
 [[ -f "$TASK_JAR" ]] || { printf '%s\n' 'Install SDK platforms;android-27' >&2; exit 1; }
 [[ -f "$TASK_ROOT/receiver/src/main/assets/ts7-pattern.h264" ]] || { printf '%s\n' 'Run receiver/generate-pattern.sh' >&2; exit 1; }
+[[ "${TS7_SKIP_CORE_BUILD:-0}" == 1 ]] || "$TASK_ROOT/diplay-port/build.sh"
+TASK_CORE="$TASK_ROOT/build/diplay-port"
+TASK_LIBS="$TASK_CORE/core.jar:$TASK_CORE/kotlin-stdlib.jar:$TASK_CORE/bcprov.jar:$TASK_CORE/jmdns.jar:$TASK_CORE/slf4j-api.jar:$TASK_CORE/slf4j-nop.jar"
 mkdir -p "$TASK_ROOT/build/receiver" "$TASK_ROOT/build/receiver-signing" "$TASK_ROOT/dist"
 TASK_BUILD="$(mktemp -d "$TASK_ROOT/build/receiver/build.XXXXXX")"
-TASK_NAME="TS7-CarPlay-Lite-v0.1-alpha"
+TASK_NAME="TS7-CarPlay-Lite-DiPlay-v0.2-alpha"
 mkdir -p "$TASK_BUILD/classes" "$TASK_BUILD/dex" "$TASK_BUILD/generated/io/ts7/carplay"
 python3 "$TASK_ROOT/receiver/tools/build_config.py" \
   "$TASK_BUILD/generated/io/ts7/carplay/BuildConfig.java" "${TS7_CARPLAY_UPLOAD_URL:-}"
@@ -24,14 +27,27 @@ find "$TASK_ROOT/receiver/src/main/java" "$TASK_BUILD/generated" -name '*.java' 
 if [[ "${1:-}" == "--instrumented" ]]; then
   find "$TASK_ROOT/receiver/src/androidTest/java" -name '*.java' -type f -print | sort >> "$TASK_BUILD/sources.txt"
 fi
-javac -source 8 -target 8 -encoding UTF-8 -classpath "$TASK_JAR" -d "$TASK_BUILD/classes" @"$TASK_BUILD/sources.txt"
+javac --release 8 -encoding UTF-8 -classpath "$TASK_JAR:$TASK_LIBS" -d "$TASK_BUILD/classes" @"$TASK_BUILD/sources.txt"
 find "$TASK_BUILD/classes" -name '*.class' -type f -print | sort > "$TASK_BUILD/classes.txt"
-"$TASK_TOOLS/d8" --lib "$TASK_JAR" --min-api 27 --output "$TASK_BUILD/dex" @"$TASK_BUILD/classes.txt"
+"$TASK_TOOLS/d8" --lib "$TASK_JAR" --min-api 27 --output "$TASK_BUILD/dex" \
+  "$TASK_CORE/core.jar" "$TASK_CORE/kotlin-stdlib.jar" "$TASK_CORE/bcprov.jar" \
+  "$TASK_CORE/jmdns.jar" "$TASK_CORE/slf4j-api.jar" "$TASK_CORE/slf4j-nop.jar" @"$TASK_BUILD/classes.txt"
+mkdir -p "$TASK_BUILD/assets/licenses" "$TASK_BUILD/lib/armeabi-v7a" "$TASK_BUILD/lib/x86_64"
+cp "$TASK_ROOT/receiver/src/main/assets/ts7-pattern.h264" "$TASK_BUILD/assets/"
+cp "$TASK_ROOT/third_party/diplay-base/LICENSE" "$TASK_BUILD/assets/licenses/DiPlay-GPL-3.0.txt"
+cp "$TASK_ROOT/third_party/diplay-base/docs/licenses/dependencies/"*.txt "$TASK_BUILD/assets/licenses/"
+cp "$TASK_ROOT/THIRD_PARTY_NOTICES.md" "$TASK_BUILD/assets/licenses/TS7-NOTICES.md"
+cp "$TASK_CORE/native/armeabi-v7a/liblocal_hotspot_radio.so" "$TASK_BUILD/lib/armeabi-v7a/"
+cp "$TASK_CORE/native/x86_64/liblocal_hotspot_radio.so" "$TASK_BUILD/lib/x86_64/"
 "$TASK_TOOLS/aapt2" link -I "$TASK_JAR" --manifest "$TASK_BUILD/AndroidManifest.xml" \
-  -A "$TASK_ROOT/receiver/src/main/assets" -o "$TASK_BUILD/unsigned.apk"
+  -A "$TASK_BUILD/assets" -o "$TASK_BUILD/unsigned.apk"
 (
   cd "$TASK_BUILD/dex"
-  zip -q -0 "$TASK_BUILD/unsigned.apk" classes.dex
+  zip -q -0 "$TASK_BUILD/unsigned.apk" classes*.dex
+)
+(
+  cd "$TASK_BUILD"
+  zip -q -0 unsigned.apk lib/armeabi-v7a/liblocal_hotspot_radio.so lib/x86_64/liblocal_hotspot_radio.so
 )
 "$TASK_TOOLS/zipalign" -f 4 "$TASK_BUILD/unsigned.apk" "$TASK_BUILD/aligned.apk"
 TASK_KEY="${TS7_ALPHA_KEYSTORE:-$TASK_ROOT/build/receiver-signing/test.keystore}"
