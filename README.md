@@ -8,9 +8,10 @@
 
 ## Downloads / install
 
-新版待完成 [v0.2 verification](docs/DIPLAY_PORT_VERIFICATION.md) 後發布：
+新版：[直接下載 TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk](https://github.com/nnnc8/ts7-carplay-lite/releases/download/carplay-v0.2.0-diplay-preview/TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk)。
+[v0.2 verification](docs/DIPLAY_PORT_VERIFICATION.md)／
 [TS7 CarPlay Lite v0.2 Alpha — DiPlay Port Preview](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v0.2.0-diplay-preview)，
-檔名 TS7-CarPlay-Lite-DiPlay-v0.2-alpha.apk。對應 GPL source、patches、
+對應 GPL source、patches、
 完整 notices/build scripts 隨同 release 提供；不使用上游 APK 或認證資料。
 
 安裝後應看到「TS7 CarPlay Lite · DiPlay v0.2 Preview」、

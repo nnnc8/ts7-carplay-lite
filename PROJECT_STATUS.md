@@ -66,7 +66,9 @@ Host: receiver2047, authentication24, gate30, DiPlay444 fixtures PASS;
 Diagnostic sanitizer PASS; backend16 tests PASS.
 Initial87e9901 Android8.1 normal startup/authblocked/crypto/JNI/Surface PASS,
 PR CI37604670362/push37604605337 PASS, Diagnostic37604670078 PASS.
-Final hardened source rerun pending; release only after exact final CI passes.
+Hardened77ef5cb PR37605750814/push37605744850 and Diagnostic37605750770 PASS.
+Final release-source documentation refresh must also pass CI before publication;
+exact source/run/APK/download SHA256 proof is recorded in the release notes.
 Do not reuse v0.1 emulator/CI results as v0.2 proof.
 
 Independent upstream network/privacy review completed; identified log/binding/queue/
@@ -77,8 +79,9 @@ but reviewer unavailable (usage limit); do not claim a complete final independen
 
 - Diagnostic v0.2 tag/APK unchanged, SHA87dc5f08a1d0d5562720b834d460329a4cbc008f10072778d8e7f81540497a34.
 - v0.1 technical-preview release unchanged, SHA5a2461ce16324b793425aa3fa287840c64f55a9980f95385044839bd252b26da.
-- New intended prerelease: carplay-v0.2.0-diplay-preview, exact title
-  TS7 CarPlay Lite v0.2 Alpha — DiPlay Port Preview. Publish only after new CI passes.
+- Preview prerelease: carplay-v0.2.0-diplay-preview, exact title
+  TS7 CarPlay Lite v0.2 Alpha — DiPlay Port Preview. Only normal CI APK/source/checksum,
+  no instrumentation published; [release record](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v0.2.0-diplay-preview).
 - Production relay: https://ts7-carplay-lite-relay.vercel.app;RootDirectory backend.
   Preserve secret server-side. Version2 support deployment/live checks recorded in ledger.
 - Issue15 stays OPEN;Issues10/11 DEFERRED;Issue4 stays OPEN. Main not overwritten by experiment.

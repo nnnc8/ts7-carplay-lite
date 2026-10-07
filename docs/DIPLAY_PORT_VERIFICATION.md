@@ -18,10 +18,10 @@ Compile != runtime != iPhone != authentication != video.
 | Diagnostic privacy | PASS ReportSanitizerTest; diagnostic code/workflow unchanged |
 | Both backend routes | PASS16 unit tests; v0.1/v0.2 fixed13, diagnostic fixed5, privacy/auth deny |
 | Normal APK inspect | PASSAPI27/version0.2-alpha/permissions/actualARMv7/DiPlaypresence/no credentials/signature |
-| Android8.1 emulator | PASS initial87e9901: normal startup/authgate/BCcrypto/native link/originalSurface/reset/stop; final source rerun pending |
-| Hosted CI | PASS initial PR37604670362 / push37604605337; Diagnostic37604670078; final source rerun pending |
+| Android8.1 emulator | PASS hardened77ef5cb: normal startup/authgate/BCcrypto/native link/originalSurface/reset/stop |
+| Hosted CI | PASS hardened [PR37605750814](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37605750814) / [push37605744850](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37605744850), Diagnostic37605750770 |
 | Production relay | READY dpl_3eDB7nymbC7ug9LoeeENwf82JLJ1, staged both GET405/invalidPOST400 then promoted; both public routes retested PASS |
-| New release download | PENDING publish/hash/readback |
+| New release download | Normal CI APK, tag/source archive/SHA256SUMS at [preview release](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v0.2.0-diplay-preview); exact final source CI/hash/download proof recorded in release notes |
 
 ## Runtime smoke scope
 
@@ -46,7 +46,11 @@ No stolen credentials or proprietary receiver downloaded/copied. Provider unavai
 Initial CI normal activity startStatusOK/677ms; screenshot shows DiPlayv0.2Preview
 and Waiting for iPhone/authentication blocked/DiPlay ready. Instrumentation:
 BC crypto/native empty-name load PASS; OMX.google.h264.decoder720p90+frames,
-reset/recovery/stop PASS. Initial exactsource87e9901; final hardened source rerun needed.
+reset/recovery/stop PASS. Initial exactsource87e9901 and hardened77ef5cb rerun PASS.
+Final documentation refresh is not a code/API change; release gates still require
+CI passing that final source before the normal APK is published. Do not infer ARM/phone
+runtime from x86_64. Local BT MAC may be masked/unavailable and fails explicitly;
+authorized authentication alone does not prove TS7 Bluetooth/hotspot compatibility.
 
 Relay backend source is unchanged from87e9901 (16 tests). CLI upload was stopped
 when unexpected build artifacts were selected; .vercelignore added to allow backend

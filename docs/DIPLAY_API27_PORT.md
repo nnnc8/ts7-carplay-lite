@@ -54,6 +54,9 @@ hashes,2047 receiver +24auth +30gate +444DiPlay host fixtures,diagnostic sanitiz
 16 backend tests, signed/inspected normal APK.
 Initial v0.2 API27 normal startup/authblocked/BCcrypto/JNI+Surface/reset/stop PASS
 at87e9901, PR CI37604670362 and push37604605337; screenshots inspected.
-Final binding/buffer cleanup hardening will rerun at the exact release source.
+Hardened77ef5cb PR CI37605750814 / push37605744850 PASS; normal startup,
+crypto/native load, Surface/reset/recovery/stop remain PASS. Real BT/RFCOMM/AP
+has not run. Android masked local BT MAC returns LOCAL_BLUETOOTH_ADDRESS_UNAVAILABLE;
+a future legally supported hardware/API solution is required, no invented fallback.
 See DIPLAY_PORT_VERIFICATION.md for final CI/release/download proof; do not treat
 emulator x86_64 as real TS7 ARMv7 or actual iPhone verification.
