@@ -55,8 +55,10 @@ public final class PlatformReadinessRunner {
     public PlatformReadiness snapshot() { return report; }
     public boolean isRunning() { return running; }
     public boolean isBusy() {
-        return PlatformResourceGuard.isQuarantined() || RUNS.get() != 0 || WORKERS.get() != 0
-            || probes.hasPendingResources();
+        // Cleanup publishes quarantine before releasing its last worker/callback owner.
+        // Read quarantine last so observing no live owner cannot bypass that publication.
+        return RUNS.get() != 0 || WORKERS.get() != 0 || probes.hasPendingResources()
+            || PlatformResourceGuard.isQuarantined();
     }
 
     public void cancel() {

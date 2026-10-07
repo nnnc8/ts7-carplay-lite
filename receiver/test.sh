@@ -17,3 +17,4 @@ java -cp "$TASK_TEST" io.ts7.carplay.ReceiverTest "$TASK_ROOT/receiver/src/main/
 java -cp "$TASK_TEST" io.ts7.carplay.PlatformReadinessTest
 java -cp "$TASK_TEST" io.ts7.carplay.PlatformCleanupTest immediate
 java -cp "$TASK_TEST" io.ts7.carplay.PlatformCleanupTest late
+java -cp "$TASK_TEST" io.ts7.carplay.PlatformCleanupTest admission

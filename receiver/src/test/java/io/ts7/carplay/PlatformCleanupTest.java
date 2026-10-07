@@ -9,6 +9,24 @@ import static io.ts7.carplay.PlatformReadiness.Code.*;
 public final class PlatformCleanupTest {
     private static int checks;
     public static void main(String[] args) throws Exception {
+        if ("admission".equals(args[0])) {
+            AtomicInteger inspections = new AtomicInteger();
+            PlatformReadinessRunner admission = new PlatformReadinessRunner(new PlatformReadinessRunner.Probes() {
+                public PlatformReadiness.Code run(PlatformReadiness.Probe probe, PlatformReadinessRunner.Cancellation token) { return NONE; }
+                public boolean hasPendingResources() {
+                    inspections.incrementAndGet();
+                    // A late close publishes failure exactly between the admission checks.
+                    PlatformResourceGuard.quarantine(new Object());
+                    return false;
+                }
+            }, 40);
+            check(!admission.start(value -> {}, () -> {}), "quarantine published during admission blocks run");
+            check(inspections.get() == 1 && PlatformResourceGuard.isQuarantined(), "deterministic late publication");
+            PlatformReadinessRunner recreated = new PlatformReadinessRunner((probe, token) -> NONE, 40);
+            check(!recreated.start(value -> {}, () -> {}), "recreated runner remains blocked");
+            System.out.println("Platform cleanup admission PASS: " + checks + " assertions; late-publication race");
+            return;
+        }
         boolean late = "late".equals(args[0]);
         Object handle = new Object();
         CountDownLatch done = new CountDownLatch(1);
