@@ -20,6 +20,18 @@ function validPayload() {
 function request(payload) {
   return { method: "POST", headers: { "content-type": "application/json", "x-forwarded-proto": "https", "x-forwarded-for": "test" }, body: payload };
 }
+
+test("core preview version stays strict, backwards compatible and cannot claim CarPlay", () => {
+  const payload = validPayload();
+  assert.deepEqual(relay.validate(payload), []);
+  payload.appVersion = "0.1-alpha-core-preview";
+  assert.deepEqual(relay.validate(payload), []);
+  payload.carplayState = "STREAMING";
+  assert.ok(relay.validate(payload).includes("authentication boundary"));
+  payload.carplayState = "IDLE";
+  payload.appVersion = "0.2-working";
+  assert.ok(relay.validate(payload).includes("unsupported report version"));
+});
 function response() {
   return { statusCode: 200, setHeader() {}, end(body) { this.body = JSON.parse(body); } };
 }

@@ -17,6 +17,7 @@ public interface ReceiverCore {
     void disconnect();
     // Called after the renderer is ready to accept input, including after fresh reauthentication.
     void videoSinkReady();
+    default boolean renderedFrameConfirmed() { return false; }
     boolean reconnect();
     boolean requestKeyframe();
     boolean touch(int action, float normalizedX, float normalizedY);

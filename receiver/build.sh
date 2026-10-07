@@ -11,8 +11,14 @@ done
 [[ -f "$TASK_ROOT/receiver/src/main/assets/ts7-pattern.h264" ]] || { printf '%s\n' 'Run receiver/generate-pattern.sh' >&2; exit 1; }
 mkdir -p "$TASK_ROOT/build/receiver" "$TASK_ROOT/build/receiver-signing" "$TASK_ROOT/dist"
 TASK_BUILD="$(mktemp -d "$TASK_ROOT/build/receiver/build.XXXXXX")"
-TASK_NAME="TS7-CarPlay-Lite-v0.1-alpha"
+TASK_NAME="TS7-CarPlay-Lite-v0.1-alpha-core-preview"
+bash "$TASK_ROOT/receiver-core/build.sh"
+TASK_CORE="$TASK_ROOT/build/receiver-core"
 mkdir -p "$TASK_BUILD/classes" "$TASK_BUILD/dex" "$TASK_BUILD/generated/io/ts7/carplay"
+mkdir -p "$TASK_BUILD/legal-assets/licenses"
+cp "$TASK_ROOT/receiver/LICENSE" "$TASK_BUILD/legal-assets/licenses/GPL-3.0.txt"
+cp "$TASK_ROOT/receiver-core/licenses/"*.txt "$TASK_BUILD/legal-assets/licenses/"
+cp "$TASK_ROOT/THIRD_PARTY_NOTICES.md" "$TASK_BUILD/legal-assets/licenses/THIRD_PARTY_NOTICES.md"
 python3 "$TASK_ROOT/receiver/tools/build_config.py" \
   "$TASK_BUILD/generated/io/ts7/carplay/BuildConfig.java" "${TS7_CARPLAY_UPLOAD_URL:-}"
 cp "$TASK_ROOT/receiver/src/main/AndroidManifest.xml" "$TASK_BUILD/AndroidManifest.xml"
@@ -24,14 +30,15 @@ find "$TASK_ROOT/receiver/src/main/java" "$TASK_BUILD/generated" -name '*.java' 
 if [[ "${1:-}" == "--instrumented" ]]; then
   find "$TASK_ROOT/receiver/src/androidTest/java" -name '*.java' -type f -print | sort >> "$TASK_BUILD/sources.txt"
 fi
-javac -source 8 -target 8 -encoding UTF-8 -classpath "$TASK_JAR" -d "$TASK_BUILD/classes" @"$TASK_BUILD/sources.txt"
+javac --release 8 -encoding UTF-8 -classpath "$TASK_JAR:$TASK_CORE/core.jar:$TASK_CORE/kotlin-stdlib.jar:$TASK_CORE/bcprov.jar" -d "$TASK_BUILD/classes" @"$TASK_BUILD/sources.txt"
 find "$TASK_BUILD/classes" -name '*.class' -type f -print | sort > "$TASK_BUILD/classes.txt"
-"$TASK_TOOLS/d8" --lib "$TASK_JAR" --min-api 27 --output "$TASK_BUILD/dex" @"$TASK_BUILD/classes.txt"
+"$TASK_TOOLS/d8" --lib "$TASK_JAR" --min-api 27 --output "$TASK_BUILD/dex" @"$TASK_BUILD/classes.txt" \
+  "$TASK_CORE/core.jar" "$TASK_CORE/kotlin-stdlib.jar" "$TASK_CORE/bcprov.jar"
 "$TASK_TOOLS/aapt2" link -I "$TASK_JAR" --manifest "$TASK_BUILD/AndroidManifest.xml" \
-  -A "$TASK_ROOT/receiver/src/main/assets" -o "$TASK_BUILD/unsigned.apk"
+  -A "$TASK_ROOT/receiver/src/main/assets" -A "$TASK_BUILD/legal-assets" -o "$TASK_BUILD/unsigned.apk"
 (
   cd "$TASK_BUILD/dex"
-  zip -q -0 "$TASK_BUILD/unsigned.apk" classes.dex
+  zip -q -0 "$TASK_BUILD/unsigned.apk" classes*.dex
 )
 "$TASK_TOOLS/zipalign" -f 4 "$TASK_BUILD/unsigned.apk" "$TASK_BUILD/aligned.apk"
 TASK_KEY="${TS7_ALPHA_KEYSTORE:-$TASK_ROOT/build/receiver-signing/test.keystore}"

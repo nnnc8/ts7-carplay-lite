@@ -22,12 +22,15 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.nio.ByteBuffer;
+import io.ts7.carplay.auth.AuthenticationProvider;
+import io.ts7.carplay.auth.UnavailableAuthenticationProvider;
 
 public final class MainActivity extends Activity implements SurfaceHolder.Callback {
     private final Handler main = new Handler();
     private final EventRing events = new EventRing();
     private final SessionMachine session = new SessionMachine(events);
-    private final ReceiverCore core = new ReceiverCore.Unavailable();
+    private ReceiverCore core;
+    private final AuthenticationProvider authentication = new UnavailableAuthenticationProvider();
     private final RetryBudget reconnect = new RetryBudget();
     private final PcmAudioOutput audio = new PcmAudioOutput(events);
     private final float[] touch = new float[2];
@@ -67,6 +70,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
+        core = new LawfulReceiverCore(this, authentication);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -129,6 +133,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
 
     @Override protected void onDestroy() {
         stopPlayback(SessionMachine.Reason.USER_STOP);
+        authentication.close();
         main.removeCallbacksAndMessages(null);
         super.onDestroy();
     }
@@ -155,7 +160,8 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         String[] options = {"Connect iPhone (authentication unavailable)", "System Bluetooth pairing",
             "System Wi-Fi settings", "Video profile: " + profile.name(),
             "Developer test mode: " + (developer ? "ON" : "OFF"),
-            "Start developer H.264 pattern", "Stop playback"};
+            "Start developer H.264 pattern", "Stop playback",
+            "Authentication provider / safe hardware inventory"};
         new AlertDialog.Builder(this).setTitle("Settings · Technical preview")
             .setItems(options, (dialog, index) -> {
                 if (index == 0) connect();
@@ -168,7 +174,23 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                 }
                 if (index == 5) startPattern();
                 if (index == 6) stopPlayback(SessionMachine.Reason.USER_STOP);
+                if (index == 7) authenticationInventory();
             }).setNegativeButton("Close", null).show();
+    }
+
+    private void authenticationInventory() {
+        new AlertDialog.Builder(this).setTitle("Authentication: Unavailable")
+            .setMessage("This checks USB descriptors and I2C node metadata only. It never opens device nodes or reads credentials, firmware, certificates or keys. Results stay local; generic hardware does not prove MFi.")
+            .setPositiveButton("Check inventory", (dialog, which) -> new Thread(() -> {
+                final String result = authentication.getInfo().toString() + "\n\n"
+                    + AuthenticationInventoryProbe.probe(getApplicationContext()).toString();
+                main.post(() -> {
+                    if (!isFinishing() && !isDestroyed())
+                        new AlertDialog.Builder(this).setTitle("Safe hardware inventory")
+                            .setMessage(result).setPositiveButton("Close", null).show();
+                });
+            }, "ts7-auth-inventory").start())
+            .setNegativeButton("Cancel", null).show();
     }
 
     private void profiles() {
@@ -182,6 +204,15 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
 
     private void connect() {
         stopPlayback(SessionMachine.Reason.USER_STOP);
+        if (core.hasLawfulAuthentication() && checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            new AlertDialog.Builder(this).setTitle("Android 8.1 Wi-Fi permission")
+                .setMessage("Android 8.1 requires its location permission for local-only Wi-Fi hotspot setup. This app does not read GPS, location history or location telemetry. Bluetooth pairing is chosen in system settings.")
+                .setPositiveButton("Allow setup permission", (dialog, which) ->
+                    requestPermissions(new String[] {android.Manifest.permission.ACCESS_COARSE_LOCATION}, 27))
+                .setNegativeButton("Cancel", null).show();
+            return; // User explicitly retries Connect after the system permission result.
+        }
         session.begin(core.hasLawfulAuthentication());
         if (core.hasLawfulAuthentication()) {
             reconnect.reset();
@@ -234,7 +265,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                 public void firstFrame() {
                     main.post(() -> {
                         if (generation != currentGeneration) return;
-                        if ("CARPLAY".equals(mode) && session.authenticated()) {
+                        if ("CARPLAY".equals(mode) && session.authenticated() && core.renderedFrameConfirmed()) {
                             if (session.state() == SessionMachine.State.CARPLAY_NEGOTIATING
                                     || session.state() == SessionMachine.State.RECOVERING) {
                                 session.firstCarPlayFrame();
@@ -255,7 +286,10 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                 public void failed(SessionMachine.Reason reason) {
                     main.post(() -> {
                         if (generation != currentGeneration) return;
-                        stopPlayback(reason);
+                        if ("CARPLAY".equals(mode) && coreActive)
+                            handleDisconnect(connectionGeneration, reason == SessionMachine.Reason.DECODER_ERROR
+                                ? SessionMachine.Reason.DECODER_FAILED : reason);
+                        else stopPlayback(reason);
                         Toast.makeText(MainActivity.this, "Playback stopped: " + reason.name(), Toast.LENGTH_LONG).show();
                     });
                 }
@@ -395,11 +429,18 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
             if (!recoveryCurrent(expectedConnection, expectedRecovery)) return;
             reconnect.nextDelayMs(); // Consume only an attempt actually dispatched.
             reconnectCount++;
-            core.reconnect(); // Acceptance is not evidence of recovery: core must resume authenticated media.
+            // New listener token also invalidates UI posts queued by the previous core epoch.
+            int nextConnection = ++connectionGeneration;
+            try { core.connect(profile, coreListener(nextConnection)); }
+            catch (IllegalStateException unavailable) {
+                session.exhausted();
+                stopPlayback(SessionMachine.Reason.AUTH_FAILED);
+                return;
+            }
             // Let synchronous provider callbacks posted to the UI complete first.
             main.post(() -> {
-                if (recoveryCurrent(expectedConnection, expectedRecovery))
-                    scheduleReconnect(expectedConnection, expectedRecovery);
+                if (recoveryCurrent(nextConnection, expectedRecovery))
+                    scheduleReconnect(nextConnection, expectedRecovery);
             });
         }, delay);
     }

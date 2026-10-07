@@ -42,14 +42,14 @@ jobs:
       - name: Upload requested alpha APK
         uses: actions/upload-artifact@v4
         with:
-          name: TS7-CarPlay-Lite-v0.1-alpha.apk
-          path: dist/TS7-CarPlay-Lite-v0.1-alpha.apk
+          name: TS7-CarPlay-Lite-v0.1-alpha-core-preview.apk
+          path: dist/TS7-CarPlay-Lite-v0.1-alpha-core-preview.apk
           if-no-files-found: error
       - name: Upload separate instrumentation APK
         uses: actions/upload-artifact@v4
         with:
           name: TS7-Alpha-Instrumentation
-          path: dist/TS7-CarPlay-Lite-v0.1-alpha-instrumented.apk
+          path: dist/TS7-CarPlay-Lite-v0.1-alpha-core-preview-instrumented.apk
           if-no-files-found: error
 
   android-81-surface:

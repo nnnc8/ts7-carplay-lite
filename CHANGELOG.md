@@ -1,5 +1,16 @@
 # Changelog
 
+## Phase 1.5 lawful core integration — in progress, 2026-10-07
+
+- Synced real TS7 upload #13 /6030102288: OMX.sprd.h264.decoder,1280×720,target30fps,
+  measured29.850746fps,8380rendered frames,7frame/packet drops,queue0,restarts0,
+  RAM455MB/lowMemory=false,lastPlaybackReasonNONE. Real short-run Surface output
+  VERIFIED; approximately4m41s is a frame-equivalent estimate, not a whole-run timer.
+- TEST_PATTERN remains distinct from CarPlay;15/30/60-minute sessions and actual
+  wireless/auth/audio/touch/reconnect remain unverified. #4/#17 stay OPEN.
+- Locked the proven renderer sources/asset to baseline4e98000; started lawful
+  xcertplay API27/core/transport/provider work on feature/lawful-carplay-core.
+
 ## CarPlay Lite v0.1-alpha technical preview — 2026-10-07
 
 - Advanced to wireless-only Phase 1 after captured Diagnostic v0.2 report; wired/USB issues remain deferred.

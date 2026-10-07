@@ -18,6 +18,10 @@ public final class RendererInstrumentation extends Instrumentation {
             MainActivity app = activity;
             Thread.sleep(1000);
             require(app.rendererForTest() == null && "IDLE".equals(app.modeForTest()), "Idle startup must not initialize decoder");
+            CoreRuntimeChecks.run(getTargetContext());
+            Bundle coreStatus = new Bundle();
+            coreStatus.putString("progress", "CORE_API27_RUNTIME_PASS");
+            sendStatus(1, coreStatus);
             runOnMainSync(() -> { app.enableDeveloperTest(); app.startPattern(); });
             long deadline = System.currentTimeMillis() + 20000;
             SurfaceRenderer renderer = app.rendererForTest();

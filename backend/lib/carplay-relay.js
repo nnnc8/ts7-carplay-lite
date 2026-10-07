@@ -10,7 +10,7 @@ const FIELDS = [
   "audioUnderruns", "events",
 ];
 const STATES = ["IDLE", "BT_DISCOVERY", "BT_CONNECTED", "WIFI_CONNECTING", "WIFI_CONNECTED", "CARPLAY_NEGOTIATING", "STREAMING", "RECOVERING", "ERROR"];
-const REASONS = ["NONE", "BLOCKED_BY_AUTHENTICATION_REQUIREMENT", "NETWORK_LOSS", "SESSION_LOST", "DECODER_ERROR", "VIDEO_STALL", "RECOVERY_EXHAUSTED", "SURFACE_LOST", "USER_STOP", "INPUT_REJECTED"];
+const REASONS = ["NONE", "BLOCKED_BY_AUTHENTICATION_REQUIREMENT", "NETWORK_LOSS", "SESSION_LOST", "DECODER_ERROR", "VIDEO_STALL", "RECOVERY_EXHAUSTED", "SURFACE_LOST", "USER_STOP", "INPUT_REJECTED", "AUTH_FAILED", "NETWORK_LOST", "SESSION_CLOSED", "DECODER_FAILED"];
 const EVENTS = new Set([
   "APP_OPEN", "BT_CONNECT", "BT_DISCONNECT", "WIFI_CONNECT", "NETWORK_LOSS", "AUTHENTICATION_BLOCKED",
   "CARPLAY_SESSION_START", "SESSION_LOST", "VIDEO_SPS_RECEIVED", "VIDEO_PPS_RECEIVED", "DECODER_CONFIGURED",
@@ -27,7 +27,7 @@ function exactKeys(value, fields) {
 function validate(payload) {
   if (!exactKeys(payload, FIELDS)) return ["missing or unknown field"];
   const errors = [];
-  if (payload.schemaVersion !== 1 || payload.reportType !== "carplay-alpha" || payload.appVersion !== "0.1-alpha") errors.push("unsupported report version");
+  if (payload.schemaVersion !== 1 || payload.reportType !== "carplay-alpha" || !["0.1-alpha", "0.1-alpha-core-preview"].includes(payload.appVersion)) errors.push("unsupported report version");
   if (typeof payload.timestamp !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(payload.timestamp)
       || !Number.isFinite(Date.parse(payload.timestamp))) errors.push("invalid timestamp");
   if (!["IDLE", "TEST_PATTERN", "CARPLAY"].includes(payload.mode) || !STATES.includes(payload.carplayState)) errors.push("invalid session state");
@@ -67,7 +67,7 @@ function sanitize(payload) {
 }
 
 function format(payload) {
-  const lines = ["## TS7 CarPlay Lite v0.1-alpha diagnostics", "",
+  const lines = ["## TS7 CarPlay Lite " + payload.appVersion + " diagnostics", "",
     "**TECHNICAL PREVIEW — NOT YET A FUNCTIONAL CARPLAY RECEIVER**", "",
     "The TEST_PATTERN is synthetic H.264, not iPhone/CarPlay video.", ""];
   for (const field of FIELDS) if (field !== "events") lines.push(`- ${field}: ${payload[field]}`);

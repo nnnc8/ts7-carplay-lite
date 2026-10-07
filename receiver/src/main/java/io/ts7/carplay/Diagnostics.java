@@ -21,7 +21,7 @@ public final class Diagnostics {
         // Decoder identifiers have a narrow grammar; never serialize arbitrary exception text.
         if (!decoder.matches("[A-Za-z0-9_.-]{1,128}")) decoder = "UNKNOWN";
         StringBuilder json = new StringBuilder(20000);
-        json.append("{\"schemaVersion\":1,\"reportType\":\"carplay-alpha\",\"appVersion\":\"0.1-alpha\"")
+        json.append("{\"schemaVersion\":1,\"reportType\":\"carplay-alpha\",\"appVersion\":\"0.1-alpha-core-preview\"")
             .append(",\"timestamp\":\"").append(time.format(new Date())).append('"')
             .append(",\"mode\":\"").append(mode).append('"')
             .append(",\"carplayState\":\"").append(session.state().name()).append('"')

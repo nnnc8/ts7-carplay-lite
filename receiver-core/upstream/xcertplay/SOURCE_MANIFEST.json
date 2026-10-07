@@ -1,0 +1,369 @@
+{
+  "upstream": "https://github.com/shilapi/xcertplay",
+  "revision": "17c92439413638dfd1d7f91d7e1c2e7358398762",
+  "license": "GPL-3.0",
+  "files": [
+    {
+      "upstreamPath": "LICENSE",
+      "path": "receiver-core/upstream/xcertplay/LICENSE",
+      "upstreamSha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "modified": false,
+      "portSha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/session/Iap2Session.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/iap2/session/Iap2Session.kt",
+      "upstreamSha256": "a47b220c84dfbdf1d126b17d90034ca81ae868b151486968dacd3e6ab2a7b4cd",
+      "modified": true,
+      "portSha256": "ed0dd75d12c7d9eb525f99f07113fdef605dbde2ccd555e50275e5b627b12357"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/session/Iap2FileTransferReceiver.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/iap2/session/Iap2FileTransferReceiver.kt",
+      "upstreamSha256": "5fc713eafe4cff7d43399f328693a2e4d645e15f1502e83aae8e9ccc4560d4ce",
+      "modified": false,
+      "portSha256": "5fc713eafe4cff7d43399f328693a2e4d645e15f1502e83aae8e9ccc4560d4ce"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/Srp6a.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/Srp6a.kt",
+      "upstreamSha256": "1386e5efac098afc16d1dd8af503a05bcfce3fdc8ad12255fc2f2ff8916c489e",
+      "modified": false,
+      "portSha256": "1386e5efac098afc16d1dd8af503a05bcfce3fdc8ad12255fc2f2ff8916c489e"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayCrypto.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/AirPlayCrypto.kt",
+      "upstreamSha256": "fd055253a47874c48005d91c56d4cca7e108610b73d750006c0072f8beafc89d",
+      "modified": false,
+      "portSha256": "fd055253a47874c48005d91c56d4cca7e108610b73d750006c0072f8beafc89d"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/RtspMessage.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/RtspMessage.kt",
+      "upstreamSha256": "ff1b6cb148f22f792e03be4e0754f83d1391f850cd635067605703ab737fceaa",
+      "modified": true,
+      "portSha256": "24935811087952303242477ec868036b550edade0dd392cdc2904617a7902e36"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/Tlv8Codec.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/Tlv8Codec.kt",
+      "upstreamSha256": "8f2afc6b59bffc8b9325f94933e38d9a77f341bcf3b42224d4f198e9303b1c65",
+      "modified": true,
+      "portSha256": "4b388b0ad57c7e0e683b9d4fe5a023a43649f44fb3f44dc639d78e0bd1521a92"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/ControlCipher.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/ControlCipher.kt",
+      "upstreamSha256": "7ff47dfbf6f5126ab3ce20671c64d36048c44cc2d1b1fd5701b5357cd6223329",
+      "modified": false,
+      "portSha256": "7ff47dfbf6f5126ab3ce20671c64d36048c44cc2d1b1fd5701b5357cd6223329"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/PairingStore.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/PairingStore.kt",
+      "upstreamSha256": "b28e3f9a20999770e37df145c5cc4279a40e1061e7b386727497a6af833905d1",
+      "modified": false,
+      "portSha256": "b28e3f9a20999770e37df145c5cc4279a40e1061e7b386727497a6af833905d1"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/BplistCodec.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/BplistCodec.kt",
+      "upstreamSha256": "af2596af810be122c6966179d3891ed5831818a8408955fa09aa037ada748682",
+      "modified": true,
+      "portSha256": "3ac5a663044936e9687e5b00467979bed5818329a00da07787f06e9ebc0a64ad"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AudioStream.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/AudioStream.kt",
+      "upstreamSha256": "bfa3af0c5a53355c3209d52f2541dcdd3ac033925c60334aa333a29e6be0ff5d",
+      "modified": true,
+      "portSha256": "ecd962e0bbd5c6b1b25b17f736adcf81c3983c67288656418bb8dfa8a7232994"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/MfiSapAuthSetup.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/MfiSapAuthSetup.kt",
+      "upstreamSha256": "d9d472f478e780f8f110cef4bd87dd969867a67b5d08d8a3d5552648801e7e9d",
+      "modified": false,
+      "portSha256": "d9d472f478e780f8f110cef4bd87dd969867a67b5d08d8a3d5552648801e7e9d"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/PairSetup.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/PairSetup.kt",
+      "upstreamSha256": "01810aa91b85753d7972eccb874eea6f405dbd1c23af9475fa1e13417e47bd58",
+      "modified": false,
+      "portSha256": "01810aa91b85753d7972eccb874eea6f405dbd1c23af9475fa1e13417e47bd58"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/SafeArea.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/SafeArea.kt",
+      "upstreamSha256": "fd58cea61937342b237e528c4de5f537eadf23a5c5c5c34186bd39208ed6b320",
+      "modified": false,
+      "portSha256": "fd58cea61937342b237e528c4de5f537eadf23a5c5c5c34186bd39208ed6b320"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/Bytes.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/Bytes.kt",
+      "upstreamSha256": "528d41d464e27d71ba3095017dbeb1fe421a5490f4f9f3532a3f3f7abc89b3f6",
+      "modified": false,
+      "portSha256": "528d41d464e27d71ba3095017dbeb1fe421a5490f4f9f3532a3f3f7abc89b3f6"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/CarPlayMediaEngine.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/CarPlayMediaEngine.kt",
+      "upstreamSha256": "b8d19e897d447d87463ca2faadbcb60603ea7d05a1771864e23586e192b6a3cc",
+      "modified": true,
+      "portSha256": "609ac93a6a2009d703f7198280edb90a3e5867ae1f13bdc7035417ed474d3c0e"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayHid.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/AirPlayHid.kt",
+      "upstreamSha256": "4231f595bd1085a453c742d2bbaad4c4a4e2b58e860a6f6ae7710be37f344344",
+      "modified": false,
+      "portSha256": "4231f595bd1085a453c742d2bbaad4c4a4e2b58e860a6f6ae7710be37f344344"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/PairVerify.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/PairVerify.kt",
+      "upstreamSha256": "23aba19de3e849df4b7f7f5dd17c9bfbc745c78fcf3795d395a0361ac17dbd45",
+      "modified": false,
+      "portSha256": "23aba19de3e849df4b7f7f5dd17c9bfbc745c78fcf3795d395a0361ac17dbd45"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayConfig.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/AirPlayConfig.kt",
+      "upstreamSha256": "4090128b71ddf953d9168b5f7fcbace6fca2f116b01cf08c6e7e88d3fdf6477d",
+      "modified": false,
+      "portSha256": "4090128b71ddf953d9168b5f7fcbace6fca2f116b01cf08c6e7e88d3fdf6477d"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/MicrophonePacketizer.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/MicrophonePacketizer.kt",
+      "upstreamSha256": "91ceb77a14c34f6fe9303ac52fddea33c0016489060f49a88282a6fbcf969d93",
+      "modified": false,
+      "portSha256": "91ceb77a14c34f6fe9303ac52fddea33c0016489060f49a88282a6fbcf969d93"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayInfoPlist.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/AirPlayInfoPlist.kt",
+      "upstreamSha256": "8023caa114badbabb1b618fe23690c10a5b4216d298e60f83e15f2e017709215",
+      "modified": false,
+      "portSha256": "8023caa114badbabb1b618fe23690c10a5b4216d298e60f83e15f2e017709215"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayIapTunnelStream.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/AirPlayIapTunnelStream.kt",
+      "upstreamSha256": "2fe77dd295f8acf0f31db35e928f593893eea8269fe7699be105f44b1e039d80",
+      "modified": false,
+      "portSha256": "2fe77dd295f8acf0f31db35e928f593893eea8269fe7699be105f44b1e039d80"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayIdentity.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/AirPlayIdentity.kt",
+      "upstreamSha256": "b28c3d82753446efcbfee49eb848e86489ecf5209f8b1997f8969f82a73393c8",
+      "modified": false,
+      "portSha256": "b28c3d82753446efcbfee49eb848e86489ecf5209f8b1997f8969f82a73393c8"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayDisplaySettings.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/AirPlayDisplaySettings.kt",
+      "upstreamSha256": "93c20e56fcc6fc54b5898944123d955132d2276bc61591e23fcbcb33b6b00744",
+      "modified": false,
+      "portSha256": "93c20e56fcc6fc54b5898944123d955132d2276bc61591e23fcbcb33b6b00744"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/IapTunnel.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/IapTunnel.kt",
+      "upstreamSha256": "684ec3705d615cd0efbf2fb32b93b9fecfa91cd9ad989b13f17442240b3606e9",
+      "modified": false,
+      "portSha256": "684ec3705d615cd0efbf2fb32b93b9fecfa91cd9ad989b13f17442240b3606e9"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/NtpClock.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/NtpClock.kt",
+      "upstreamSha256": "33ec47e165c015319b1a9838f7d89db491c78cd83c43eb1fc09b6fe9c70e91d7",
+      "modified": false,
+      "portSha256": "33ec47e165c015319b1a9838f7d89db491c78cd83c43eb1fc09b6fe9c70e91d7"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/ScreenStream.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/ScreenStream.kt",
+      "upstreamSha256": "f99aa9ac189d3a2f09f8dfd400f4de30de64ba4affcd8a1187f215a4e8a636c3",
+      "modified": true,
+      "portSha256": "7768a8610601b15c4e365ef0de4399fbcf9acad4ddea82c9f1703edffdd876c6"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/CarPlayDisplayScale.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/CarPlayDisplayScale.kt",
+      "upstreamSha256": "13d3f7b74d36cddb176a3b09f9453f6f214a22b94e5faf07546c8d1c10bbb49c",
+      "modified": false,
+      "portSha256": "13d3f7b74d36cddb176a3b09f9453f6f214a22b94e5faf07546c8d1c10bbb49c"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlaySession.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/AirPlaySession.kt",
+      "upstreamSha256": "3b8bff3847e2f40c1ec5044e679f48243354ca3ac42dcb41135471578be84175",
+      "modified": true,
+      "portSha256": "b857804c3ea04b10e713fdcc27a641d05756c58726d9f21bc7d5c05795baf88a"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/message/Iap2Messages.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/iap2/message/Iap2Messages.kt",
+      "upstreamSha256": "21699bf0d7a41ec03f792a79dafeb700e4e754f3cada50fb52f689ff246dc327",
+      "modified": false,
+      "portSha256": "21699bf0d7a41ec03f792a79dafeb700e4e754f3cada50fb52f689ff246dc327"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/body/Iap2BodyBuilder.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/iap2/body/Iap2BodyBuilder.kt",
+      "upstreamSha256": "1582474db22b718954050cf3e79cd10bf18647b831a6cfee79072efe8167755b",
+      "modified": false,
+      "portSha256": "1582474db22b718954050cf3e79cd10bf18647b831a6cfee79072efe8167755b"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/body/Iap2BodyReader.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/iap2/body/Iap2BodyReader.kt",
+      "upstreamSha256": "2d292fb9d36ae5ed4bcc846cde59b85f7d7bcfe3da35c9f958ab6f022f8da146",
+      "modified": false,
+      "portSha256": "2d292fb9d36ae5ed4bcc846cde59b85f7d7bcfe3da35c9f958ab6f022f8da146"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/catalog/Iap2Endpoint.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/iap2/catalog/Iap2Endpoint.kt",
+      "upstreamSha256": "c48680358784c52aeb1ca6a1ef7e1c5a4e01cc0e579d6784408c6b3abbb92730",
+      "modified": false,
+      "portSha256": "c48680358784c52aeb1ca6a1ef7e1c5a4e01cc0e579d6784408c6b3abbb92730"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/wire/Iap2Wire.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/iap2/wire/Iap2Wire.kt",
+      "upstreamSha256": "f6fb6707e0ba0a21bed9cd08cfdc1557745cf66a5acff0c03358af9a98690af6",
+      "modified": false,
+      "portSha256": "f6fb6707e0ba0a21bed9cd08cfdc1557745cf66a5acff0c03358af9a98690af6"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/trace/Iap2FrameFormatter.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/iap2/trace/Iap2FrameFormatter.kt",
+      "upstreamSha256": "f40be36ae5df9bc21c2cdb1136df1b14ef3f000d1d81570aa25ecb743e0c49bf",
+      "modified": false,
+      "portSha256": "f40be36ae5df9bc21c2cdb1136df1b14ef3f000d1d81570aa25ecb743e0c49bf"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/wire/Iap2CsmFramer.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/iap2/wire/Iap2CsmFramer.kt",
+      "upstreamSha256": "1409b90cda3637d266fefdfd6f566d52143cdfbd88d5b447cf63bb6241afb7e5",
+      "modified": false,
+      "portSha256": "1409b90cda3637d266fefdfd6f566d52143cdfbd88d5b447cf63bb6241afb7e5"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/wire/Iap2WireCodec.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/iap2/wire/Iap2WireCodec.kt",
+      "upstreamSha256": "860865941159f56bd11172682ee504f623f249a1b052ce8542ddf90a269703f5",
+      "modified": false,
+      "portSha256": "860865941159f56bd11172682ee504f623f249a1b052ce8542ddf90a269703f5"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/BlockingDuplexByteStream.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/transport/BlockingDuplexByteStream.kt",
+      "upstreamSha256": "1425939b1e54c6963b90a563177f63416e9ee7505b80285714d3da06e3fe27ed",
+      "modified": false,
+      "portSha256": "1425939b1e54c6963b90a563177f63416e9ee7505b80285714d3da06e3fe27ed"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/BluetoothRfcommDuplexStream.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/transport/BluetoothRfcommDuplexStream.kt",
+      "upstreamSha256": "d98d350914abf514eedb27070cf16c20d770e692f09dc05d0bf20d9254483045",
+      "modified": false,
+      "portSha256": "d98d350914abf514eedb27070cf16c20d770e692f09dc05d0bf20d9254483045"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/I2cTransport.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/transport/I2cTransport.kt",
+      "upstreamSha256": "c44424ddd9fe471ca816a0f6c314e4eced3ff59ab2aaf56274907cf1341f5562",
+      "modified": false,
+      "portSha256": "c44424ddd9fe471ca816a0f6c314e4eced3ff59ab2aaf56274907cf1341f5562"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2CsmChannel.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/transport/Iap2CsmChannel.kt",
+      "upstreamSha256": "45935504eca4ae2e713f2c62dbfa3e7d75a34f77e1033f607c754d7e7c42e026",
+      "modified": false,
+      "portSha256": "45935504eca4ae2e713f2c62dbfa3e7d75a34f77e1033f607c754d7e7c42e026"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2IdentificationClient.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/transport/Iap2IdentificationClient.kt",
+      "upstreamSha256": "cefc6b8eae2c13b9ac8a384eb34f546d6421b935650b6b1ece40d7fba498c436",
+      "modified": true,
+      "portSha256": "2023abc941da9aafa4794e346188ebd9416d63f3b0e78dacb6add994ed13e54f"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2LinkChannel.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/transport/Iap2LinkChannel.kt",
+      "upstreamSha256": "5a1c3427fd35bc4e5d16f2debd88055ff4f0fb113535b1bc3999cddda456ca6d",
+      "modified": false,
+      "portSha256": "5a1c3427fd35bc4e5d16f2debd88055ff4f0fb113535b1bc3999cddda456ca6d"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2LinkEngine.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/transport/Iap2LinkEngine.kt",
+      "upstreamSha256": "991d8d617e5b9d9daba2985cee6f402878815f382acaaafe7cc3e82cb2c20152",
+      "modified": false,
+      "portSha256": "991d8d617e5b9d9daba2985cee6f402878815f382acaaafe7cc3e82cb2c20152"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2LocationClient.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/transport/Iap2LocationClient.kt",
+      "upstreamSha256": "72f601417bba7e1fe011836e98dca16c6dd0ec9ba165618d13e385a3a2783d63",
+      "modified": false,
+      "portSha256": "72f601417bba7e1fe011836e98dca16c6dd0ec9ba165618d13e385a3a2783d63"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2WiredControlClient.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/transport/Iap2WiredControlClient.kt",
+      "upstreamSha256": "a90ccd69ac5a33a32bd50c7c504c282c18bfd8ab4a666da1953b76ded7df14cd",
+      "modified": true,
+      "portSha256": "556090118efeb9e56c8457ac7d3d29b8cba12971e2d2e2e518ac30a3fc3f2614"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2WirelessControlClient.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/transport/Iap2WirelessControlClient.kt",
+      "upstreamSha256": "3d841af87f489ef3d4f91bf859eb95ede40c6b0aae85739858d53e0d338b9482",
+      "modified": true,
+      "portSha256": "9e5adef1c22189c6dea5a95915accbdc2d355af6005ca2e08dedbc36c8c2ec5e"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/media/MediaCodecSupport.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/media/MediaCodecSupport.kt",
+      "upstreamSha256": "0a96f0b24ccb8c15068dd896998b92a81eb6e0dd8a40f00ce718393edf87e0ef",
+      "modified": false,
+      "portSha256": "0a96f0b24ccb8c15068dd896998b92a81eb6e0dd8a40f00ce718393edf87e0ef"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/mfi/Iap2MfiAuthenticationClient.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/mfi/Iap2MfiAuthenticationClient.kt",
+      "upstreamSha256": "e0d73aa19f29f4935519bb448f89380d3b161c8e323ff0848874f821bf958a6a",
+      "modified": false,
+      "portSha256": "e0d73aa19f29f4935519bb448f89380d3b161c8e323ff0848874f821bf958a6a"
+    },
+    {
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/mfi/MfiAuthenticationClient.kt",
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/mfi/MfiAuthenticationClient.kt",
+      "upstreamSha256": "d38cedb32804eec7798911be86e8fda753237a035fccba3db6cb0ee276e4fc1f",
+      "modified": true,
+      "portSha256": "7ed7f48f75f3c9d6bc3e9fb6ef789a4ba3556d1c5645fc38a3d28d54fda512df"
+    }
+  ],
+  "localAdditions": [
+    {
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/airplay/SilentProtocolLog.kt",
+      "license": "GPL-3.0-only",
+      "portSha256": "3718725a6dac902a4a2c77e7a702461a28a56a5ceac7b5644e96105254c74a61"
+    },
+    {
+      "path": "receiver-core/upstream/xcertplay/src/com/shilapi/xcertplay/transport/ProtocolTransportException.kt",
+      "license": "GPL-3.0-only",
+      "portSha256": "395fa52ec4b6c1f6dd2dd5a800bbda861b55dc3cb6366f8bdc47fe882a1b0839"
+    }
+  ]
+}

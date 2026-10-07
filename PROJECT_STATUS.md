@@ -8,6 +8,14 @@ Last updated: 2026-10-07
 
 Status: **IMPLEMENTATION_IN_PROGRESS**
 
+Subphase: **Phase 1.5 — Lawful protocol/core integration**. Work branch:
+`feature/lawful-carplay-core`, based on latest main 4e98000. Renderer is frozen;
+this round prioritizes xcertplay API27 feasibility/port, protocol/transport adapters
+and an external lawful authentication-provider boundary, not synthetic-video tuning.
+
+Renderer: **REAL TS7 SHORT-RUN VERIFIED**. Authentication: **BLOCKED**, integration
+work continues; no lawful provider is configured and real iPhone video remains blocked.
+
 Phase 0 basic report gate is COMPLETE. [Captured real-device v0.2 report](https://github.com/nnnc8/ts7-carplay-lite/issues/5#issuecomment-6018940228) includes AVC instantiate PASS, explicitly without decoding input. Issue #4 remains OPEN for sustained operation.
 
 v0.1-alpha is **TECHNICAL PREVIEW / NOT YET A FUNCTIONAL CARPLAY RECEIVER**. Original shell/renderer and wireless integration boundaries are implemented; lawful protocol/authentication provider is unavailable: **BLOCKED_BY_AUTHENTICATION_REQUIREMENT**. No simulated iPhone session, extracted identity or proprietary receiver.
@@ -24,12 +32,32 @@ v0.1-alpha is **TECHNICAL PREVIEW / NOT YET A FUNCTIONAL CARPLAY RECEIVER**. Ori
 | Graphics | OpenGL ES 3.2 | VERIFIED reported version |
 | Wi-Fi | 2437 MHz / 65 Mbps / −41 dBm, enabled/connected | VERIFIED snapshot, load behavior UNKNOWN |
 | Bluetooth | adapter present/enabled; BLE feature | VERIFIED inventory, bootstrap UNKNOWN |
-| AVC | OMX.sprd.h264.decoder; advanced instantiate PASS (46 ms probe) | VERIFIED enumeration/initialization only |
+| AVC | OMX.sprd.h264.decoder; advanced instantiate PASS (46 ms probe); now 8380 real-device rendered frames at 1280×720 / approximately 29.85 fps | VERIFIED initialization and short-run Surface output; not CarPlay |
 | Advertised AVC | width 64–1920; height 64–1088; bitrate 1–50M; fps 0–960 | OBSERVED capability range, not sustain guarantee |
 | USB | deviceCount=0 | VERIFIED that instant; no inference about MFi hardware |
 | Earlier About screen | Quad-SL8141E | OBSERVED label, not exact silicon proof |
 
-UNKNOWN: full wireless session compatibility, legal authentication mechanism, sustained H.264, real audio/touch, reconnect and RAM trend under load.
+UNKNOWN: full wireless session compatibility, legal authentication mechanism, 15/30/60-minute sustained H.264, real audio/touch, reconnect and RAM trend under load.
+
+## Real TS7 short-run renderer evidence — 2026-10-07
+
+[Explicit user upload #13 / 6030102288](https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6030102288):
+TEST_PATTERN, CarPlay IDLE, authentication blocked; decoder OMX.sprd.h264.decoder,
+1280×720, target30fps, measured29.850746268656717fps, renderedFrames8380,
+droppedVideoFrames7, droppedPackets7, videoQueueDepth0, decoderRestartCount0,
+availableRam455MB, lowMemory=false, lastPlaybackReason=NONE; reported pipeline latency193ms.
+
+VERIFIED: real TS7 H.264 → OMX.sprd.h264.decoder → MediaCodec → Surface short-run
+output. At the reported fps, 8380 frames correspond to about281seconds / 4m41s;
+this duration is a frame-based estimate, not an uploaded continuous wall-clock timer.
+The renderer counter belongs to the current renderer instance and resets on a new
+playback; the event log also records an earlier stop/start. FPS is a recent window,
+not a whole-run average. OBSERVED:7/8380 rendered-frame-scale drops, approximately0.084%,
+not a protocol-loss probability. 15/30/60-minute behavior UNKNOWN. This is not a
+full CarPlay/audio/touch/reconnect verification. #4 and #17 remain OPEN.
+
+The upload also proves the real alpha #13 relay write succeeded; prior "pending"
+statements below describe the earlier publication-time verification only.
 
 ## Implemented this round
 
@@ -55,7 +83,7 @@ UNKNOWN: full wireless session compatibility, legal authentication mechanism, su
 | Actual API 27 MediaCodec Surface | PASS emulator: 90+ frames, 720p, stream-reset recovery and stop; OMX.google.h264.decoder, NOT SPRD/TS7 |
 | PR CI | PASS [37495146916](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37495146916); preserved diagnostic [37495147056](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37495147056) PASS |
 | main CI | PASS [alpha + Surface 37496485921](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37496485921) / [diagnostic 37496485898](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37496485898), release source f4a7020 |
-| Real TS7 alpha rendering | NOT YET |
+| Real TS7 alpha rendering | VERIFIED short-run:1280×720 / OMX.sprd.h264.decoder / approximately29.85fps /8380frames; about4m41s frame-equivalent |
 | Real wireless CarPlay | BLOCKED: lawful authentication/core |
 | Real audio/touch/Siri | NOT YET / Siri deferred |
 | 30/60-minute session gates | NOT YET |

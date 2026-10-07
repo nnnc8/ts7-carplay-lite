@@ -89,3 +89,17 @@ Status: Accepted, real-device unverified
 One codec worker; finite 1/2/5 s retries, 3 s frame stall watchdog and vendor-call hang detection. Never spawn replacement while prior vendor worker is stuck. Surface teardown/lifecycle must cancel and prevent new rendering, with bounded wait instead of indefinite UI freeze. Unresponsive vendor calls cannot be force-killed safely; contain/report limitation.
 
 AudioTrack PCM sink and normalized single-finger touch are integration boundaries, not verified CarPlay delivery. No microphone permission; Siri postponed. Long-session/reconnect milestones require lawful real-device evidence.
+
+## ADR-014 — Freeze real-device renderer; lawful core integration
+
+Status: Accepted, explicit Phase1.5 user direction
+
+Real #13 upload6030102288 verifies1280×720/OMX.sprd.h264.decoder/approximately29.85fps
+and8380frames, about4m41s frame-equivalent. This is TEST_PATTERN, not CarPlay.
+Keep #4/#17 open for long-run/wireless acceptance. Lock renderer/queue/config/asset
+hashes in receiver-core/renderer-lock.json; all new protocol media uses adapters,
+never a replacement pixel-copy or codec architecture. Deep-audit pinned xcertplay
+17c92439413638dfd1d7f91d7e1c2e7358398762 and port lawful reusable core separately from
+its UI/Android media/services. Authentication provenance must be explicit; unavailable
+hardware/remote contracts fail closed and inventory only checks non-secret presence,
+never reads a bus/register/certificate/key or infers MFi absence from USB0.
