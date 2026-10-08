@@ -2,7 +2,22 @@
 
 Updated: 2026-10-08.
 
-## Current phase
+## Current phase — full Fork primary receiver
+
+Main engineering is now [nnnc8/ts7-diplay](https://github.com/nnnc8/ts7-diplay),
+the actual full GitHub Fork of DiPlay-Legacy-Android at c8884adcc75bfda3c134db63877bd6c6f83beb74.
+Untouched upstream baseline and TS7 compatibility branches are separate. The
+original UI, modules, controller/media/audio/touch and shared wired source are
+preserved there; optimization follows an accepted measured baseline, not before.
+
+This Lite project is diagnostic / hardware-data / regression / history only.
+All releases, previous commits, Diagnostic v0.2, relay and Issue data remain.
+PR18 remains OPEN/unmerged; main is not overwritten. No old receiver code,
+runtime credentials or production relay are changed by this documentation handoff.
+The new public engineering R1 contains no accessory identity. AUTH_BLOCKED is a
+real blocker, not a phone success claim. See [full handoff](docs/FULL_FORK_HANDOFF.md).
+
+## Historical Lite phase — not the current receiver strategy
 
 Phase 1 — Wireless CarPlay minimal receiver / IMPLEMENTATION_IN_PROGRESS.
 Primary strategy: **TS7-specific DiPlay Android 8.1 port**.

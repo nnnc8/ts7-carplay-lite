@@ -1,5 +1,12 @@
 # TS7 CarPlay Lite
 
+> **主線已移至 [TS7 DiPlay 完整 Fork](https://github.com/nnnc8/ts7-diplay)。**
+> 本專案改為診斷、實機資料、回歸測試與歷史紀錄；以下 Lite／實驗性認證
+> 敘述是歷史狀態，不是新主線的使用或認證授權。
+> 新公開 Fork 不提取、複用或打包未獲授權的 accessory credentials；缺少合法
+> 外部認證時明確顯示 AUTH_BLOCKED。請看 [主線交接](docs/FULL_FORK_HANDOFF.md)。
+> 舊版本、Diagnostic v0.2、relay、Issue 資料及 PR #18 全部保留，不合併 PR #18。
+
 **v1.0 development — experimental authentication; real iPhone session not yet verified.**
 
 主線：**TS7-specific DiPlay Android8.1 port**，Phase1 IN_PROGRESS。

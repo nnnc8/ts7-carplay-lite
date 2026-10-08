@@ -1,5 +1,20 @@
 # AGENTS.md — TS7 CarPlay Lite Agent Handoff Contract
 
+## Current instruction — full Fork first (2026-10-08)
+
+Primary receiver development is now https://github.com/nnnc8/ts7-diplay . This
+repository is preserved for diagnostics, physical evidence, regression checks and
+history. Do not continue a competing Lite receiver or merge PR18. Read
+docs/FULL_FORK_HANDOFF.md before treating the older Phase1 instructions below as
+current work. Preserve stable main, every historical release and fixed5/fixed13.
+
+The later explicit Full-Fork request supersedes the experimental-identity
+exception below for all new work: no extraction or reuse of unauthorized runtime
+credentials. Do not access the old ignored identity directories. Public Fork,
+CI, APK, source and diagnostics must be identity-free; only legally authorized
+external provisioning may use upstream interfaces. Missing provider is
+AUTH_BLOCKED. Historical acceptance claims are not real iPhone proof.
+
 This repository is intended to be worked on by multiple AI/coding agents. Preserve continuity.
 
 ## Read first
