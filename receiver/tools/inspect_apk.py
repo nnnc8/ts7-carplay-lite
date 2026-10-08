@@ -5,11 +5,14 @@ import re
 import sys
 import subprocess
 import zipfile
+import os
 
 apk = pathlib.Path(sys.argv[1])
 badging = subprocess.check_output([sys.argv[2], "dump", "badging", str(apk)], text=True)
 assert re.search(r"(?:minSdkVersion|sdkVersion):'27'", badging) and "targetSdkVersion:'27'" in badging
-assert "package: name='io.ts7.carplay'" in badging and "versionName='0.2.1-platform'" in badging and "versionCode='3'" in badging
+assert "package: name='io.ts7.carplay'" in badging and "versionName='1.0.0-dev'" in badging and "versionCode='4'" in badging
+experimental = len(sys.argv) == 4 and sys.argv[3] == "--experimental-auth"
+assert len(sys.argv) == (4 if experimental else 3)
 assert set(re.search(r"native-code: (.*)", badging).group(1).replace("'", "").split()) == {"armeabi-v7a", "x86_64"}
 assert "launchable-activity: name='io.ts7.carplay.MainActivity'" in badging
 permissions = set(re.findall(r"uses-permission: name='([^']+)'", badging))
@@ -32,7 +35,15 @@ with zipfile.ZipFile(apk) as archive:
     assert arm[:5] == b"\x7fELF\x01" and int.from_bytes(arm[18:20], "little") == 40, "Actual ELF32 ARM required"
     x86 = archive.read("lib/x86_64/liblocal_hotspot_radio.so")
     assert x86[:5] == b"\x7fELF\x02" and int.from_bytes(x86[18:20], "little") == 62
-    assert not any(re.search(r"(?i)(tlink|zlink|offline-mfi|[.](pk8|p7b|pem|key|p12|pfx|jks|keystore)$)", name) for name in names)
+    identity = {"assets/offline-mfi/identity.pk8", "assets/offline-mfi/certificate.p7b"}
+    credential_names = {name for name in names if re.search(r"(?i)(tlink|zlink|offline-mfi|[.](pk8|p7b|pem|key|p12|pfx|jks|keystore)$)", name)}
+    assert credential_names == (identity if experimental else set()), "Only two explicitly selected experimental inputs are allowed"
+    if experimental:
+        source_identity = pathlib.Path(os.environ["TS7_DIPLAY_AUTH_ASSETS_DIR"])
+        for name in identity:
+            content = archive.read(name)
+            assert 0 < len(content) <= 16384
+            assert content == (source_identity / pathlib.Path(name).name).read_bytes(), "Runtime input mismatch"
     assert "assets/licenses/DiPlay-GPL-3.0.txt" in names and "assets/licenses/TS7-NOTICES.md" in names
     assert "assets/licenses/DiPlay-UPSTREAM-NOTICES.md" in names
     notices = archive.read("assets/licenses/TS7-NOTICES.md")
@@ -40,10 +51,12 @@ with zipfile.ZipFile(apk) as archive:
     dex = b"".join(archive.read(name) for name in names if re.fullmatch(r"classes\d*[.]dex", name))
     for core in (b"CarPlayController;", b"DiPlayReceiverCore;", b"CarPlayMediaEngine;", b"DiPlayMediaBridge;"):
         assert core in dex, "Missing actual DiPlay core/renderer seam"
-    for excluded in (b"LocalMfiAuthenticationClient;", b"RemoteMfiAuthenticationClient;", b"BydNavigationOutputs;", b"DiPlayActivity;", b"FakeAuthenticationProvider;"):
+    assert b"LocalMfiAuthenticationClient;" in dex and b"ExperimentalDiPlayAuthenticationProvider;" in dex
+    for excluded in (b"RemoteMfiAuthenticationClient;", b"BydNavigationOutputs;", b"DiPlayActivity;", b"FakeAuthenticationProvider;"):
         assert excluded not in dex, "Excluded upstream/test-only code was packaged"
     assert instrumented == (b"Lio/ts7/carplay/RendererInstrumentation;" in dex), "Test entry point must be CI-only"
     assert instrumented == (b"Lio/ts7/carplay/ReadinessInstrumentation;" in dex), "Readiness test entry point must be CI-only"
+    assert instrumented == (b"Lio/ts7/carplay/AuthenticationInstrumentation;" in dex), "Authentication test entry point must be CI-only"
     for readiness in (b"PlatformReadiness;", b"PlatformReadinessRunner;", b"AndroidPlatformProbes;"):
         assert readiness in dex, "Missing platform readiness implementation"
     assert not re.search(rb"ghp_|github_pat_|GITHUB_TOKEN|BEGIN [A-Z ]*PRIVATE KEY", dex)
@@ -55,4 +68,4 @@ with zipfile.ZipFile(apk) as archive:
     source = pathlib.Path(__file__).resolve().parents[1] / "src/main/assets/ts7-pattern.h264"
     assert hashlib.sha256(asset).digest() == hashlib.sha256(source.read_bytes()).digest()
     assert len(asset) <= 1024 * 1024
-print("APK inspection PASS: API27, actual source-built ELF32 ARM JNI, DiPlay core + unchanged Surface seam, no credentials/vendor UI/GPS/pixel-copy APIs")
+print("APK inspection PASS: API27, source-built ARM JNI, unchanged Surface seam, no GitHub/signing secrets/vendor UI/GPS/pixel-copy APIs; experimental identity " + ("explicitly included" if experimental else "absent"))

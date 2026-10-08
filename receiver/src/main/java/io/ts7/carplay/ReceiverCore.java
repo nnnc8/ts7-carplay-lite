@@ -31,6 +31,8 @@ public interface ReceiverCore {
         default void audioStopped() {}
     }
     boolean hasLawfulAuthentication();
+    // Availability/admission is separate from Apple authorization and phone-confirmed authentication.
+    default boolean hasAuthenticationProvider() { return hasLawfulAuthentication(); }
     void connect(VideoProfile profile, Listener listener);
     void disconnect();
     // Called after the renderer is ready to accept input, including after fresh reauthentication.

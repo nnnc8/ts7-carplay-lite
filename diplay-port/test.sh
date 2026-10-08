@@ -16,3 +16,8 @@ javac --release 8 -classpath "$TASK_CP" -d "$TASK_TEST" \
 java -cp "$TASK_CP:$TASK_TEST" io.ts7.carplay.auth.AuthenticationBoundaryTest
 java -cp "$TASK_CP:$TASK_TEST" io.ts7.carplay.core.ProtocolIntegrationTest
 java -cp "$TASK_CP:$TASK_TEST:$TASK_TEST/fixtures.jar" io.ts7.carplay.core.DiPlayPortTestKt
+java -cp "$TASK_CP:$TASK_TEST:$TASK_TEST/fixtures.jar" io.ts7.carplay.core.ExperimentalAuthenticationTestKt ${TS7_EXPERIMENTAL_TEST_ASSETS_DIR:+"$TS7_EXPERIMENTAL_TEST_ASSETS_DIR"}
+if [[ -n "${TS7_AUTH_FIXTURE_OUTPUT_DIR:-}" ]]; then
+  java -cp "$TASK_CP:$TASK_TEST:$TASK_TEST/fixtures.jar" io.ts7.carplay.core.ExperimentalAuthenticationTestKt \
+    --generate-api27-fixture "$TS7_AUTH_FIXTURE_OUTPUT_DIR"
+fi

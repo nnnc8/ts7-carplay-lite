@@ -12,7 +12,7 @@ public final class Diagnostics {
 
     public static String report(Context context, SessionMachine session, RadioMonitor radio,
             SurfaceRenderer renderer, VideoProfile profile, String mode, SessionMachine.Reason playbackReason, int reconnects,
-            PcmAudioOutput audio, EventRing events, PlatformReadiness readiness) {
+            PcmAudioOutput audio, EventRing events, PlatformReadiness readiness, boolean authenticationAvailable) {
         ActivityManager.MemoryInfo memory = new ActivityManager.MemoryInfo();
         ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE)).getMemoryInfo(memory);
         SimpleDateFormat time = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
@@ -21,13 +21,15 @@ public final class Diagnostics {
         // Decoder identifiers have a narrow grammar; never serialize arbitrary exception text.
         if (!decoder.matches("[A-Za-z0-9_.-]{1,128}")) decoder = "UNKNOWN";
         StringBuilder json = new StringBuilder(20000);
-        json.append("{\"schemaVersion\":1,\"reportType\":\"carplay-alpha\",\"appVersion\":\"0.2.1-platform\"")
+        String authentication = session.authenticated() ? "PHONE_CONFIRMED_SESSION"
+            : authenticationAvailable ? "EXPERIMENTAL_IDENTITY_AVAILABLE" : "BLOCKED_BY_AUTHENTICATION_REQUIREMENT";
+        json.append("{\"schemaVersion\":1,\"reportType\":\"carplay-alpha\",\"appVersion\":\"1.0.0-dev\"")
             .append(",\"timestamp\":\"").append(time.format(new Date())).append('"')
             .append(",\"mode\":\"").append(mode).append('"')
             .append(",\"carplayState\":\"").append(session.state().name()).append('"')
             .append(",\"bluetoothState\":\"").append(session.bluetooth().name()).append('"')
             .append(",\"wifiState\":\"").append(session.wifi().name()).append('"')
-            .append(",\"authentication\":\"BLOCKED_BY_AUTHENTICATION_REQUIREMENT\"")
+            .append(",\"authentication\":\"").append(authentication).append('"')
             .append(",\"decoderName\":\"").append(decoder).append('"')
             .append(",\"lastDisconnectReason\":\"").append(session.lastReason().name()).append('"')
             .append(",\"lastPlaybackReason\":\"").append(playbackReason.name()).append('"');

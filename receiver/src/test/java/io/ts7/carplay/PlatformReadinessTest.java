@@ -23,7 +23,23 @@ public final class PlatformReadinessTest {
         PlatformReadiness changed = empty.with(PlatformReadiness.Probe.surface, new PlatformReadiness.Result(NONE, 8));
         check(empty.get(PlatformReadiness.Probe.surface).errorCode == NOT_RUN, "immutable snapshot");
         check(changed.json().contains("\"surface\":{\"status\":\"PASS\",\"durationMs\":8,\"errorCode\":\"NONE\"}"), "exact public shape");
-        check(changed.display().contains("Authentication  BLOCKED (expected)"), "auth explicitly blocked");
+        check(changed.display().contains("Authentication  NOT TESTED"), "platform probes do not make an authentication claim");
+
+        AtomicBoolean networkAvailable = new AtomicBoolean(true);
+        java.util.List<PlatformReadiness.Probe> order = new java.util.ArrayList<>();
+        CountDownLatch orderDone = new CountDownLatch(1);
+        PlatformReadinessRunner ordered = new PlatformReadinessRunner((probe, token) -> {
+            order.add(probe);
+            if (probe == PlatformReadiness.Probe.localOnlyHotspot) networkAvailable.set(false);
+            if (probe == PlatformReadiness.Probe.networkBinding && !networkAvailable.get()) return NETWORK_UNAVAILABLE;
+            return NONE;
+        }, 100);
+        check(ordered.start(value -> {}, orderDone::countDown), "ordered probes start");
+        check(orderDone.await(2, TimeUnit.SECONDS), "ordered probes finish");
+        check(order.size() == 12 && new java.util.HashSet<>(order).size() == 12, "all probes execute exactly once");
+        check(order.get(11) == PlatformReadiness.Probe.localOnlyHotspot, "disruptive hotspot is last");
+        check(ordered.snapshot().get(PlatformReadiness.Probe.networkBinding).errorCode == NONE,
+            "network binding is measured before hotspot interruption, not claimed concurrent");
 
         AtomicInteger executed = new AtomicInteger();
         CountDownLatch done = new CountDownLatch(1);

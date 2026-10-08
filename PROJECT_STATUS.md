@@ -7,10 +7,10 @@ Updated: 2026-10-08.
 Phase 1 — Wireless CarPlay minimal receiver / IMPLEMENTATION_IN_PROGRESS.
 Primary strategy: **TS7-specific DiPlay Android 8.1 port**.
 Protocol: DiPlay-derived port IN_PROGRESS.
-Authentication: **BLOCKED_BY_AUTHENTICATION_REQUIREMENT**.
-Preview: **NOT YET A FUNCTIONAL CARPLAY RECEIVER**.
-Scoped deliverable: **v0.2.1 TS7 Platform Readiness Preview**; no new CarPlay features,
-no merge of PR18 and no authentication hardware work pending physical TS7 evidence.
+Authentication: **EXPERIMENTAL_LOCAL IMPLEMENTED**, user-selected 2026-10-08.
+Version: **1.0.0-dev standalone**, NOT Apple-certified; real iPhone session not yet verified.
+Continue toward v1.0 with existing DiPlay code and necessary TS7 adaptations.
+Missing runtime inputs remain BLOCKED; PR18 unmerged/main preserved.
 xcertplay remains fallback/auth-hardware architecture reference, not primary work.
 
 ## Preserved real TS7 evidence
@@ -39,13 +39,19 @@ Chosen Legacy revision c8884adcc75bfda3c134db63877bd6c6f83beb74, GPL3 core.
 Reason: reproducible public source, actual wireless/iAP2/AirPlay/audio/touch lifecycle
 and legacy Android work. Current minSdk/README is not TS7 compatibility proof.
 
-71 exact-source/notice files with original blobs/ported hashes in third_party/diplay-base.
-GPL source and source-built read-only JNI only. No upstream UI/site/assets/APK/firmware.
-No extracted MFi identity, private keys, certificate bundle or proprietary receiver.
-Legal provider is separate from source license; external interface READY, unavailable default.
+72 source/notice files with original blobs/ported hashes in third_party/diplay-base.
+GPL protocol/local-auth code and source-built JNI; no upstream UI/icons/proprietary receiver.
+Only two explicitly selected runtime inputs from the matching official v0.2.7 APK, outside Git/source/CI.
+Runtime credentials are not GPL-relicensed or Apple-certified; public distribution rights unresolved.
+Authorized-provider templates remain separate. See docs/EXPERIMENTAL_AUTHENTICATION.md.
 
 ## Implemented
 
+- Reused pinned P-256/protocol-major3 authenticator; bounded direct assets, key/certificate self-check, fixed failures, startup worker and no secret logging/storage.
+- Experimental availability separate from authorized MFi/real session proof; Connect guides permission and paired-phone selection.
+- Identity-free source/CI versus explicitly opted-in standalone; freshly generated CI crypto fixture, never real runtime data in CI.
+- Hotspot readiness runs last, preventing its client Wi-Fi interruption from contaminating earlier Network checks; no coexistence claim.
+- Strict1.0.0-dev report states BLOCKED / EXPERIMENTAL_IDENTITY_AVAILABLE / PHONE_CONFIRMED_SESSION. Old report versions/fixed5 remain unchanged; client reports are not server-verified phone trust.
 - User-triggered Developer platform readiness: 12 independent real local API probes,
   fixed typed status/duration/error codes, bounded workers/cancel/late-reservation cleanup,
   process-wide repeat-run/failed-cleanup quarantine guard, no phone/session/authentication/credential reads.
@@ -68,8 +74,9 @@ Legal provider is separate from source license; external interface READY, unavai
 ## Verification
 
 See [DiPlay verification ledger](docs/DIPLAY_PORT_VERIFICATION.md) for exact results.
-Local: API27 source compile PASS; native ARMv7/x86_64 build PASS; APK/signature/ABI/
-credentials/license inspection PASS;71 source hash +9 renderer-lock PASS.
+Current local delta: API27/ARMv7/x86_64 compile PASS, identity-free/standalone APK signature/ABI/input inspection PASS,
+72 source hash +9 renderer-lock PASS. Selected runtime cryptography and nonblocking-close regression covered;
+readiness126, receiver2047, backend29 PASS. Current hosted/commit results require separate evidence.
 Host: receiver2047, authentication24, gate30, DiPlay478 fixtures PASS;
 Diagnostic sanitizer PASS; backend16 tests PASS.
 v0.2.1 local delta: readiness121 + immediate/late/admission cleanup24 assertions, existing receiver2047/auth24/gate30/DiPlay478,
@@ -108,12 +115,9 @@ does not constitute an authentication certification or complete upstream securit
 
 ## Next blocker / next device check
 
-Authorized AuthenticationProvider + realTS7 Bluetooth/LOHS/multicast/channel/SELinux
-compatibility and actual iPhone bootstrap remain unverified.
-Install the platform release APK; expected v0.2.1PlatformPreview +Waiting for iPhone +
-authentication blocked +DiPlay ready. Empty central Surface is expected in waiting mode.
-Do not claim connected/session/streaming. Copy diagnostics or explicitly upload to13.
-No driving-time testing. Further5/15-minute renderer tests remain optional separate evidence.
-Next required check: Settings → Developer → Test platform readiness, then Copy/explicit Upload
-to fixed13. No iPhone needed. Restore Internet after temporary hotspot check; see platform guide.
-Real TS7 readiness is still UNKNOWN; emulator radios and x86 JNI cannot fulfill that evidence gate.
+[Real report1](https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6050562144): 11PASS/hotspot permission denied.
+[Real report2](https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6050623491): 11PASS including hotspot reservation+close; Network UNAVAILABLE after client Wi-Fi loss.
+Across both: all12 individual probes have physicalPASS, not same-run12PASS/coexistence proof.
+Do not request repeats. Finish host/API27/packaging/review first, then consolidate indispensable phone acceptance.
+Crypto/emulator cannot prove real iPhone trust/video/audio/touch/recovery or30/60-minute gates.
+Siri/microphone remain deferred as previously documented.

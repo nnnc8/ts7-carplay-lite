@@ -24,6 +24,15 @@ public final class PlatformReadinessRunner {
     private static final Object RUN_LOCK = new Object();
     private static final AtomicInteger RUNS = new AtomicInteger();
     private static final AtomicInteger WORKERS = new AtomicInteger();
+    // A TS7 hotspot start/close interrupts its station network. Test disruptive radio work last.
+    private static final PlatformReadiness.Probe[] EXECUTION_ORDER = {
+        PlatformReadiness.Probe.coreInitialization, PlatformReadiness.Probe.jni,
+        PlatformReadiness.Probe.bluetoothApi, PlatformReadiness.Probe.rfcomm,
+        PlatformReadiness.Probe.multicast, PlatformReadiness.Probe.mdns,
+        PlatformReadiness.Probe.tcpBind, PlatformReadiness.Probe.udpBind,
+        PlatformReadiness.Probe.networkBinding, PlatformReadiness.Probe.surface,
+        PlatformReadiness.Probe.audioTrack, PlatformReadiness.Probe.localOnlyHotspot,
+    };
     private volatile boolean running;
     private volatile boolean cancelled;
     private volatile PlatformReadiness report = new PlatformReadiness();
@@ -71,7 +80,7 @@ public final class PlatformReadinessRunner {
 
     private void execute(Consumer<PlatformReadiness> progress, Runnable done) {
         try {
-            for (PlatformReadiness.Probe probe : PlatformReadiness.Probe.values()) {
+            for (PlatformReadiness.Probe probe : EXECUTION_ORDER) {
                 PlatformReadiness.Result result;
                 if (cancelled) result = new PlatformReadiness.Result(PlatformReadiness.Code.TEST_CANCELLED, 0);
                 else result = executeOne(probe);

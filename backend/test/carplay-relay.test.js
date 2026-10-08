@@ -45,9 +45,35 @@ function platformPayload() {
 function request(payload) {
   return { method: "POST", headers: { "content-type": "application/json", "x-forwarded-proto": "https", "x-forwarded-for": "test" }, body: payload };
 }
+
+test("development identity readiness is distinct from phone trust; old previews remain blocked", () => {
+  const development = { ...platformPayload(), appVersion: "1.0.0-dev", authentication: "EXPERIMENTAL_IDENTITY_AVAILABLE" };
+  assert.deepEqual(relay.validate(development), []);
+  for (const version of ["0.1-alpha", "0.2-alpha", "0.2.1-platform"])
+    assert.ok(relay.validate({ ...development, appVersion: version }).includes("authentication boundary"));
+  for (const change of [{ mode: "CARPLAY" }, { carplayState: "STREAMING" }, { authentication: "APPLE_CERTIFIED" },
+    { authentication: "PHONE_CONFIRMED_SESSION" }])
+    assert.ok(relay.validate({ ...development, ...change }).includes("authentication boundary"));
+  const streaming = { ...development, mode: "CARPLAY", carplayState: "STREAMING",
+    authentication: "PHONE_CONFIRMED_SESSION", bluetoothState: "BOOTSTRAP_CONFIRMED", wifiState: "SESSION_LINK_CONFIRMED" };
+  assert.deepEqual(relay.validate(streaming), []);
+  assert.ok(relay.validate({ ...streaming, renderedFrames: 0 }).includes("streaming evidence missing"));
+  const missing = { ...development }; delete missing.platformReadiness;
+  assert.ok(relay.validate(missing).includes("missing platform readiness"));
+});
 function response() {
   return { statusCode: 200, setHeader() {}, end(body) { this.body = JSON.parse(body); } };
 }
+test("development rejects contradictory phone/session/streaming evidence before GitHub", async () => {
+  const streaming = { ...platformPayload(), appVersion: "1.0.0-dev", mode: "CARPLAY", carplayState: "STREAMING",
+    authentication: "PHONE_CONFIRMED_SESSION", bluetoothState: "BOOTSTRAP_CONFIRMED", wifiState: "SESSION_LINK_CONFIRMED" };
+  for (const change of [{ mode: "TEST_PATTERN", carplayState: "IDLE" }, { carplayState: "BT_DISCOVERY" },
+    { mode: "IDLE" }, { decoderName: "NOT_STARTED" }, { decoderName: "UNKNOWN" },
+    { videoWidth: 0 }, { videoHeight: 0 }, { renderedFrames: 0 }])
+    await assertRejectedBeforeGithub({ ...streaming, ...change }, "contradictory development evidence");
+  assert.deepEqual(relay.validate({ ...streaming, carplayState: "CARPLAY_NEGOTIATING", decoderName: "NOT_STARTED",
+    renderedFrames: 0, videoWidth: 0, videoHeight: 0 }), []);
+});
 async function assertRejectedBeforeGithub(payload, label) {
   resetTestState();
   let calls = 0;

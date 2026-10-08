@@ -11,7 +11,7 @@ import io.ts7.carplay.SessionMachine
 import io.ts7.carplay.VideoProfile
 import io.ts7.carplay.auth.AuthenticationProvider
 
-/** Uses the actual DiPlay Controller's wireless lifecycle; credentials remain external. */
+/** Uses the actual DiPlay wireless lifecycle; source and explicitly supplied runtime inputs stay separate. */
 class DiPlayReceiverCore @JvmOverloads constructor(
     context: Context,
     private val provider: AuthenticationProvider,
@@ -44,7 +44,8 @@ class DiPlayReceiverCore @JvmOverloads constructor(
         try {
             createController(VideoProfile.DEFAULT, false).start()
             initialized = true
-            initialization = "DIPLAY_CORE_READY_AUTH_BLOCKED"
+            initialization = if (hasAuthenticationProvider()) "DIPLAY_CORE_READY_EXPERIMENTAL"
+                else "DIPLAY_CORE_READY_AUTH_BLOCKED"
         } catch (_: Exception) {
             initialization = "DIPLAY_CORE_INITIALIZATION_FAILED"
             disconnect()
@@ -60,6 +61,9 @@ class DiPlayReceiverCore @JvmOverloads constructor(
     }
     override fun hasLawfulAuthentication(): Boolean =
         !closed && provider.isAvailable && provider.info.isAuthorized && providerProtocolMajor in 1..255
+
+    override fun hasAuthenticationProvider(): Boolean =
+        !closed && provider.isAvailable && provider.info.canUseForConnection() && providerProtocolMajor in 1..255
 
     override fun connect(profile: VideoProfile, listener: ReceiverCore.Listener) {
         startConnection(profile, listener, false)
@@ -78,7 +82,7 @@ class DiPlayReceiverCore @JvmOverloads constructor(
             captured = epoch
             listener = target
             error = when {
-                !hasLawfulAuthentication() -> SessionMachine.Reason.BLOCKED_BY_AUTHENTICATION_REQUIREMENT
+                !hasAuthenticationProvider() -> SessionMachine.Reason.BLOCKED_BY_AUTHENTICATION_REQUIREMENT
                 // No UI-thread wait; retain retry intent until the old service has detached.
                 closingController?.awaitClosed(0) == false -> SessionMachine.Reason.SESSION_LOST
                 context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
@@ -113,7 +117,7 @@ class DiPlayReceiverCore @JvmOverloads constructor(
         val runtime = CarPlayRuntimeConfig(
             identification = com.shilapi.xcertplay.transport.Iap2IdentificationConfig(
                 name = "TS7 CarPlay Lite", modelIdentifier = "TS7.Android8.1", manufacturer = "TS7 CarPlay Lite",
-                serialNumber = java.util.UUID.randomUUID().toString(), firmwareVersion = "0.2-alpha",
+                serialNumber = java.util.UUID.randomUUID().toString(), firmwareVersion = "1.0.0-dev",
                 hardwareVersion = "TS7.API27", carPlayUsbInterfaceNumber = 0,
                 externalAccessoryProtocol = "io.ts7.carplay"),
             wirelessBluetoothDeviceAddress = selectedAddress,
@@ -172,7 +176,7 @@ class DiPlayReceiverCore @JvmOverloads constructor(
     }
     override fun reconnect(): Boolean {
         val retry = synchronized(lock) { desiredListener?.let { lastProfile to it } } ?: return false
-        if (!hasLawfulAuthentication()) return false
+        if (!hasAuthenticationProvider()) return false
         return startConnection(retry.first, retry.second, true)
     }
     private fun fail(captured: Long, reason: SessionMachine.Reason) {

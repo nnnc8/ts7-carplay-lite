@@ -1,4 +1,4 @@
-name: Build TS7 Platform Readiness API27 preview
+name: Build TS7 DiPlay API27 development
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
       - name: DiPlay API27 and ARMv7 source build
         run: |
           ./diplay-port/build.sh
-          ./diplay-port/test.sh
+          TS7_AUTH_FIXTURE_OUTPUT_DIR=build/auth-fixture ./diplay-port/test.sh
           python3 diplay-port/tools/verify_source.py
       - name: Core and privacy contracts
         run: |
@@ -44,17 +44,25 @@ jobs:
         run: |
           TS7_SKIP_CORE_BUILD=1 ./receiver/build.sh
           TS7_SKIP_CORE_BUILD=1 ./receiver/build.sh --instrumented
+          TS7_SKIP_CORE_BUILD=1 TS7_AUTH_FIXTURE=1 TS7_ENABLE_EXPERIMENTAL_AUTH=1 TS7_DIPLAY_AUTH_ASSETS_DIR="$PWD/build/auth-fixture" ./receiver/build.sh --instrumented
       - name: Upload requested platform APK
         uses: actions/upload-artifact@v4
         with:
-          name: TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk
-          path: dist/TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk
+          name: TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.apk
+          path: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.apk
+          if-no-files-found: error
+
+      - name: Upload generated authentication test fixture (not for installation)
+        uses: actions/upload-artifact@v4
+        with:
+          name: TS7-Authentication-Test-Fixture
+          path: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev-auth-fixture-instrumented.apk
           if-no-files-found: error
       - name: Upload separate instrumentation APK
         uses: actions/upload-artifact@v4
         with:
           name: TS7-Alpha-Instrumentation
-          path: dist/TS7-CarPlay-Lite-DiPlay-v0.2.1-platform-instrumented.apk
+          path: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev-instrumented.apk
           if-no-files-found: error
 
   android-81-surface:
@@ -68,11 +76,15 @@ jobs:
           node-version: '20'
       - uses: actions/download-artifact@v4
         with:
-          name: TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk
+          name: TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.apk
           path: dist
       - uses: actions/download-artifact@v4
         with:
           name: TS7-Alpha-Instrumentation
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: TS7-Authentication-Test-Fixture
           path: dist
       - name: Enable KVM
         run: |
@@ -100,4 +112,5 @@ jobs:
             dist/normal-startup.png
             dist/platform-readiness-smoke.txt
             dist/platform-readiness-smoke.png
+            dist/authentication-smoke.txt
           if-no-files-found: warn

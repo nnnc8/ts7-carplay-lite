@@ -14,7 +14,22 @@ TASK_CORE="$TASK_ROOT/build/diplay-port"
 TASK_LIBS="$TASK_CORE/core.jar:$TASK_CORE/kotlin-stdlib.jar:$TASK_CORE/bcprov.jar:$TASK_CORE/jmdns.jar:$TASK_CORE/slf4j-api.jar:$TASK_CORE/slf4j-nop.jar"
 mkdir -p "$TASK_ROOT/build/receiver" "$TASK_ROOT/build/receiver-signing" "$TASK_ROOT/dist"
 TASK_BUILD="$(mktemp -d "$TASK_ROOT/build/receiver/build.XXXXXX")"
-TASK_NAME="TS7-CarPlay-Lite-DiPlay-v0.2.1-platform"
+TASK_NAME="TS7-CarPlay-Lite-DiPlay-v1.0.0-dev"
+TASK_AUTH_ASSETS="${TS7_DIPLAY_AUTH_ASSETS_DIR:-}"
+if [[ -n "$TASK_AUTH_ASSETS" ]]; then
+  [[ "${TS7_ENABLE_EXPERIMENTAL_AUTH:-0}" == 1 ]] || { printf '%s\n' 'Explicit experimental identity opt-in required' >&2; exit 1; }
+  [[ -d "$TASK_AUTH_ASSETS" && ! -L "$TASK_AUTH_ASSETS" ]] || { printf '%s\n' 'Invalid runtime directory' >&2; exit 1; }
+  for task_auth_name in identity.pk8 certificate.p7b; do
+    [[ -f "$TASK_AUTH_ASSETS/$task_auth_name" && ! -L "$TASK_AUTH_ASSETS/$task_auth_name" ]] || { printf '%s\n' 'Missing runtime input' >&2; exit 1; }
+    TASK_AUTH_BYTES="$(wc -c < "$TASK_AUTH_ASSETS/$task_auth_name")"
+    [[ "$TASK_AUTH_BYTES" -gt 0 && "$TASK_AUTH_BYTES" -le 16384 ]] || { printf '%s\n' 'Runtime input bound' >&2; exit 1; }
+  done
+  TASK_NAME="${TASK_NAME}-standalone"
+fi
+if [[ "${TS7_AUTH_FIXTURE:-0}" == 1 ]]; then
+  [[ "${1:-}" == --instrumented && -n "$TASK_AUTH_ASSETS" ]] || { printf '%s\n' 'Generated fixture requires a separate instrumented build' >&2; exit 1; }
+  TASK_NAME="TS7-CarPlay-Lite-DiPlay-v1.0.0-dev-auth-fixture"
+fi
 mkdir -p "$TASK_BUILD/classes" "$TASK_BUILD/dex" "$TASK_BUILD/generated/io/ts7/carplay"
 python3 "$TASK_ROOT/receiver/tools/build_config.py" \
   "$TASK_BUILD/generated/io/ts7/carplay/BuildConfig.java" "${TS7_CARPLAY_UPLOAD_URL:-}"
@@ -33,6 +48,10 @@ find "$TASK_BUILD/classes" -name '*.class' -type f -print | sort > "$TASK_BUILD/
   "$TASK_CORE/core.jar" "$TASK_CORE/kotlin-stdlib.jar" "$TASK_CORE/bcprov.jar" \
   "$TASK_CORE/jmdns.jar" "$TASK_CORE/slf4j-api.jar" "$TASK_CORE/slf4j-nop.jar" @"$TASK_BUILD/classes.txt"
 mkdir -p "$TASK_BUILD/assets/licenses" "$TASK_BUILD/lib/armeabi-v7a" "$TASK_BUILD/lib/x86_64"
+if [[ -n "$TASK_AUTH_ASSETS" ]]; then
+  mkdir -p "$TASK_BUILD/assets/offline-mfi"
+  cp "$TASK_AUTH_ASSETS/identity.pk8" "$TASK_AUTH_ASSETS/certificate.p7b" "$TASK_BUILD/assets/offline-mfi/"
+fi
 cp "$TASK_ROOT/receiver/src/main/assets/ts7-pattern.h264" "$TASK_BUILD/assets/"
 cp "$TASK_ROOT/third_party/diplay-base/LICENSE" "$TASK_BUILD/assets/licenses/DiPlay-GPL-3.0.txt"
 cp "$TASK_ROOT/third_party/diplay-base/docs/licenses/dependencies/"*.txt "$TASK_BUILD/assets/licenses/"
@@ -64,5 +83,9 @@ fi
   --ks-pass "pass:$TASK_STOREPASS" --key-pass "pass:$TASK_KEYPASS" \
   --out "$TASK_ROOT/dist/$TASK_NAME.apk" "$TASK_BUILD/aligned.apk"
 "$TASK_TOOLS/apksigner" verify --verbose "$TASK_ROOT/dist/$TASK_NAME.apk"
-python3 "$TASK_ROOT/receiver/tools/inspect_apk.py" "$TASK_ROOT/dist/$TASK_NAME.apk" "$TASK_TOOLS/aapt2"
+if [[ -n "$TASK_AUTH_ASSETS" ]]; then
+  python3 "$TASK_ROOT/receiver/tools/inspect_apk.py" "$TASK_ROOT/dist/$TASK_NAME.apk" "$TASK_TOOLS/aapt2" --experimental-auth
+else
+  python3 "$TASK_ROOT/receiver/tools/inspect_apk.py" "$TASK_ROOT/dist/$TASK_NAME.apk" "$TASK_TOOLS/aapt2"
+fi
 shasum -a 256 "$TASK_ROOT/dist/$TASK_NAME.apk"

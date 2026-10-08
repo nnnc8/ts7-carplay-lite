@@ -12,7 +12,7 @@ manifest = json.loads((VENDOR / "SOURCE_MANIFEST.json").read_text())
 assert manifest["upstreamCommit"] == PIN
 assert manifest["primaryBase"] == "https://github.com/programmerguohuajing/DiPlay-Legacy-Android"
 entries = manifest["files"]
-assert len(entries) == 71 and len({entry["path"] for entry in entries}) == 71
+assert len(entries) == 72 and len({entry["path"] for entry in entries}) == 72
 for entry in entries:
     path = Path(entry["path"])
     assert not path.is_absolute() and ".." not in path.parts
@@ -48,4 +48,4 @@ assert "APP_ABI := armeabi-v7a x86_64" in appmk
 native = (VENDOR / "shared/src/main/jni/Android.mk").read_text()
 assert re.search(r"^LOCAL_SRC_FILES\s*:=\s*local_hotspot_radio\.c\s*$", native, re.MULTILINE)
 assert len(re.findall(r"^LOCAL_MODULE\s*:=", native, re.MULTILINE)) == 1
-print("Source audit PASS: 71 pinned source/notice hashes, GPL/notices, nine frozen renderer files, no embedded credentials/proprietary binaries/vendor or GPS providers")
+print("Source audit PASS: 72 pinned source/notice hashes, GPL/notices, nine frozen renderer files, no embedded credentials/proprietary binaries/vendor or GPS providers in source")

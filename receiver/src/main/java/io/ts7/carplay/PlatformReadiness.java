@@ -84,7 +84,7 @@ public final class PlatformReadiness {
                 .append("  ").append(result.durationMs).append(" ms · ")
                 .append(result.errorCode.name()).append('\n');
         }
-        return text.append("\nAuthentication  BLOCKED (expected)\n")
+        return text.append("\nAuthentication  NOT TESTED by platform probes\n")
             .append("Local capabilities only; not a CarPlay session or end-to-end wireless proof.").toString();
     }
 }

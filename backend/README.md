@@ -3,7 +3,7 @@
 These Vercel Node.js Serverless Functions accept only strict sanitized reports and create comments on fixed public destinations:
 
 - POST /api/diagnostics: Diagnostic v0.2 → nnnc8/ts7-carplay-lite #5 (preserved).
-- POST /api/carplay-diagnostics: CarPlay Lite v0.1-alpha / DiPlay v0.2-alpha / v0.2.1-platform reports → same repository #13.
+- POST /api/carplay-diagnostics: v0.1-alpha / v0.2-alpha / v0.2.1-platform / v1.0.0-dev reports → same repository #13.
 
 Production base URL: https://ts7-carplay-lite-relay.vercel.app.
 
@@ -49,11 +49,11 @@ a static deployment, producing 404 for both routes. Setting Root Directory to
 npm test
 ```
 
-Tests cover both fixed destinations, old alpha compatibility, complete 12-probe readiness reports, malformed/missing/extra fields, duration bounds, status/code mismatches, private fixtures rejected before GitHub, sanitized Markdown tables, 32 KiB, Markdown escaping, safe GitHub failure, rate limits and duplicates. GitHub calls are mocked; running tests creates no production comments. Alpha accepts only fixed-code/numeric metrics and newest 200 events, never arbitrary error text, IP/MAC/SSID/accounts/credentials. The current no-auth binary cannot submit a CARPLAY/STREAMING claim.
+Tests cover both destinations, old clients,12-probe schema/duration/status-code bounds, privacy rejection before GitHub,32KiB, escaping, safe errors/rate/dedup and contradictory session/streaming evidence. GitHub is mocked; tests create no production comments. Fixed counters/newest200events only, no arbitrary errors/identifiers/credentials. Old clients retain the blocked boundary. New1.0.0-dev separates experimental availability from client-reported phone-confirmed session, not server-verified trust/certification.
 
 ## Runtime contract
 
-POST with Content-Type: application/json and the route's exact schema. HTTPS, server sanitization, finite GitHub timeout, no-store safe JSON responses. Alpha comments prominently label TECHNICAL PREVIEW / NOT YET A FUNCTIONAL CARPLAY RECEIVER; TEST_PATTERN is synthetic, not iPhone video.
+POST with Content-Type: application/json and exact schema. HTTPS, sanitization, finite GitHub timeout, no-store safe JSON. Old comments retain TECHNICAL PREVIEW;1.0.0-dev labels EXPERIMENTAL AUTHENTICATION / CLIENT EVIDENCE, NOT APPLE CERTIFICATION. TEST_PATTERN is synthetic, not iPhone video.
 
 ## Platform readiness report contract
 
@@ -93,7 +93,7 @@ Each probe is an object with exactly `status`, `durationMs`, `errorCode`; for ex
 
 Unknown or private fields at any depth are rejected before a GitHub call, including SSID/BSSID/MAC/IP, peer/device identifiers, credentials, certificates and raw exceptions. The relay rebuilds the validated readiness object from the allowlisted fields and renders all 12 results in a Markdown table on fixed Issue #13. Readiness results are included in duplicate detection. Diagnostic v0.2 and its fixed Issue #5 relay are unchanged.
 
-`authentication` remains exactly `"BLOCKED_BY_AUTHENTICATION_REQUIREMENT"`. This expected value does not skip readiness results: valid `FAIL`, `PERMISSION_DENIED`, `UNAVAILABLE` and `NOT_TESTED` probe outcomes can be submitted and displayed. Even all-`PASS` readiness does not authorize `mode: "CARPLAY"`, `carplayState: "STREAMING"` or any authentication success claim. Probe results describe local platform checks, not an authenticated CarPlay session or verified TS7/iPhone behavior.
+Old clients require BLOCKED_BY_AUTHENTICATION_REQUIREMENT. New1.0.0-dev also requires readiness and permits only that value, EXPERIMENTAL_IDENTITY_AVAILABLE or PHONE_CONFIRMED_SESSION. Phone-confirmed requires CARPLAY mode, BOOTSTRAP_CONFIRMED, SESSION_LINK_CONFIRMED and CARPLAY_NEGOTIATING/RECOVERING/STREAMING state. STREAMING further requires positive frames/dimensions and actual decoder. Contradictions reject before GitHub. These are consistency-checked client reports, not independent trust/certification. Failure/unavailable/not-tested readiness may be uploaded; allPASS alone never establishes a session.
 
 ## Relay limits and upload consent
 

@@ -1,8 +1,8 @@
-# TS7 CarPlay Lite DiPlay v0.2.1 platform preview
+# TS7 CarPlay Lite DiPlay v1.0.0-dev
 
-**NOT YET A FUNCTIONAL CARPLAY RECEIVER.**
+**Experimental identity implemented; actual iPhone session not yet verified.**
 Minimal framework Activity + actual selected GPL DiPlay Legacy core,
-external AuthenticationProvider unavailable by default, no proprietary credentials.
+explicitly selected upstream experimental local AuthenticationProvider; source build identity-free.
 Existing TS7-proved compressed queue/MediaCodec→Surface path preserved byte-identical.
 
 JDK17,Python3,zip,SDK27/build-tools35.0.0/NDK25.2.9519653 required.
@@ -15,19 +15,22 @@ TS7_CARPLAY_UPLOAD_URL=https://ts7-carplay-lite-relay.vercel.app/api/carplay-dia
 python3 diplay-port/tools/verify_source.py
 ```
 
-Normal output: dist/TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk.
+Source output: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.apk, identity-free.
+Opted-in runtime output: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev-standalone.apk.
+See [runtime source, explicit build flags and acceptance boundaries](../docs/EXPERIMENTAL_AUTHENTICATION.md).
 Native read-only AP radio JNI built from source for API27 ARMv7 +x86_64 emulator.
 Separate --instrumented build includes CI-only Instrumentation, never published as normal.
 Ignored local test signing key; CI ephemeral test key. Separate builds may need
 uninstall/reinstall if signatures differ (local settings lost); keep release hash authoritative.
 
-Startup shows UI first, then DiPlayready/authblocked; no decoder/radio/receiver ports
-started by unavailable provider. Central black Surface is expected while waiting.
+Startup shows UI first, then DiPlayready/experimental identity ready, or authblocked if absent/invalid.
+No decoder/radio/receiver ports until explicit Connect. Central empty Surface is expected while waiting.
 Settings opt-in developer pattern1280×72030/25/20 exercises preserved decoder path;
 pattern never claims CarPlay session. No microphone/storage/account/GPS permission.
 API27 FINE_LOCATION is explicit user opt-in for WiFi/Bluetooth discovery/LOHS,
 explained as not location collection/upload. Android may require system Location switch
-for LOHS; real TS7 capability remains UNKNOWN. Select paired iPhone locally only.
+for LOHS. Existing physical report shows temporary reservation start/close PASS, not full AP/phone traffic.
+Connect guides missing permission and paired-phone selection; selection remains process-local.
 
 Diagnostics fixed codes/counters,500 ring/newest200 export; explicit confirmation upload
 to fixed13. No identifiers/SSID/passphrase/certs/exception text; offline copy works.

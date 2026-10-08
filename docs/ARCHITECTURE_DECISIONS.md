@@ -64,7 +64,7 @@ Phase 0 basic report gate complete. Prioritize wireless session, video, decoder,
 
 ## ADR-010 — Lawful-authentication boundary / technical preview
 
-Status: Authentication boundary accepted; original shell-only strategy superseded by ADR-014.
+Status: Historical unavailable-provider decision; source strategy superseded by ADR-014 and user-selected experimental authentication by ADR-015.
 
 Research pinned five upstream projects. Current DiPlay/xcertplay require API 28; legacy fork is API-compatible but documented extracted credentials are not acceptable. No inspected project is a lawful ready-to-ship API 27 receiver for this TS7 with an available auth provider. Choose original Java shell/renderer, not a hand-written full protocol. Future hardware-auth core requires license review, legal provider and API 27 port. Shipping ReceiverCore.Unavailable always refuses connections.
 
@@ -97,3 +97,13 @@ Status: Accepted by explicit user direction,2026-10-07.
 Preserve old lawful-core branch/checkpoint; main strategy now selected GPL DiPlay Legacy revision c8884adcc75bfda3c134db63877bd6c6f83beb74. CASKA live source inaccessible/currentSHA UNKNOWN. Retain actual Controller wireless/iAP2/AirPlay/network/media code; remove AGPL UI/site, restricted assets, vendor HUD/CAN/ADB/navigation, wired receiver and offline auth loaders. GPL corresponding source and source-built API27 ARMv7 radio JNI required.
 
 Small MediaSink bridge to the nine frozen TS7 renderer/audio/touch/asset files, not a new decoder. LOHS API26 callback and explicit AP/peer binding; permission explained/no GPS. Unavailable external provider stops before radios/listeners. Authenticated media requires real AA05/SAP/pair-verify/encrypted RECORD and accepted/rendered VCL; fixture states or generated test video never qualify. Core compile/runtime/real phone are separate evidence gates. See DiPlay base/module/API27 audit/verification documents.
+
+## ADR-015 — Reuse selected DiPlay experimental local authentication
+
+Status: Accepted by explicit user direction,2026-10-08; supersedes prior blanket prohibition on these two runtime inputs.
+
+Reuse the pinned GPL LocalMfiAuthenticationClient, protocol-major3/P-256/NONEwithECDSA on an already-digested32-byte challenge. Do not invent a second handshake or require new hardware solely because the old provider was deliberately unavailable. Load bounded inputs directly on a startup worker, validate key/certificate consistency, and keep fixed errors/deadlines/no raw logs.
+
+Experimental availability has an exact positive metadata allowlist separate from isAuthorized(). Phone-confirmed AA05/SAP/pair-verify/encrypted RECORD and real rendered frames still gate session/STREAMING. The user-selected official matching v0.2.7 APK provides only two runtime files; they stay outside Git/source/CI, and require an explicit standalone-build opt-in. Source/CI remains identity-free; API27 CI uses fresh generated test identity, never the selected runtime data. Runtime files are not GPL-relicensed, not Apple-certified, and redistribution/future iOS acceptance unresolved.
+
+Keep existing TS7 renderer/media/recovery and privacy boundaries; guide Connect's permission/paired-phone prerequisites. Existing physical platform reports suffice for that gate, not the phone session. Avoid repeat car trips; complete autonomous checks first. See docs/EXPERIMENTAL_AUTHENTICATION.md.

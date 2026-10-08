@@ -3,7 +3,7 @@
   "primaryBase": "https://github.com/programmerguohuajing/DiPlay-Legacy-Android",
   "upstreamCommit": "c8884adcc75bfda3c134db63877bd6c6f83beb74",
   "date": "2026-10-07",
-  "scope": "Selected GPL protocol/network core only; no mobile/common/site/assets/release APK or firmware",
+  "scope": "Selected GPL protocol/network/local-authentication code only; no mobile/common/site or runtime identities in source. User selected upstream experimental runtime separately on 2026-10-08.",
   "files": [
     {
       "path": "LICENSE",
@@ -186,6 +186,14 @@
       "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/mfi/Iap2MfiAuthenticationClient.kt",
       "upstreamGitBlob": "f8f13331768906935b3c76957f9e38fc17fb8528",
       "portedSha256": "23be8c7bd341bcd0db1b5842faff5a663377652a9874a796fcee3271c9e26fb4",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/mfi/LocalMfiAuthenticationClient.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/mfi/LocalMfiAuthenticationClient.kt",
+      "upstreamGitBlob": "ebb4a08cb7d4f4be8392307666ba345f7eff2e92",
+      "portedSha256": "a7c05fcad40fdd4d45e3fa2347f38662d93ae2ffe37e018fb55563e2ded3a52d",
       "modified": true,
       "license": "GPL-3.0"
     },

@@ -3,7 +3,7 @@ set -euo pipefail
 adb shell wm size 1280x720
 adb shell wm density 160
 [[ "$(adb shell getprop ro.build.version.sdk | tr -d '\r')" == 27 ]]
-adb install -r dist/TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk
+adb install -r dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.apk
 adb shell am start -W -n io.ts7.carplay/.MainActivity > dist/normal-startup.txt
 for task_startup_round in $(seq 1 20); do
   adb shell uiautomator dump /sdcard/ts7-startup.xml >/dev/null
@@ -16,7 +16,7 @@ grep -Fq 'authentication blocked' dist/normal-startup.xml
 adb shell screencap -p /sdcard/ts7-startup.png
 adb pull /sdcard/ts7-startup.png dist/normal-startup.png
 adb shell am force-stop io.ts7.carplay
-adb install -r dist/TS7-CarPlay-Lite-DiPlay-v0.2.1-platform-instrumented.apk
+adb install -r dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev-instrumented.apk
 adb shell pm revoke io.ts7.carplay android.permission.ACCESS_FINE_LOCATION
 timeout 150s adb shell am instrument -w io.ts7.carplay/io.ts7.carplay.ReadinessInstrumentation > dist/platform-readiness-smoke.txt &
 TASK_READINESS_PID=$!
@@ -54,3 +54,9 @@ adb logcat -d -t 500 > dist/renderer-logcat.txt
 grep -Fq 'PASS: Android 8.1' dist/renderer-smoke.txt
 grep -Fq 'INSTRUMENTATION_CODE: -1' dist/renderer-smoke.txt
 [[ -s dist/renderer-smoke.png ]]
+adb shell am force-stop io.ts7.carplay
+adb install -r dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev-auth-fixture-instrumented.apk
+timeout 60s adb shell am instrument -w io.ts7.carplay/io.ts7.carplay.AuthenticationInstrumentation > dist/authentication-smoke.txt
+grep -Fq 'PASS: Android 8.1 generated identity load' dist/authentication-smoke.txt
+grep -Fq 'INSTRUMENTATION_CODE: -1' dist/authentication-smoke.txt
+node receiver/tools/verify_readiness_report.js dist/authentication-smoke.txt --authentication

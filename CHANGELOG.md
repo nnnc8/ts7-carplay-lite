@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.0.0-dev experimental standalone — 2026-10-08
+
+- Reused pinned DiPlay P-256 authentication and two explicitly user-selected runtime inputs from official v0.2.7. No proprietary receiver binary/UI/icons.
+- Experimental availability separate from MFi authorization/phone session proof; identity-free source/CI and opted-in standalone; missing/invalid inputs fail closed.
+- Bounded startup-worker loading, real signature/key match, expiry/failure tests and no credential logging/storage.
+- Connect guides permission/paired-phone selection; nine TS7 renderer files unchanged; hotspot readiness last to avoid earlier Network-check interference.
+- Strict1.0.0-dev report contract, generated-identity API27 crypto test; old clients/Diagnostic v0.2/fixed5 unchanged.
+- Runtime identity is NOT Apple-certified or GPL-relicensed; public distribution/future iOS acceptance unresolved. Actual phone/video/audio/touch/recovery not yet verified; not final v1.0 acceptance.
+
 ## TS7 Platform Readiness Preview v0.2.1 — 2026-10-07
 
 - Added Settings → Developer → Test platform readiness: 12 independent actual core/JNI/Bluetooth/RFCOMM/hotspot/multicast/mDNS/TCP/UDP/Network/Surface/AudioTrack checks.

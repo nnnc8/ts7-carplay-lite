@@ -1,8 +1,8 @@
 # TS7 patches to DiPlay Legacy
 
 Base: https://github.com/programmerguohuajing/DiPlay-Legacy-Android
-Commit: c8884adcc75bfda3c134db63877bd6c6f83beb74. Modified 2026-10-07.
-SOURCE_MANIFEST.json records 71 selected source/notice files, original Git blobs,
+Commit: c8884adcc75bfda3c134db63877bd6c6f83beb74. Modified 2026-10-08.
+SOURCE_MANIFEST.json records 72 selected source/notice files, original Git blobs,
 ported SHA-256 and whether modified. JNI makefiles replaced with minimal TS7 recipes.
 UPSTREAM-README.md is upstream README.md renamed as reference, NOT auth instructions.
 
@@ -14,7 +14,7 @@ UPSTREAM-README.md is upstream README.md renamed as reference, NOT auth instruct
   generation guards, accepted-socket timeout; no VPN permission or wired transport.
 - API27 hotspot: API26 callback+Handler / WifiConfiguration only; no API28+ typed refs,
   station disconnect, force5GHz, guessed channel36, manual/P2P/vendor fallback.
-  Unknown AP interface/BSSID/channel fails closed. TS7 hotspot capability UNKNOWN.
+  Unknown AP interface/BSSID/channel fails closed. TS7 temporary reservation PASS, actual channel/peer traffic UNKNOWN.
 - JNI: read-only local_hotspot_radio.c, NDK25.2/API27 armeabi-v7a and x86_64.
   No MFi/I2C native library. Empty-name smoke returns EINVAL without socket/ioctl.
 - Bonjour: explicit interface, bounded queues/status line, multicast/socket cleanup;
@@ -43,8 +43,9 @@ UPSTREAM-README.md is upstream README.md renamed as reference, NOT auth instruct
 Own adapter/provider/proof gate/build: diplay-port/. Nine existing renderer/audio/
 touch/asset files frozen by renderer-lock.json. API27 SDK / Kotlin JVM8 compile.
 Compare exact upstream commit against each manifest path to reproduce diff; renamed
-UPSTREAM-README maps to README.md. Never download upstream APK/auth assets.
-Host fixtures are not iPhone/auth evidence. Default provider unavailable before radios.
+UPSTREAM-README maps to README.md. On2026-10-08 user explicitly selected the official matching v0.2.7 runtime identity. Only two bounded runtime inputs may be supplied outside Git/source/CI; no upstream receiver binary/UI copied.
+LocalMfiAuthenticationClient retains upstream P-256/NONEwithECDSA/raw64 signing with bounded direct-byte loading and close cleanup. Protocol major3,32-byte already-digested challenge, matching public key self-check. Original GPL blob recorded in manifest; runtime data not GPL-relicensed.
+Host/generated-identity fixtures are not phone trust or session evidence. Missing provider blocks radios; selected experimental provider is not isAuthorized/Apple certification.
 
 Final adapter lifecycle review fixes: recovery/render callbacks outside media/owner
 locks; captured-epoch failure invalidation; retain only profile/listener retry intent

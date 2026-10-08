@@ -1,6 +1,6 @@
 # Third-party notices
 
-## DiPlay Legacy — bundled v0.2 preview
+## DiPlay Legacy — bundled core and experimental authentication code
 
 Upstream: https://github.com/programmerguohuajing/DiPlay-Legacy-Android
 Exact commit: c8884adcc75bfda3c134db63877bd6c6f83beb74.
@@ -16,10 +16,29 @@ Existing independently licensed files retain their notices; no blanket relicensi
 License does not grant Apple certification, credentials, trademarks or artwork.
 
 No AGPL common/mobile UI/site copied. No restricted Apple/BYD/CASKA assets, fonts,
-icons, upstream APK, firmware, extracted MFi identity/cert/private key, challenge
-response, vendor blob or proprietary TLink/ZLink/Carlinkit binary is bundled.
+icons, upstream APK, firmware, vendor receiver blob or proprietary TLink/ZLink/Carlinkit
+binary is bundled. Runtime authentication data are described separately below.
 com.shilapi.xcertplay namespace is DiPlay Legacy's actual namespace, not the old
 xcertplay-primary experiment. Old branch remains a separate unfinished checkpoint.
+
+## User-selected experimental DiPlay runtime — 2026-10-08
+
+The user explicitly selected reuse of DiPlay's existing experimental authentication.
+LocalMfiAuthenticationClient.kt is reused from the same GPL core pin; its original
+blob ebb4a08cb7d4f4be8392307666ba345f7eff2e92 is recorded in SOURCE_MANIFEST.json.
+TS7 changes add bounded byte-array input and close; the P-256/NONEwithECDSA/raw64
+signing algorithm is unchanged. Generated identity tests follow upstream test blob
+45f07ef858f9e53bef9bc6d15a6fb0561b4acb42; no stored test identities.
+
+Standalone builds may explicitly include only offline-mfi/identity.pk8 and
+offline-mfi/certificate.p7b from the official DiPlay Legacy v0.2.7 release APK,
+SHA-256 391a68216498cdc221745aa8bb2ee06aecb48680bfd982d37bbeb390d8050927.
+These experimental data came from public Carlinkit firmware according to upstream
+notices; they are NOT relicensed as GPL source, NOT newly issued credentials for TS7,
+and NOT Apple certification. Distribution suitability and future iOS acceptance are
+unresolved. A bundled key is extractable; no confidentiality claim is made.
+They stay outside Git and corresponding source. Source/CI builds omit these inputs.
+GitHub credentials and Android APK-signing keys remain entirely separate and excluded.
 
 ## Runtime dependencies (official downloads, hashes enforced)
 

@@ -47,11 +47,11 @@ public final class SessionMachine {
         return lost; // Observation only; client Wi-Fi loss is not proof of a hotspot/session loss.
     }
 
-    public synchronized void begin(boolean lawfulProviderAvailable) {
+    public synchronized void begin(boolean authenticationProviderAvailable) {
         authenticated = false;
         sessionStartedNs = 0;
         clearRadioProof();
-        if (!lawfulProviderAvailable) {
+        if (!authenticationProviderAvailable) {
             lastReason = Reason.BLOCKED_BY_AUTHENTICATION_REQUIREMENT;
             events.add(EventCode.AUTHENTICATION_BLOCKED);
             transition(State.ERROR);

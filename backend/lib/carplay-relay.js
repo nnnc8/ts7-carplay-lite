@@ -47,17 +47,32 @@ function validate(payload) {
   if (!exactKeys(payload, FIELDS) && !exactKeys(payload, FIELDS_WITH_READINESS)) return ["missing or unknown field"];
   const errors = [];
   if (payload.schemaVersion !== 1 || payload.reportType !== "carplay-alpha"
-      || !["0.1-alpha", "0.2-alpha", "0.2.1-platform"].includes(payload.appVersion)) errors.push("unsupported report version");
+      || !["0.1-alpha", "0.2-alpha", "0.2.1-platform", "1.0.0-dev"].includes(payload.appVersion)) errors.push("unsupported report version");
   if (Object.prototype.hasOwnProperty.call(payload, "platformReadiness")) validatePlatformReadiness(payload.platformReadiness, errors);
-  else if (payload.appVersion === "0.2.1-platform") errors.push("missing platform readiness");
+  else if (["0.2.1-platform", "1.0.0-dev"].includes(payload.appVersion)) errors.push("missing platform readiness");
   if (typeof payload.timestamp !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(payload.timestamp)
       || !Number.isFinite(Date.parse(payload.timestamp))) errors.push("invalid timestamp");
   if (!["IDLE", "TEST_PATTERN", "CARPLAY"].includes(payload.mode) || !STATES.includes(payload.carplayState)) errors.push("invalid session state");
   if (!["OFF", "IDLE", "DISCOVERING", "LINK_OBSERVED", "BOOTSTRAP_CONFIRMED"].includes(payload.bluetoothState)) errors.push("invalid Bluetooth state");
   if (!["DISCONNECTED", "NETWORK_OBSERVED", "SESSION_LINK_CONFIRMED"].includes(payload.wifiState)) errors.push("invalid Wi-Fi state");
-  // All previews lack an authorized authentication provider; readiness cannot authorize a session.
-  if (payload.authentication !== "BLOCKED_BY_AUTHENTICATION_REQUIREMENT" || payload.mode === "CARPLAY"
-      || payload.carplayState === "STREAMING") errors.push("authentication boundary");
+  // Old identity-free previews keep their original hard boundary. New reports are client evidence,
+  // not server verification of phone trust or Apple certification. Readiness alone never qualifies.
+  if (payload.appVersion !== "1.0.0-dev") {
+    if (payload.authentication !== "BLOCKED_BY_AUTHENTICATION_REQUIREMENT" || payload.mode === "CARPLAY"
+        || payload.carplayState === "STREAMING") errors.push("authentication boundary");
+  } else {
+    if (!["BLOCKED_BY_AUTHENTICATION_REQUIREMENT", "EXPERIMENTAL_IDENTITY_AVAILABLE", "PHONE_CONFIRMED_SESSION"].includes(payload.authentication))
+      errors.push("authentication boundary");
+    if (payload.authentication !== "PHONE_CONFIRMED_SESSION" && (payload.mode === "CARPLAY" || payload.carplayState === "STREAMING"))
+      errors.push("authentication boundary");
+    if (payload.authentication === "PHONE_CONFIRMED_SESSION"
+        && (payload.bluetoothState !== "BOOTSTRAP_CONFIRMED" || payload.wifiState !== "SESSION_LINK_CONFIRMED"
+          || payload.mode !== "CARPLAY" || !["CARPLAY_NEGOTIATING", "RECOVERING", "STREAMING"].includes(payload.carplayState)))
+      errors.push("authentication boundary");
+    if (payload.carplayState === "STREAMING" && (payload.mode !== "CARPLAY" || payload.renderedFrames < 1
+        || ["NOT_STARTED", "UNKNOWN"].includes(payload.decoderName) || payload.videoWidth < 1 || payload.videoHeight < 1))
+      errors.push("streaming evidence missing");
+  }
   if (!REASONS.includes(payload.lastDisconnectReason)) errors.push("invalid disconnect reason");
   if (!REASONS.includes(payload.lastPlaybackReason)) errors.push("invalid playback reason");
   if (typeof payload.decoderName !== "string" || !/^(NOT_STARTED|UNKNOWN|(?:OMX|c2)\.[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*){1,8})$/.test(payload.decoderName)
@@ -113,7 +128,9 @@ function sanitize(payload) {
 
 function format(payload) {
   const lines = [`## TS7 CarPlay Lite v${payload.appVersion} diagnostics`, "",
-    "**TECHNICAL PREVIEW — NOT YET A FUNCTIONAL CARPLAY RECEIVER**", "",
+    payload.appVersion === "1.0.0-dev"
+      ? "**DEVELOPMENT — EXPERIMENTAL AUTHENTICATION; CLIENT EVIDENCE, NOT APPLE CERTIFICATION**"
+      : "**TECHNICAL PREVIEW — NOT YET A FUNCTIONAL CARPLAY RECEIVER**", "",
     "The TEST_PATTERN is synthetic H.264, not iPhone/CarPlay video.", ""];
   for (const field of FIELDS) if (field !== "events") lines.push(`- ${field}: ${payload[field]}`);
   if (payload.platformReadiness) {

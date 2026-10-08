@@ -3,7 +3,7 @@ package io.ts7.carplay.auth;
 
 import java.util.Arrays;
 
-/** External, provenance-gated authentication. No provider stores or exports a private key. */
+/** Provenance-gated authentication. Protocol results never export a private key. */
 public interface AuthenticationProvider extends AutoCloseable {
     boolean isAvailable();
     ProviderInfo getInfo();
@@ -11,10 +11,10 @@ public interface AuthenticationProvider extends AutoCloseable {
     void close();
 
     final class ProviderInfo {
-        public enum Type { UNAVAILABLE, HARDWARE_MFI, REMOTE_AUTHORIZED }
-        public enum Source { UNAVAILABLE, MFI_AND_VENDOR_AGREEMENT, AUTHORIZED_SERVICE_AGREEMENT }
-        public enum IdentifierType { NONE, I2C_BUS, USB_INTERFACE, UART_INTERFACE, SERVICE }
-        public enum Provisioning { UNAVAILABLE, UNVERIFIED, AUTHORIZED }
+        public enum Type { UNAVAILABLE, HARDWARE_MFI, REMOTE_AUTHORIZED, EXPERIMENTAL_LOCAL }
+        public enum Source { UNAVAILABLE, MFI_AND_VENDOR_AGREEMENT, AUTHORIZED_SERVICE_AGREEMENT, PUBLIC_DIPLAY_RELEASE }
+        public enum IdentifierType { NONE, I2C_BUS, USB_INTERFACE, UART_INTERFACE, SERVICE, BUNDLED_ASSET }
+        public enum Provisioning { UNAVAILABLE, UNVERIFIED, AUTHORIZED, EXPERIMENTAL_USER_SELECTED }
         public final Type type;
         public final Source authorizedSource;
         public final IdentifierType hardwareIdentifierType;
@@ -37,9 +37,18 @@ public interface AuthenticationProvider extends AutoCloseable {
         public boolean isAuthorized() {
             if (provisioning != Provisioning.AUTHORIZED) return false;
             return type == Type.HARDWARE_MFI && authorizedSource == Source.MFI_AND_VENDOR_AGREEMENT
-                && hardwareIdentifierType != IdentifierType.NONE && hardwareIdentifierType != IdentifierType.SERVICE
+                && (hardwareIdentifierType == IdentifierType.I2C_BUS || hardwareIdentifierType == IdentifierType.USB_INTERFACE
+                    || hardwareIdentifierType == IdentifierType.UART_INTERFACE)
                 || type == Type.REMOTE_AUTHORIZED && authorizedSource == Source.AUTHORIZED_SERVICE_AGREEMENT
                 && hardwareIdentifierType == IdentifierType.SERVICE;
+        }
+
+        /** User-selected experimental identity is usable, but is NOT an authorized MFi claim. */
+        public boolean canUseForConnection() {
+            return isAuthorized() || type == Type.EXPERIMENTAL_LOCAL
+                && authorizedSource == Source.PUBLIC_DIPLAY_RELEASE
+                && hardwareIdentifierType == IdentifierType.BUNDLED_ASSET
+                && provisioning == Provisioning.EXPERIMENTAL_USER_SELECTED;
         }
 
         @Override public String toString() {
@@ -97,7 +106,8 @@ public interface AuthenticationProvider extends AutoCloseable {
         public static AuthResult unavailable() { return new AuthResult(Status.UNAVAILABLE, new byte[0]); }
         public static AuthResult rejected() { return new AuthResult(Status.UNAUTHORIZED, new byte[0]); }
         public static AuthResult cancelled() { return new AuthResult(Status.CANCELLED, new byte[0]); }
-        /** Only an explicitly provisioned provider may return protocol bytes; nothing is bundled. */
+        public static AuthResult failed() { return new AuthResult(Status.FAILED, new byte[0]); }
+        /** Only an explicitly provisioned provider may return protocol bytes; never a private key. */
         public static AuthResult success(byte[] bytes) { return new AuthResult(Status.SUCCESS, bytes); }
         public synchronized byte[] copyProtocolBytes() {
             if (closed) throw new IllegalStateException("AUTH_RESULT_CLOSED");

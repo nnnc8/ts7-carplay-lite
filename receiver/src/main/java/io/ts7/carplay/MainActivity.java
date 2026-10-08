@@ -28,7 +28,7 @@ import android.widget.Toast;
 import java.nio.ByteBuffer;
 import java.util.function.BooleanSupplier;
 import io.ts7.carplay.core.DiPlayReceiverCore;
-import io.ts7.carplay.auth.UnavailableAuthenticationProvider;
+import io.ts7.carplay.core.ExperimentalDiPlayAuthenticationProvider;
 
 public final class MainActivity extends Activity implements SurfaceHolder.Callback {
     private final Handler main = new Handler();
@@ -62,6 +62,8 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     private SessionMachine.Reason playbackReason = SessionMachine.Reason.NONE;
     private boolean touchPressed;
     private int touchPointer;
+    private boolean phoneSelected;
+    private boolean connectAfterPermission;
 
     private final Runnable monitor = new Runnable() {
         @Override public void run() {
@@ -81,7 +83,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.BLACK);
-        heading = text("TS7 CarPlay Lite · v0.2.1 Platform Preview", 20);
+        heading = text("TS7 CarPlay Lite · v1.0 Development", 20);
         heading.setGravity(Gravity.CENTER);
         root.addView(heading, new LinearLayout.LayoutParams(-1, 44));
         surface = new SurfaceView(this);
@@ -105,7 +107,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         root.addView(stage, new LinearLayout.LayoutParams(-1, 0, 1));
         bar = new LinearLayout(this);
         bar.setGravity(Gravity.CENTER_VERTICAL);
-        status = text("Waiting for iPhone · authentication blocked", 14);
+        status = text("Preparing DiPlay authentication", 14);
         bar.addView(status, new LinearLayout.LayoutParams(0, -2, 1));
         button(bar, "Settings", this::settings);
         button(bar, "Diagnostics", this::diagnostics);
@@ -114,8 +116,10 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         readiness = new PlatformReadinessRunner(new AndroidPlatformProbes(this, surface.getHolder()));
         events.add(EventCode.APP_OPEN);
         radio = new RadioMonitor(this, session);
-        core = new DiPlayReceiverCore(this, new UnavailableAuthenticationProvider());
+        ExperimentalDiPlayAuthenticationProvider provider = new ExperimentalDiPlayAuthenticationProvider();
+        core = new DiPlayReceiverCore(this, provider, 3);
         new Thread(() -> {
+            AuthenticationAssets.initialize(getAssets(), provider);
             core.initialize();
             main.post(() -> { if (!isDestroyed()) updateStatus(); });
         }, "ts7-diplay-initialize").start();
@@ -172,12 +176,12 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
 
     private void settings() {
         boolean developer = getPreferences(0).getBoolean("developerPattern", false);
-        String[] options = {"Connect iPhone (authentication unavailable)", "System Bluetooth pairing",
+        String[] options = {"Connect iPhone", "System Bluetooth pairing",
             "System Wi-Fi settings", "Video profile: " + profile.name(),
             "Developer test mode: " + (developer ? "ON" : "OFF"),
             "Start developer H.264 pattern", "Stop playback",
             "Wireless discovery permission", "Select paired iPhone", "Developer"};
-        new AlertDialog.Builder(this).setTitle("Settings · Technical preview")
+        new AlertDialog.Builder(this).setTitle("Settings · Development")
             .setItems(options, (dialog, index) -> {
                 if (index == 0) connect();
                 if (index == 1) startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
@@ -190,7 +194,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                 if (index == 5) startPattern();
                 if (index == 6) stopPlayback(SessionMachine.Reason.USER_STOP);
                 if (index == 7) discoveryPermission();
-                if (index == 8) selectIphone();
+                if (index == 8) selectIphone(false);
                 if (index == 9) developer();
             }).setNegativeButton("Close", null).show();
     }
@@ -204,11 +208,12 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
             .setMessage("Android 8 requires this permission for Wi-Fi/Bluetooth discovery. TS7 CarPlay Lite does not collect or upload location.")
             .setPositiveButton("Continue", (dialog, which) ->
                 requestPermissions(new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, 27))
-            .setNegativeButton("Cancel", null).show();
+            .setNegativeButton("Cancel", (dialog, which) -> connectAfterPermission = false)
+            .setOnCancelListener(dialog -> connectAfterPermission = false).show();
     }
 
     @SuppressWarnings("deprecation")
-    private void selectIphone() {
+    private void selectIphone(boolean connectAfterSelection) {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         if (adapter == null || !adapter.isEnabled()) {
             Toast.makeText(this, "Enable Bluetooth and pair an iPhone in Android settings.", Toast.LENGTH_LONG).show();
@@ -228,7 +233,9 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
             .setItems(names, (dialog, index) -> {
                 stopPlayback(SessionMachine.Reason.USER_STOP);
                 core.selectPairedAddress(devices[index].getAddress());
-                Toast.makeText(this, "Selected locally; authentication remains blocked.", Toast.LENGTH_LONG).show();
+                phoneSelected = true;
+                if (connectAfterSelection) connect();
+                else Toast.makeText(this, "iPhone selected locally. Choose Connect iPhone.", Toast.LENGTH_LONG).show();
             }).setNegativeButton("Cancel", null).show();
     }
 
@@ -242,17 +249,38 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     }
 
     private void connect() {
+        if ("NOT_INITIALIZED".equals(core.initializationStatus())) {
+            Toast.makeText(this, "Preparing authentication. Please try again shortly.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (core.hasAuthenticationProvider()) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                connectAfterPermission = true;
+                discoveryPermission();
+                return;
+            }
+            if (!phoneSelected) { selectIphone(true); return; }
+        }
         stopPlayback(SessionMachine.Reason.USER_STOP);
-        session.begin(core.hasLawfulAuthentication());
-        if (core.hasLawfulAuthentication()) {
+        session.begin(core.hasAuthenticationProvider());
+        if (core.hasAuthenticationProvider()) {
             reconnect.reset();
             coreActive = true;
             core.connect(profile, coreListener(++connectionGeneration));
         }
         else new AlertDialog.Builder(this).setTitle("Authentication blocked")
-            .setMessage("A lawful CarPlay authentication component is required. This technical preview cannot connect an iPhone yet. The developer H.264 pattern can test the decoder and display.")
+            .setMessage("Runtime identity is missing or invalid. Source/CI builds do not include it. The standalone experimental build must contain the explicitly selected DiPlay runtime identity. Local H.264 tests remain available.")
             .setPositiveButton("OK", null).show();
         updateStatus();
+    }
+
+    @Override public void onRequestPermissionsResult(int request, String[] permissions, int[] results) {
+        super.onRequestPermissionsResult(request, permissions, results);
+        if (request != 27) return;
+        boolean continueConnection = connectAfterPermission;
+        connectAfterPermission = false;
+        if (continueConnection && results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED
+                && !isDestroyed()) connect();
     }
 
     // Package-visible for the separately packaged CI instrumentation build.
@@ -261,7 +289,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     String modeForTest() { return mode; }
     SessionMachine sessionForTest() { return session; }
     String coreStatusForTest() { return core.initializationStatus(); }
-    boolean coreAuthForTest() { return core.hasLawfulAuthentication(); }
+    boolean coreAuthForTest() { return core.hasAuthenticationProvider(); }
 
     void startPattern() {
         if (!getPreferences(0).getBoolean("developerPattern", false)) {
@@ -522,7 +550,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
 
     private String report() {
         return Diagnostics.report(this, session, radio, renderer, profile, mode, playbackReason, reconnectCount,
-            audio, events, readiness.snapshot());
+            audio, events, readiness.snapshot(), core.hasAuthenticationProvider());
     }
 
     private void developer() {
@@ -598,7 +626,9 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     private void updateStatus() {
         if (status == null) return;
         SurfaceRenderer current = renderer;
-        String line = "Waiting for iPhone · authentication blocked";
+        String line = core.hasAuthenticationProvider()
+            ? "Waiting for iPhone · experimental identity ready · DiPlay ready"
+            : "Waiting for iPhone · authentication blocked";
         if ("DIPLAY_CORE_READY_AUTH_BLOCKED".equals(core.initializationStatus())) line += " · DiPlay ready";
         else if ("DIPLAY_CORE_INITIALIZATION_FAILED".equals(core.initializationStatus())) line += " · port initialization failed";
         if ("TEST_PATTERN".equals(mode) && current != null) {

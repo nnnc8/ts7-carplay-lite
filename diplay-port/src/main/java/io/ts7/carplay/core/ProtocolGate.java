@@ -15,7 +15,7 @@ public final class ProtocolGate {
 
     public synchronized long begin(AuthenticationProvider provider) {
         stop();
-        authorized = provider != null && provider.isAvailable() && provider.getInfo().isAuthorized();
+        authorized = provider != null && provider.isAvailable() && provider.getInfo().canUseForConnection();
         state = authorized ? State.BOOTSTRAP : State.FAILED;
         failure = authorized ? Failure.NONE : Failure.AUTH_UNAVAILABLE;
         return epoch;

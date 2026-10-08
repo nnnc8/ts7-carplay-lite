@@ -1,7 +1,7 @@
 # TS7 Platform Readiness Preview v0.2.1
 
 **NOT YET A FUNCTIONAL CARPLAY RECEIVER.** PR #18 stays OPEN/unmerged.
-Further CarPlay features and authentication hardware work are paused pending real TS7 evidence.
+Historical v0.2.1 instructions retained below. The2026-10-08 user-approved experimental route now continues toward v1.0; two physical uploads already cover12 individualPASS results. Do not request a repeat run. See [current authentication/build evidence](EXPERIMENTAL_AUTHENTICATION.md).
 This is a user-triggered platform test, not a wireless session or an authentication attempt.
 
 ## Download / operate on TS7
@@ -114,6 +114,7 @@ Wi-Fi AP/channel/SELinux/multicast delivery, SPRD/display/audio hardware or vend
 Unavailable emulator radios/hotspot are honest outcomes, not mocked PASS results.
 Emulated TCP/UDP/Network/Surface/AudioTrack results prove only that emulator instance.
 Real TS7 results, and any iPhone/auth/video/audio/touch session, remain UNKNOWN until captured.
+Update2026-10-08: [first TS7 platform report](https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6050562144) has11PASS/hotspot permission denied; [second](https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6050623491) has11PASS including hotspot reservation+close, Network unavailable after client Wi-Fi loss. These prove each individual probe across two runs, not AP channel/over-air traffic/coexistence or a phone session. Current runner puts hotspot last and footer says authentication NOT TESTED by platform probes; JSON key order unchanged.
 Exact commit, hosted CI, downloadable APK hash and deployment checks are recorded in release notes.
 
 Official API references: [Network.bindSocket](https://developer.android.com/reference/android/net/Network),

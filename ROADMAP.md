@@ -8,19 +8,17 @@ Captured v0.2 report confirms Android 8.1/API 27/ARMv7/2 GB/1280×720/radios/AVC
 
 ## Phase 1 — Wireless CarPlay minimal receiver — CURRENT
 
-Primary strategy: TS7-specific DiPlay Android8.1 fork (Legacy c8884ad), not xcertplay-primary. GPL protocol port IN_PROGRESS; external authentication provider BLOCKED. Deliver v0.2 DiPlay Port Preview and prove API27 startup first; actual iPhone bootstrap is a later real-device gate.
+Primary strategy: TS7-specific DiPlay Android8.1 fork (Legacy c8884ad). Existing experimental local authentication explicitly selected 2026-10-08 and implemented; source builds identity-free, opted-in standalone includes runtime inputs. This is not Apple certification or phone acceptance.
 
-Current scoped gate: v0.2.1 TS7 Platform Readiness Preview, 12 independent local platform
-probes and sanitized fixed13 upload. Further CarPlay features/authentication hardware work
-paused pending physical TS7 evidence. PR18 remains OPEN/unmerged; readiness PASS is not a session.
+v0.2.1 gate has two real TS7 uploads covering12 individualPASS results. Continue toward v1.0 using existing upstream code, without repeated car trips. PR18 OPEN/unmerged; readiness/crypto PASS is not a session.
 
 Lightweight Java/framework shell, lawful-core integration boundary, separate Bluetooth/Wi-Fi/CarPlay states, H.264 → MediaCodec → Surface, telemetry, touch boundary, minimal PCM output and finite recovery.
 
 1280×720 @ 30 fps with 25/20 stability profiles. Prefer OMX.sprd.h264.decoder but record actual fallback. No Compose/WebView or decoded-frame copies.
 
-Current deliverable: generated-H.264 **TECHNICAL PREVIEW / NOT YET A FUNCTIONAL CARPLAY RECEIVER**. Authentication is BLOCKED_BY_AUTHENTICATION_REQUIREMENT. Preview requires an actual working Surface path, not compilation alone.
+Current build: **1.0.0-dev experimental standalone**, real iPhone acceptance not yet verified. Generated-H.264 technical preview and identity-free developer build remain separate.
 
-Functional exit: lawful wireless bootstrap/authenticated session and first real CarPlay frame on TS7, bounded queue, explicit failure classifications and captured evidence. Partial audio/touch must be labeled. No extracted identities/proprietary blobs.
+Functional exit: actual wireless bootstrap/phone-confirmed session and first real CarPlay frame on TS7, bounded queue, explicit failures and captured evidence. Partial audio/touch must be labeled. Only the user-selected experimental identity exception is allowed, not proprietary receiver blobs.
 
 ## Phase 2 — SPRD H.264 / Surface optimization
 

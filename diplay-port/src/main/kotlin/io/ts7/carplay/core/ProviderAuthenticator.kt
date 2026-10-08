@@ -20,7 +20,7 @@ class ProviderAuthenticator(
         operation(AuthenticationProvider.AuthRequest.Operation.SIGN_CHALLENGE, challenge, 65525)
     private fun operation(kind: AuthenticationProvider.AuthRequest.Operation,
         challenge: ByteArray, maximum: Int): ByteArray {
-        if (!provider.isAvailable || !provider.info.isAuthorized)
+        if (!provider.isAvailable || !provider.info.canUseForConnection())
             throw MfiInvalidDataException("AUTH_UNAVAILABLE")
         require(maximum in 1..65525) { "AUTH_BOUND" }
         val request = AuthenticationProvider.AuthRequest(kind, challenge, System.nanoTime() + 3_000_000_000L)
