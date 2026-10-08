@@ -46,11 +46,24 @@ extract or access the historical ignored credential inputs. Upstream provider
 interfaces remain for explicitly legally authorized external provisioning only.
 Without one, AUTH_BLOCKED must stop the real phone connection path.
 
-The R1 APK will be published only after exact-source upstream/TS7 build, tests,
-ARMv7 inspection, actual API27 emulator lifecycle/native/Surface and privacy/license
-gates pass. Until the Release exists, there is no new install recommendation here.
-Every R1 package must say ENGINEERING BASELINE / NOT YET VERIFIED AS FUNCTIONAL
-CARPLAY ON TS7. Real TS7 and real iPhone are separate unpassed acceptance gates.
+R1 is now published after all exact-source upstream/TS7 build, tests, ARMv7,
+actual API27 emulator lifecycle/native/Surface and privacy/license gates passed:
+https://github.com/nnnc8/ts7-diplay/releases/tag/ts7-fullfork-baseline-r1
+Install APK:
+https://github.com/nnnc8/ts7-diplay/releases/download/ts7-fullfork-baseline-r1/TS7-DiPlay-FullFork-Baseline-R1.apk
+Exact new-Fork source: `78f58e776ef6ca1c7e0eb2578d1acbe5c9ba7f67`.
+CI push37787544033 / PR37787553227 / original Android37787553404 all PASS;
+pristine326 / patched361 tests, 17 checker regressions and all8 actual API27
+emulator checks PASS. The actual original AndroidMediaSink produced Surface
+callbacks/red pixels across initial, replaced and restarted Surface cycles.
+The separately packaged corresponding source was extracted, rebuilt and inspected.
+Published assets were downloaded again and all SHA-256 checks matched.
+No raw logcat/test output or phone data was published; test media are synthetic.
+
+Every R1 package says ENGINEERING BASELINE / NOT YET VERIFIED AS FUNCTIONAL
+CARPLAY ON TS7. Real TS7 and real iPhone are separate unpassed acceptance gates;
+this identity-free APK is not install-and-go functional CarPlay. Full Fork PR2
+is draft/unmerged and both repositories' main branches remain untouched.
 
 Next car milestone: install that engineering R1, open Classic UI, choose an
 already-paired iPhone and observe explicit hotspot/preflight result, Bluetooth

@@ -6,6 +6,11 @@
 > 新公開 Fork 不提取、複用或打包未獲授權的 accessory credentials；缺少合法
 > 外部認證時明確顯示 AUTH_BLOCKED。請看 [主線交接](docs/FULL_FORK_HANDOFF.md)。
 > 舊版本、Diagnostic v0.2、relay、Issue 資料及 PR #18 全部保留，不合併 PR #18。
+>
+> 新主線 [TS7 DiPlay Full-Fork Baseline R1 工程測試版](https://github.com/nnnc8/ts7-diplay/releases/tag/ts7-fullfork-baseline-r1)
+> 已發布：[下載 R1 APK](https://github.com/nnnc8/ts7-diplay/releases/download/ts7-fullfork-baseline-r1/TS7-DiPlay-FullFork-Baseline-R1.apk)。
+> 完整來源、361 項測試與 Android8.1 模擬器 8 項驗收通過；實車與真實 iPhone 尚未驗收。
+> 此 APK 不含配件認證資料，缺少合法外部認證時會停在 AUTH_BLOCKED，並非裝好即可連 CarPlay。
 
 **v1.0 development — experimental authentication; real iPhone session not yet verified.**
 
@@ -14,7 +19,7 @@
 使用者於 2026-10-08 明確選用上游實驗性認證，不必先購買額外認證硬體。
 資料可用不代表 iPhone 已信任、CarPlay 已連線或 Apple 官方認證；PR #18 不合併。
 
-## Downloads / install
+## Historical Lite downloads / install — preserved, not the new R1
 
 新版：[直接下載 v1.0.0-dev.1 連線修正版 APK](https://github.com/nnnc8/ts7-carplay-lite/releases/download/carplay-v1.0.0-dev.1-standalone/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1-standalone.apk)（含明確選用的實驗性認證）。
 [預發佈／對應GPL原始碼／檢查碼與完整驗證](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v1.0.0-dev.1-standalone)。

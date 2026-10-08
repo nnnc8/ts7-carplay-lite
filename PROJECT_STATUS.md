@@ -17,6 +17,20 @@ runtime credentials or production relay are changed by this documentation handof
 The new public engineering R1 contains no accessory identity. AUTH_BLOCKED is a
 real blocker, not a phone success claim. See [full handoff](docs/FULL_FORK_HANDOFF.md).
 
+Published [TS7 DiPlay Full-Fork Baseline R1 engineering prerelease](https://github.com/nnnc8/ts7-diplay/releases/tag/ts7-fullfork-baseline-r1)
+at exact new-Fork source `78f58e776ef6ca1c7e0eb2578d1acbe5c9ba7f67`.
+New-Fork push37787544033 / PR37787553227 / unchanged Android37787553404 all PASS.
+Pristine upstream326 / patched361 tests and all8 actual API27 emulator checks PASS,
+including original AndroidMediaSink MediaCodec-to-Surface output and lifecycle.
+ARMv7/native ELF, permissions, signer, source/license/privacy and test isolation PASS.
+Corresponding source ZIP was independently extracted, rebuilt and inspected;
+published assets were downloaded again and all four SHA-256 checks matched.
+APK`cecabf8bd1eefcacb8108e0fe06a35fb6df2a71a66f16f4a4df869635fa86253`;
+source ZIP`3aab93f3f05a328add16b4dd831d0bd0553d790b9a1c99656660a4c716bc2077`.
+This is ENGINEERING BASELINE / NOT YET VERIFIED AS FUNCTIONAL CARPLAY ON TS7.
+Real TS7 and real iPhone NOT RUN; missing authorized authentication is AUTH_BLOCKED.
+No new Lite receiver code, old credentials, main/PR18, releases or relay changed.
+
 ## Historical Lite phase — not the current receiver strategy
 
 Phase 1 — Wireless CarPlay minimal receiver / IMPLEMENTATION_IN_PROGRESS.
