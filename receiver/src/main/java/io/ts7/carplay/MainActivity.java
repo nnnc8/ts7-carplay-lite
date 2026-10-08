@@ -37,6 +37,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     private DiPlayReceiverCore core;
     private final RetryBudget reconnect = new RetryBudget();
     private final PcmAudioOutput audio = new PcmAudioOutput(events);
+    private FocusedPcmAudioOutput focusedAudio;
     private final float[] touch = new float[2];
     private RadioMonitor radio;
     private SurfaceView surface;
@@ -64,6 +65,8 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     private int touchPointer;
     private boolean phoneSelected;
     private boolean connectAfterPermission;
+    private volatile EventCode connectionDetail;
+    private static final long CONNECTION_ATTEMPT_TIMEOUT_MS = 120000;
 
     private final Runnable monitor = new Runnable() {
         @Override public void run() {
@@ -113,6 +116,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         button(bar, "Diagnostics", this::diagnostics);
         root.addView(bar, new LinearLayout.LayoutParams(-1, 54));
         setContentView(root); // No probes, assets or MediaCodec work precede visible UI.
+        focusedAudio = new FocusedPcmAudioOutput(this, audio, events, main);
         readiness = new PlatformReadinessRunner(new AndroidPlatformProbes(this, surface.getHolder()));
         events.add(EventCode.APP_OPEN);
         radio = new RadioMonitor(this, session);
@@ -266,7 +270,11 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         if (core.hasAuthenticationProvider()) {
             reconnect.reset();
             coreActive = true;
-            core.connect(profile, coreListener(++connectionGeneration));
+            connectionDetail = null;
+            reconnect.attemptStarted();
+            int expected = ++connectionGeneration;
+            armConnectionDeadline(expected, ++recoveryGeneration);
+            core.connect(profile, coreListener(expected));
         }
         else new AlertDialog.Builder(this).setTitle("Authentication blocked")
             .setMessage("Runtime identity is missing or invalid. Source/CI builds do not include it. The standalone experimental build must contain the explicitly selected DiPlay runtime identity. Local H.264 tests remain available.")
@@ -371,7 +379,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         generation++;
         if (pattern != null) { pattern.stop(); pattern = null; events.add(EventCode.TEST_STOP); }
         if (renderer != null) renderer.stop(); // Never wait for a vendor call on the UI thread.
-        audio.stop();
+        focusedAudio.stop();
         mode = "IDLE";
         playbackReason = reason;
         showChrome();
@@ -418,14 +426,19 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
             public void bluetoothBootstrapConfirmed() { bluetoothBootstrapConfirmed(() -> true); }
             public void bluetoothBootstrapConfirmed(BooleanSupplier attemptCurrent) {
                 main.post(() -> {
-                    if (attemptCurrent.getAsBoolean() && connectionCurrent(expected) && session.state() == SessionMachine.State.BT_DISCOVERY)
+                    if (attemptCurrent.getAsBoolean() && connectionCurrent(expected)
+                            && (session.state() == SessionMachine.State.BT_DISCOVERY
+                                || (session.state() == SessionMachine.State.RECOVERING && !session.authenticated())))
                         session.bootstrapConfirmed();
                 });
             }
             public void wifiSessionLinkConfirmed() { wifiSessionLinkConfirmed(() -> true); }
             public void wifiSessionLinkConfirmed(BooleanSupplier attemptCurrent) {
                 main.post(() -> {
-                    if (attemptCurrent.getAsBoolean() && connectionCurrent(expected) && session.state() == SessionMachine.State.WIFI_CONNECTING)
+                    if (attemptCurrent.getAsBoolean() && connectionCurrent(expected)
+                            && (session.state() == SessionMachine.State.WIFI_CONNECTING
+                                || (session.state() == SessionMachine.State.RECOVERING && !session.authenticated()
+                                    && session.bluetooth() == SessionMachine.BluetoothState.BOOTSTRAP_CONFIRMED)))
                         session.sessionWifiConfirmed();
                 });
             }
@@ -460,24 +473,36 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
             }
             public boolean audioFormat(int sampleRate, int channels) {
                 if (!connectionCurrent(expected) || !session.authenticated() || !"CARPLAY".equals(mode)) return false;
-                try { audio.start(sampleRate, channels); return true; }
-                catch (Exception error) { events.add(EventCode.AUDIO_ERROR); return false; }
+                return focusedAudio.start(sampleRate, channels);
             }
             public int audioPcm(ByteBuffer pcm, int bytes) {
                 if (!connectionCurrent(expected) || !session.authenticated() || !"CARPLAY".equals(mode)) return 0;
-                int written = audio.write(pcm, bytes);
+                int written = focusedAudio.write(pcm, bytes);
                 if (written != bytes) events.add(EventCode.AUDIO_ERROR, bytes - written);
                 return written;
             }
             public void audioStopped() {
-                if (expected == connectionGeneration) audio.stop();
+                if (expected == connectionGeneration) focusedAudio.stop();
+            }
+            public void connectionEvent(EventCode code, BooleanSupplier attemptCurrent) {
+                if (attemptCurrent.getAsBoolean() && connectionCurrent(expected)) {
+                    connectionDetail = code;
+                    events.add(code);
+                }
             }
         };
     }
 
     private void handleDisconnect(int expected, SessionMachine.Reason reason) {
-        if (!connectionCurrent(expected)
-                || (session.state() == SessionMachine.State.RECOVERING && !session.authenticated())) return;
+        if (!connectionCurrent(expected)) return;
+        if (session.state() == SessionMachine.State.RECOVERING && !session.authenticated()) {
+            if (reconnect.attemptEnded()) {
+                session.recovering(reason); // Revoke proof from this failed retry before the next attempt.
+                scheduleReconnect(expected, ++recoveryGeneration);
+            }
+            return;
+        }
+        reconnect.attemptEnded();
         session.recovering(reason);
         stopVideo(reason); // Fresh authentication and a fresh rendered frame are needed.
         events.add(EventCode.RECOVERY_START);
@@ -490,27 +515,36 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     }
 
     private void scheduleReconnect(int expectedConnection, int expectedRecovery) {
+        if (reconnect.inFlight()) return; // Backoff is between failed attempts, not a timer cancelling a live handshake.
         long delay = reconnect.peekDelayMs();
         if (delay < 0) {
-            // The final attempt gets a completion window; never cancel it on the same UI turn.
-            main.postDelayed(() -> {
-                if (!recoveryCurrent(expectedConnection, expectedRecovery)) return;
-                session.exhausted();
-                stopPlayback(SessionMachine.Reason.RECOVERY_EXHAUSTED);
-            }, 5000);
+            if (!recoveryCurrent(expectedConnection, expectedRecovery)) return;
+            session.exhausted();
+            stopPlayback(SessionMachine.Reason.RECOVERY_EXHAUSTED);
             return;
         }
         main.postDelayed(() -> {
-            if (!recoveryCurrent(expectedConnection, expectedRecovery)) return;
+            if (!recoveryCurrent(expectedConnection, expectedRecovery) || !reconnect.attemptStarted()) return;
             reconnect.nextDelayMs(); // Consume only an attempt actually dispatched.
             reconnectCount++;
-            core.reconnect(); // Acceptance is not evidence of recovery: core must resume authenticated media.
-            // Let synchronous provider callbacks posted to the UI complete first.
+            int deadlineGeneration = ++recoveryGeneration;
+            armConnectionDeadline(expectedConnection, deadlineGeneration);
+            boolean accepted = core.reconnect();
+            // Accepted attempts wait for actual success/failure or their bounded startup deadline.
             main.post(() -> {
-                if (recoveryCurrent(expectedConnection, expectedRecovery))
-                    scheduleReconnect(expectedConnection, expectedRecovery);
+                if (!accepted && recoveryCurrent(expectedConnection, deadlineGeneration) && reconnect.attemptEnded())
+                    scheduleReconnect(expectedConnection, ++recoveryGeneration);
             });
         }, delay);
+    }
+
+    private void armConnectionDeadline(int expectedConnection, int expectedRecovery) {
+        main.postDelayed(() -> {
+            if (!connectionCurrent(expectedConnection) || recoveryGeneration != expectedRecovery
+                    || !reconnect.inFlight() || session.authenticated()) return;
+            events.add(EventCode.CONNECTION_ATTEMPT_TIMEOUT);
+            core.connectionTimedOut(); // Invalidates only this attempt; retains explicit user's finite retry intent.
+        }, CONNECTION_ATTEMPT_TIMEOUT_MS);
     }
 
     private void diagnostics() {
@@ -636,6 +670,8 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                 + String.format(java.util.Locale.US, "%.1f fps · q=%d", current.measuredFps(), current.queueDepth());
         } else if (coreActive) line = session.state().name();
         else if (playbackReason != SessionMachine.Reason.NONE && playbackReason != SessionMachine.Reason.USER_STOP) line += " · " + playbackReason.name();
+        if (connectionDetail != null && (coreActive || playbackReason == SessionMachine.Reason.RECOVERY_EXHAUSTED))
+            line += " · " + connectionDetail.name();
         status.setText(line);
     }
 

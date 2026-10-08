@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import com.shilapi.xcertplay.airplay.*
 import com.shilapi.xcertplay.orchestration.*
 import io.ts7.carplay.ReceiverCore
+import io.ts7.carplay.EventCode
 import io.ts7.carplay.SessionMachine
 import io.ts7.carplay.VideoProfile
 import io.ts7.carplay.auth.AuthenticationProvider
@@ -43,6 +44,8 @@ class DiPlayReceiverCore @JvmOverloads constructor(
         if (closed || initialized || controller != null) return
         try {
             createController(VideoProfile.DEFAULT, false).start()
+            // Validate startup, then retire the idle controller before the first explicit Connect.
+            invalidateLocked()
             initialized = true
             initialization = if (hasAuthenticationProvider()) "DIPLAY_CORE_READY_EXPERIMENTAL"
                 else "DIPLAY_CORE_READY_AUTH_BLOCKED"
@@ -71,6 +74,7 @@ class DiPlayReceiverCore @JvmOverloads constructor(
     private fun startConnection(profile: VideoProfile, target: ReceiverCore.Listener, retry: Boolean): Boolean {
         var pending: CarPlayController? = null
         var error: SessionMachine.Reason? = null
+        var teardownPending = false
         val retired: DiPlayMediaBridge?
         val captured: Long
         synchronized(lock) {
@@ -81,10 +85,11 @@ class DiPlayReceiverCore @JvmOverloads constructor(
             epoch = gate.begin(provider)
             captured = epoch
             listener = target
+            teardownPending = closingController?.awaitClosed(0) == false
             error = when {
                 !hasAuthenticationProvider() -> SessionMachine.Reason.BLOCKED_BY_AUTHENTICATION_REQUIREMENT
                 // No UI-thread wait; retain retry intent until the old service has detached.
-                closingController?.awaitClosed(0) == false -> SessionMachine.Reason.SESSION_LOST
+                teardownPending -> SessionMachine.Reason.SESSION_LOST
                 context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
                     selectedAddress == null -> SessionMachine.Reason.INPUT_REJECTED
                 else -> null
@@ -98,7 +103,11 @@ class DiPlayReceiverCore @JvmOverloads constructor(
         }
         // Never acquire a media monitor or perform event I/O under the connection-owner lock.
         retired?.clear()
-        if (error != null) { fail(captured, error!!); return false }
+        if (error != null) {
+            if (error == SessionMachine.Reason.SESSION_LOST) record(captured, if (teardownPending)
+                EventCode.CONNECTION_TEARDOWN_PENDING else EventCode.WIRELESS_SESSION_FAILED)
+            fail(captured, error!!); return false
+        }
         try { pending?.start() }
         catch (_: Exception) { fail(captured, SessionMachine.Reason.SESSION_LOST) }
         return synchronized(lock) { gate.current(captured) }
@@ -139,19 +148,32 @@ class DiPlayReceiverCore @JvmOverloads constructor(
                 }
             },
             CarPlayMediaEngine(bridge ?: object : MediaSink {}, microphoneEnabled = false),
-            { status -> if (status is CarPlayStatus.Failed || status == CarPlayStatus.ControlEnded) {
-                fail(captured, SessionMachine.Reason.SESSION_LOST)
-            } else synchronized(lock) {
-                if (gate.current(captured)) when (status) {
-                    CarPlayStatus.BluetoothBootstrapAuthenticated -> {
-                        bluetoothReady = true
-                        if (gate.bootstrapConfirmed(captured)) listener?.bluetoothBootstrapConfirmed { gate.current(captured) }
-                        advance(captured)
-                    }
-                    CarPlayStatus.WifiTunnelAuthenticated -> { tunnelReady = true; advance(captured) }
-                    else -> Unit
+            { status ->
+                val code = when (status) {
+                    CarPlayStatus.StartingHotspot -> EventCode.WIRELESS_HOTSPOT_START
+                    is CarPlayStatus.HotspotReady -> EventCode.WIRELESS_HOTSPOT_READY
+                    CarPlayStatus.AttachingNetwork -> EventCode.WIRELESS_AIRPLAY_START
+                    CarPlayStatus.ConnectingBluetooth -> EventCode.WIRELESS_RFCOMM_CONNECT
+                    CarPlayStatus.RunningWireless -> EventCode.WIRELESS_IAP2_NEGOTIATION
+                    CarPlayStatus.ControlEnded -> EventCode.WIRELESS_CONTROL_TIMEOUT
+                    is CarPlayStatus.Failed -> fixedConnectionFailure(status.message)
+                    else -> null
                 }
-            } },
+                code?.let { record(captured, it) }
+                if (status is CarPlayStatus.Failed || status == CarPlayStatus.ControlEnded) {
+                    fail(captured, SessionMachine.Reason.SESSION_LOST)
+                } else synchronized(lock) {
+                    if (gate.current(captured)) when (status) {
+                        CarPlayStatus.BluetoothBootstrapAuthenticated -> {
+                            bluetoothReady = true
+                            if (gate.bootstrapConfirmed(captured)) listener?.bluetoothBootstrapConfirmed { gate.current(captured) }
+                            advance(captured)
+                        }
+                        CarPlayStatus.WifiTunnelAuthenticated -> { tunnelReady = true; advance(captured) }
+                        else -> Unit
+                    }
+                }
+            },
             if (authorized) ProviderAuthenticator(provider, providerProtocolMajor) else null,
         ).also { controller = it }
     }
@@ -178,6 +200,14 @@ class DiPlayReceiverCore @JvmOverloads constructor(
         val retry = synchronized(lock) { desiredListener?.let { lastProfile to it } } ?: return false
         if (!hasAuthenticationProvider()) return false
         return startConnection(retry.first, retry.second, true)
+    }
+    fun connectionTimedOut() {
+        val captured = synchronized(lock) { epoch }
+        fail(captured, SessionMachine.Reason.SESSION_LOST)
+    }
+    private fun record(captured: Long, code: EventCode) {
+        val target = synchronized(lock) { if (gate.current(captured)) listener else null }
+        target?.connectionEvent(code) { gate.current(captured) }
     }
     private fun fail(captured: Long, reason: SessionMachine.Reason) {
         val stopped = synchronized(lock) {
@@ -217,4 +247,19 @@ class DiPlayReceiverCore @JvmOverloads constructor(
         disconnect()
         provider.close()
     }
+}
+
+/** Never turn arbitrary exception or peer text into public diagnostics. */
+fun fixedConnectionFailure(message: String?): EventCode = when (message) {
+    "LOCAL_BLUETOOTH_ADDRESS_UNAVAILABLE" -> EventCode.LOCAL_BLUETOOTH_ADDRESS_UNAVAILABLE
+    "BLUETOOTH_SELECTION_REQUIRED" -> EventCode.BLUETOOTH_SELECTION_REQUIRED
+    "HOTSPOT_TIMEOUT" -> EventCode.HOTSPOT_TIMEOUT
+    "HOTSPOT_CANCELLED" -> EventCode.HOTSPOT_CANCELLED
+    "HOTSPOT_CONFIG_UNAVAILABLE" -> EventCode.HOTSPOT_CONFIG_UNAVAILABLE
+    "HOTSPOT_SECURITY_UNSUPPORTED" -> EventCode.HOTSPOT_SECURITY_UNSUPPORTED
+    "HOTSPOT_CHANNEL_UNKNOWN" -> EventCode.HOTSPOT_CHANNEL_UNKNOWN
+    "HOTSPOT_ADDRESS_AMBIGUOUS" -> EventCode.HOTSPOT_ADDRESS_AMBIGUOUS
+    "WIRELESS_SERVICE_LOST" -> EventCode.WIRELESS_SERVICE_LOST
+    "WIRELESS_TUNNEL_FAILED" -> EventCode.WIRELESS_TUNNEL_FAILED
+    else -> EventCode.WIRELESS_SESSION_FAILED
 }

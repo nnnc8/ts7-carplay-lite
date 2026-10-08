@@ -37,7 +37,7 @@ TS7_CARPLAY_UPLOAD_URL=https://ts7-carplay-lite-relay.vercel.app/api/carplay-dia
 ./receiver/build.sh
 ```
 
-Outputs: TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.apk (identity-free) or -standalone.apk (selected runtime). Both API27/ARMv7, versionCode4, test-signed. Existing release signing differs from local/CI signing; Android may require receiver uninstall/reinstall, which clears receiver preferences. Diagnostic v0.2 is separate and unaffected.
+Outputs: TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1.apk (identity-free) or -standalone.apk (selected runtime). Both API27/ARMv7, versionCode5, test-signed. Original v1.0.0-dev and this local build reuse the same ignored signing key; verify the released artifacts' certificate equality before claiming in-place upgrade. Other local/CI builds may differ and require reinstall, clearing receiver preferences. Diagnostic v0.2 is separate and unaffected.
 
 Build rejects symlinks/missing/oversize inputs, copies only the exact two filenames, and inspection verifies packaged bytes against selected inputs. Source archives and hosted CI never include the real runtime files. A fresh generated self-signed test identity builds a clearly labeled -auth-fixture-instrumented.apk for API27 crypto tests only; do not distribute that as a usable receiver.
 

@@ -7,6 +7,9 @@ ported SHA-256 and whether modified. JNI makefiles replaced with minimal TS7 rec
 UPSTREAM-README.md is upstream README.md renamed as reference, NOT auth instructions.
 
 - CarPlayController: retain actual wireless RFCOMM/iAP2/LOHS/AirPlay handoff.
+  Failure callbacks now preserve only exact allowlisted local codes; tunnel errors
+  use a fixed generic code, never exception/peer data. Own startup retires its idle
+  controller before Connect; finite retry backoff waits for attempt completion.
   Remove vendor initialization, wired/NCM/USB/CH341/I2C scanning, credential loaders,
   auth servers, persistent phone-pair databases, GPS/CAN/HUD. Explicit authenticator
   required before starting radios. RuntimeConfig: single selected wireless phone.

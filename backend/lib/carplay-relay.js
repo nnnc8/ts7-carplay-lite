@@ -14,6 +14,7 @@ const PLATFORM_READINESS_FIELDS = [
   "mdns", "tcpBind", "udpBind", "networkBinding", "surface", "audioTrack",
 ];
 const FIELDS_WITH_READINESS = [...FIELDS, "platformReadiness"];
+const DEVELOPMENT_VERSIONS = ["1.0.0-dev", "1.0.0-dev.1"];
 const READINESS_ERROR_CODES = {
   PASS: ["NONE"],
   PERMISSION_DENIED: ["PERMISSION_MISSING"],
@@ -36,6 +37,11 @@ const EVENTS = new Set([
   "FIRST_FRAME", "DECODER_ERROR", "CODEC_CALL_TIMEOUT", "VIDEO_STALL", "RECOVERY_START", "RECOVERY_SUCCESS", "RECOVERY_EXHAUSTED",
   "KEYFRAME_REQUEST", "TEST_START", "TEST_STOP", "STREAM_RESET", "QUEUE_RESYNC", "INPUT_REJECTED",
   "SURFACE_LOST", "AUDIO_STARTED", "AUDIO_STOPPED", "AUDIO_ERROR", ...STATES.map((state) => "STATE_" + state),
+  "CONNECTION_ATTEMPT_TIMEOUT", "CONNECTION_TEARDOWN_PENDING", "WIRELESS_HOTSPOT_START", "WIRELESS_HOTSPOT_READY",
+  "WIRELESS_AIRPLAY_START", "WIRELESS_RFCOMM_CONNECT", "WIRELESS_IAP2_NEGOTIATION", "WIRELESS_SESSION_FAILED",
+  "WIRELESS_CONTROL_TIMEOUT", "WIRELESS_TUNNEL_FAILED", "WIRELESS_SERVICE_LOST", "LOCAL_BLUETOOTH_ADDRESS_UNAVAILABLE",
+  "BLUETOOTH_SELECTION_REQUIRED", "HOTSPOT_TIMEOUT", "HOTSPOT_CANCELLED", "HOTSPOT_CONFIG_UNAVAILABLE",
+  "HOTSPOT_SECURITY_UNSUPPORTED", "HOTSPOT_CHANNEL_UNKNOWN", "HOTSPOT_ADDRESS_AMBIGUOUS",
 ]);
 
 function object(value) { return value !== null && typeof value === "object" && !Array.isArray(value); }
@@ -47,9 +53,9 @@ function validate(payload) {
   if (!exactKeys(payload, FIELDS) && !exactKeys(payload, FIELDS_WITH_READINESS)) return ["missing or unknown field"];
   const errors = [];
   if (payload.schemaVersion !== 1 || payload.reportType !== "carplay-alpha"
-      || !["0.1-alpha", "0.2-alpha", "0.2.1-platform", "1.0.0-dev"].includes(payload.appVersion)) errors.push("unsupported report version");
+      || !["0.1-alpha", "0.2-alpha", "0.2.1-platform", ...DEVELOPMENT_VERSIONS].includes(payload.appVersion)) errors.push("unsupported report version");
   if (Object.prototype.hasOwnProperty.call(payload, "platformReadiness")) validatePlatformReadiness(payload.platformReadiness, errors);
-  else if (["0.2.1-platform", "1.0.0-dev"].includes(payload.appVersion)) errors.push("missing platform readiness");
+  else if (["0.2.1-platform", ...DEVELOPMENT_VERSIONS].includes(payload.appVersion)) errors.push("missing platform readiness");
   if (typeof payload.timestamp !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(payload.timestamp)
       || !Number.isFinite(Date.parse(payload.timestamp))) errors.push("invalid timestamp");
   if (!["IDLE", "TEST_PATTERN", "CARPLAY"].includes(payload.mode) || !STATES.includes(payload.carplayState)) errors.push("invalid session state");
@@ -57,7 +63,7 @@ function validate(payload) {
   if (!["DISCONNECTED", "NETWORK_OBSERVED", "SESSION_LINK_CONFIRMED"].includes(payload.wifiState)) errors.push("invalid Wi-Fi state");
   // Old identity-free previews keep their original hard boundary. New reports are client evidence,
   // not server verification of phone trust or Apple certification. Readiness alone never qualifies.
-  if (payload.appVersion !== "1.0.0-dev") {
+  if (!DEVELOPMENT_VERSIONS.includes(payload.appVersion)) {
     if (payload.authentication !== "BLOCKED_BY_AUTHENTICATION_REQUIREMENT" || payload.mode === "CARPLAY"
         || payload.carplayState === "STREAMING") errors.push("authentication boundary");
   } else {
@@ -128,7 +134,7 @@ function sanitize(payload) {
 
 function format(payload) {
   const lines = [`## TS7 CarPlay Lite v${payload.appVersion} diagnostics`, "",
-    payload.appVersion === "1.0.0-dev"
+    DEVELOPMENT_VERSIONS.includes(payload.appVersion)
       ? "**DEVELOPMENT — EXPERIMENTAL AUTHENTICATION; CLIENT EVIDENCE, NOT APPLE CERTIFICATION**"
       : "**TECHNICAL PREVIEW — NOT YET A FUNCTIONAL CARPLAY RECEIVER**", "",
     "The TEST_PATTERN is synthetic H.264, not iPhone/CarPlay video.", ""];

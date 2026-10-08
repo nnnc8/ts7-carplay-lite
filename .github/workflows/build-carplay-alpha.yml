@@ -48,21 +48,21 @@ jobs:
       - name: Upload requested platform APK
         uses: actions/upload-artifact@v4
         with:
-          name: TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.apk
-          path: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.apk
+          name: TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1.apk
+          path: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1.apk
           if-no-files-found: error
 
       - name: Upload generated authentication test fixture (not for installation)
         uses: actions/upload-artifact@v4
         with:
           name: TS7-Authentication-Test-Fixture
-          path: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev-auth-fixture-instrumented.apk
+          path: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1-auth-fixture-instrumented.apk
           if-no-files-found: error
       - name: Upload separate instrumentation APK
         uses: actions/upload-artifact@v4
         with:
           name: TS7-Alpha-Instrumentation
-          path: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev-instrumented.apk
+          path: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1-instrumented.apk
           if-no-files-found: error
 
   android-81-surface:
@@ -76,7 +76,7 @@ jobs:
           node-version: '20'
       - uses: actions/download-artifact@v4
         with:
-          name: TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.apk
+          name: TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1.apk
           path: dist
       - uses: actions/download-artifact@v4
         with:

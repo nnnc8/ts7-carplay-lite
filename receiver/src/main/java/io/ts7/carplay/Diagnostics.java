@@ -23,7 +23,7 @@ public final class Diagnostics {
         StringBuilder json = new StringBuilder(20000);
         String authentication = session.authenticated() ? "PHONE_CONFIRMED_SESSION"
             : authenticationAvailable ? "EXPERIMENTAL_IDENTITY_AVAILABLE" : "BLOCKED_BY_AUTHENTICATION_REQUIREMENT";
-        json.append("{\"schemaVersion\":1,\"reportType\":\"carplay-alpha\",\"appVersion\":\"1.0.0-dev\"")
+        json.append("{\"schemaVersion\":1,\"reportType\":\"carplay-alpha\",\"appVersion\":\"").append(BuildConfig.VERSION_NAME).append("\"")
             .append(",\"timestamp\":\"").append(time.format(new Date())).append('"')
             .append(",\"mode\":\"").append(mode).append('"')
             .append(",\"carplayState\":\"").append(session.state().name()).append('"')

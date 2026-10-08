@@ -22,6 +22,14 @@ private fun put64(bytes: ByteArray, at: Int, value: Long) {
     for (i in 0..7) bytes[at + i] = (value ushr (56 - 8 * i)).toByte()
 }
 fun main() {
+    for (code in listOf("LOCAL_BLUETOOTH_ADDRESS_UNAVAILABLE", "HOTSPOT_CHANNEL_UNKNOWN", "HOTSPOT_TIMEOUT", "WIRELESS_SERVICE_LOST")) {
+        expect(com.shilapi.xcertplay.orchestration.fixedWirelessFailureCode(code) == code)
+        expect(fixedConnectionFailure(code).name == code)
+    }
+    for (unsafe in listOf(null, "PRIVATE_CANARY 00:11:22:33:44:55", "192.0.2.123 SSID", "BEGIN CERTIFICATE", "APP_OPEN")) {
+        expect(com.shilapi.xcertplay.orchestration.fixedWirelessFailureCode(unsafe) == "WIRELESS_SESSION_FAILED")
+        expect(fixedConnectionFailure(unsafe) == io.ts7.carplay.EventCode.WIRELESS_SESSION_FAILED)
+    }
     val original = linkedMapOf("fps" to 30L, "audio" to listOf("LPCM", true))
     val encoded = BplistCodec.encode(original)
     expect(BplistCodec.decode(encoded) == original)

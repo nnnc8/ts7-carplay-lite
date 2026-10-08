@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.0-dev.1 connection repair — 2026-10-08
+
+- Fixed initial idle-controller teardown race and retry timers cancelling a running wireless negotiation. Backoff1/2/5s only between failures, bounded120s per attempt, no infinite retry.
+- Fresh Bluetooth/Wi-Fi proof retained during recovery; no reuse of the lost session's radio proof. Fixed stage/failure codes identify where connection stopped without private data/arbitrary exception text.
+- Native Android8 audio-focus interruption/regain around unchanged LPCM sink; muted live PCM discarded, stale gain/loss revoked on stop/replacement.
+- versionCode5; older reports/releases/Diagnostic preserved. Exact candidate CI and actual iPhone acceptance pending. Not final v1.0 or Apple certification.
+
 ## v1.0.0-dev experimental standalone — 2026-10-08
 
 - Reused pinned DiPlay P-256 authentication and two explicitly user-selected runtime inputs from official v0.2.7. No proprietary receiver binary/UI/icons.

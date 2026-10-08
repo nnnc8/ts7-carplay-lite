@@ -10,7 +10,7 @@ import os
 apk = pathlib.Path(sys.argv[1])
 badging = subprocess.check_output([sys.argv[2], "dump", "badging", str(apk)], text=True)
 assert re.search(r"(?:minSdkVersion|sdkVersion):'27'", badging) and "targetSdkVersion:'27'" in badging
-assert "package: name='io.ts7.carplay'" in badging and "versionName='1.0.0-dev'" in badging and "versionCode='4'" in badging
+assert "package: name='io.ts7.carplay'" in badging and "versionName='1.0.0-dev.1'" in badging and "versionCode='5'" in badging
 experimental = len(sys.argv) == 4 and sys.argv[3] == "--experimental-auth"
 assert len(sys.argv) == (4 if experimental else 3)
 assert set(re.search(r"native-code: (.*)", badging).group(1).replace("'", "").split()) == {"armeabi-v7a", "x86_64"}

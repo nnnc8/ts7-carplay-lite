@@ -8,7 +8,7 @@ Phase 1 — Wireless CarPlay minimal receiver / IMPLEMENTATION_IN_PROGRESS.
 Primary strategy: **TS7-specific DiPlay Android 8.1 port**.
 Protocol: DiPlay-derived port IN_PROGRESS.
 Authentication: **EXPERIMENTAL_LOCAL IMPLEMENTED**, user-selected 2026-10-08.
-Version: **1.0.0-dev standalone**, NOT Apple-certified; real iPhone session not yet verified.
+Version: **1.0.0-dev.1 repair in progress**, NOT Apple-certified; real iPhone session not yet verified.
 Continue toward v1.0 with existing DiPlay code and necessary TS7 adaptations.
 Missing runtime inputs remain BLOCKED; PR18 unmerged/main preserved.
 xcertplay remains fallback/auth-hardware architecture reference, not primary work.
@@ -23,6 +23,8 @@ both public routes GET405/invalidPOST400/new-version missing-readiness rejection
 Detailed compiled-artifact evidence is in the release notes; subsequent documentation-only commits do not change that release's APK/source tag.
 
 ## Preserved real TS7 evidence
+
+- [Actual standalone connection failure](https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6051350325): v1.0.0-dev identity available, no decoder/frame/session, initial failure23ms after Connect,3 retries exhausted13s later. Source confirms idle startup controller teardown rejects the immediate first attempt, and prior1/2/5s timers could cancel an accepted slow hotspot/RFCOMM/handshake; timing is consistent but the old generic report cannot identify every runtime failure. v1.0.0-dev.1 repairs these control-flow defects and adds fixed stage/failure codes. Exact-build/device evidence pending; no repeat platform tests requested.
 
 - Android8.1/API27/ARMv7/2GB, display1280×720/160DPI.
 - sprd/SPRD + sp7731e_1h10 board strings VERIFIED; About SL8141E OBSERVED,
@@ -55,6 +57,9 @@ Runtime credentials are not GPL-relicensed or Apple-certified; public distributi
 Authorized-provider templates remain separate. See docs/EXPERIMENTAL_AUTHENTICATION.md.
 
 ## Implemented
+
+- Recovery waits for actual attempt completion before1/2/5s backoff; each negotiation has120s deadline. Startup probe controller retires before Connect; old-controller teardown remains quarantined. Fresh recovery requires Bluetooth/Wi-Fi proof again. Fixed failure/stage events expose no peer/credential/error text.
+- Native API26 audio focus wraps the unchanged PCM sink; temporary loss drops live audio without queueing, gain restarts the same format, permanent loss/stop revoke stale callbacks. No new permission/dependency or frozen renderer change. Candidate API27 focus instrumentation pending.
 
 - Reused pinned P-256/protocol-major3 authenticator; bounded direct assets, key/certificate self-check, fixed failures, startup worker and no secret logging/storage.
 - Experimental availability separate from authorized MFi/real session proof; Connect guides permission and paired-phone selection.

@@ -20,7 +20,7 @@ TS7_CARPLAY_UPLOAD_URL=https://ts7-carplay-lite-relay.vercel.app/api/carplay-dia
 ```
 
 Output: build/diplay-port/core.jar, source-built API27 ARMv7/x86_64 JNI,
-dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.apk (identity-free).
+dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1.apk (identity-free).
 Host fake provider only in src/test; not packaged. Tests do not prove iPhone success.
 Ignored persistent local test key / ephemeral CI key, not production signing.
 Source/API/ABI/digests reproducible; signing/timestamps not byte-identical promised.

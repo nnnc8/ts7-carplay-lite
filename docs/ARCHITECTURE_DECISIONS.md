@@ -107,3 +107,11 @@ Reuse the pinned GPL LocalMfiAuthenticationClient, protocol-major3/P-256/NONEwit
 Experimental availability has an exact positive metadata allowlist separate from isAuthorized(). Phone-confirmed AA05/SAP/pair-verify/encrypted RECORD and real rendered frames still gate session/STREAMING. The user-selected official matching v0.2.7 APK provides only two runtime files; they stay outside Git/source/CI, and require an explicit standalone-build opt-in. Source/CI remains identity-free; API27 CI uses fresh generated test identity, never the selected runtime data. Runtime files are not GPL-relicensed, not Apple-certified, and redistribution/future iOS acceptance unresolved.
 
 Keep existing TS7 renderer/media/recovery and privacy boundaries; guide Connect's permission/paired-phone prerequisites. Existing physical platform reports suffice for that gate, not the phone session. Avoid repeat car trips; complete autonomous checks first. See docs/EXPERIMENTAL_AUTHENTICATION.md.
+
+## ADR-016 — Retry only between attempts; native audio focus
+
+Status: Implemented for1.0.0-dev.1; actual phone acceptance pending.
+
+Captured standalone failure6051350325 shows no session/decoder, first failure23ms after Connect and3 retries exhausted13s later. Retire the startup probe's idle controller before explicit Connect. A single in-flight negotiation owns its120s startup deadline;1/2/5s backoff applies only after failure, never repeatedly cancels that negotiation. Stop/success/replacement invalidates pending timers. Preserve finite intent and old-teardown quarantine; don't overlap a stuck controller. Recovery revokes old/failed-partial radio proof and accepts fresh bootstrap/Wi-Fi proof before authentication/rendering. Fixed status/failure codes, never raw messages or credentials. This repairs source defects consistent with the report, not proof that every device blocker is solved.
+
+Use Android's API26 AudioFocusRequest rather than a media library. Wrap the unchanged PCM sink: transient loss pauses/discards live samples, gain restarts cached format, permanent loss/stop invalidates callbacks. No microphone permission, PCM backlog, decoded-frame copy or frozen renderer change. Silent API27 native focus tests are not audible real-iPhone/TS7 proof.

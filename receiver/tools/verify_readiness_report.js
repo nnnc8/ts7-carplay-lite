@@ -11,7 +11,7 @@ assert.ok(line, "Actual emulator public report required");
 const payload = JSON.parse(line.slice(line.indexOf("=") + 1));
 assert.deepEqual(validate(payload), [], "Android output must pass the actual server contract");
 assert.deepEqual(sanitize(payload), payload, "No fields removed from fixed public report");
-assert.equal(payload.appVersion, "1.0.0-dev");
+assert.equal(payload.appVersion, "1.0.0-dev.1");
 if (authentication) {
   assert.equal(payload.authentication, "EXPERIMENTAL_IDENTITY_AVAILABLE");
   assert.equal(payload.mode, "IDLE");

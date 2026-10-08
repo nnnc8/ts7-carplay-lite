@@ -513,7 +513,7 @@
       "path": "shared/src/main/java/com/shilapi/xcertplay/orchestration/CarPlayController.kt",
       "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/orchestration/CarPlayController.kt",
       "upstreamGitBlob": "8a486e026c6e8b8f757ba511a43dae6814700b14",
-      "portedSha256": "6c57a94c9497eeb7b221a63537b0e8956540ccbbab2bca0ab29984f102abc199",
+      "portedSha256": "1dbfdc7a2a2223b5dbae109a1e41a65ed1cb8ece6b1c092f5d1310f96eb8cfaa",
       "modified": true,
       "license": "GPL-3.0"
     },

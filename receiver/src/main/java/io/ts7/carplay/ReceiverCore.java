@@ -29,6 +29,8 @@ public interface ReceiverCore {
         default boolean audioFormat(int sampleRate, int channels) { return false; }
         default int audioPcm(ByteBuffer pcm, int bytes) { return 0; }
         default void audioStopped() {}
+        // Fixed local codes only. Never forward upstream peer data or exception text.
+        default void connectionEvent(EventCode code, BooleanSupplier attemptCurrent) {}
     }
     boolean hasLawfulAuthentication();
     // Availability/admission is separate from Apple authorization and phone-confirmed authentication.

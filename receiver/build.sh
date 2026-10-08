@@ -14,7 +14,7 @@ TASK_CORE="$TASK_ROOT/build/diplay-port"
 TASK_LIBS="$TASK_CORE/core.jar:$TASK_CORE/kotlin-stdlib.jar:$TASK_CORE/bcprov.jar:$TASK_CORE/jmdns.jar:$TASK_CORE/slf4j-api.jar:$TASK_CORE/slf4j-nop.jar"
 mkdir -p "$TASK_ROOT/build/receiver" "$TASK_ROOT/build/receiver-signing" "$TASK_ROOT/dist"
 TASK_BUILD="$(mktemp -d "$TASK_ROOT/build/receiver/build.XXXXXX")"
-TASK_NAME="TS7-CarPlay-Lite-DiPlay-v1.0.0-dev"
+TASK_NAME="TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1"
 TASK_AUTH_ASSETS="${TS7_DIPLAY_AUTH_ASSETS_DIR:-}"
 if [[ -n "$TASK_AUTH_ASSETS" ]]; then
   [[ "${TS7_ENABLE_EXPERIMENTAL_AUTH:-0}" == 1 ]] || { printf '%s\n' 'Explicit experimental identity opt-in required' >&2; exit 1; }
@@ -28,7 +28,7 @@ if [[ -n "$TASK_AUTH_ASSETS" ]]; then
 fi
 if [[ "${TS7_AUTH_FIXTURE:-0}" == 1 ]]; then
   [[ "${1:-}" == --instrumented && -n "$TASK_AUTH_ASSETS" ]] || { printf '%s\n' 'Generated fixture requires a separate instrumented build' >&2; exit 1; }
-  TASK_NAME="TS7-CarPlay-Lite-DiPlay-v1.0.0-dev-auth-fixture"
+  TASK_NAME="TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1-auth-fixture"
 fi
 mkdir -p "$TASK_BUILD/classes" "$TASK_BUILD/dex" "$TASK_BUILD/generated/io/ts7/carplay"
 python3 "$TASK_ROOT/receiver/tools/build_config.py" \

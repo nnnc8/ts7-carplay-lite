@@ -579,14 +579,14 @@ class CarPlayController(
                         Iap2WirelessControlTerminal.TIMED_OUT ->
                             onStatus(CarPlayStatus.ControlEnded)
                         Iap2WirelessControlTerminal.CHANNEL_CLOSED ->
-                            onStatus(CarPlayStatus.Failed("Wireless iAP2 tunnel closed"))
+                            onStatus(CarPlayStatus.Failed("WIRELESS_TUNNEL_FAILED"))
                     }
                 } catch (error: Throwable) {
                     if (!closed && generation == wirelessGeneration.get()) {
                         Unit
                         onStatus(
                             CarPlayStatus.Failed(
-                                error.message ?: error.javaClass.simpleName,
+                                "WIRELESS_TUNNEL_FAILED",
                             ),
                         )
                     }
@@ -925,7 +925,7 @@ class CarPlayController(
     }
 
     private fun fail(error: Throwable) {
-        if (!closed) onStatus(CarPlayStatus.Failed("WIRELESS_SESSION_FAILED"))
+        if (!closed) onStatus(CarPlayStatus.Failed(fixedWirelessFailureCode(error.message)))
     }
     private fun debugLog(message: String) {}
     private fun debugLog(message: String, error: Throwable) {}
@@ -958,4 +958,13 @@ class CarPlayController(
         private const val ADAPTER_ADDRESS_PLACEHOLDER = "02:00:00:00:00:00"
         private val BLUETOOTH_ADDRESS = Regex("^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$")
     }
+}
+
+/** Allowlisted local failure codes only, never arbitrary exception text or protocol data. */
+fun fixedWirelessFailureCode(message: String?): String = when (message) {
+    "LOCAL_BLUETOOTH_ADDRESS_UNAVAILABLE", "BLUETOOTH_SELECTION_REQUIRED",
+    "HOTSPOT_TIMEOUT", "HOTSPOT_CANCELLED", "HOTSPOT_CONFIG_UNAVAILABLE",
+    "HOTSPOT_SECURITY_UNSUPPORTED", "HOTSPOT_CHANNEL_UNKNOWN", "HOTSPOT_ADDRESS_AMBIGUOUS",
+    "WIRELESS_SERVICE_LOST", "WIRELESS_TUNNEL_FAILED" -> message
+    else -> "WIRELESS_SESSION_FAILED"
 }

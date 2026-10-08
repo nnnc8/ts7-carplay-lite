@@ -105,7 +105,7 @@ TS7_CARPLAY_UPLOAD_URL=https://ts7-carplay-lite-relay.vercel.app/api/carplay-dia
 python3 diplay-port/tools/verify_source.py
 ```
 
-Output: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.apk（不含identity）。
+Output: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1.apk（不含identity）。
 standalone 的明確選用建置方式見認證文件；runtime資料不進Git/原始碼包/CI。
 [Receiver build](receiver/README.md) / [port build](diplay-port/README.md)。
 CI獨立驗證normal API27啟動、authblocked、crypto/JNI、原Surface90+frames/reset/stop，

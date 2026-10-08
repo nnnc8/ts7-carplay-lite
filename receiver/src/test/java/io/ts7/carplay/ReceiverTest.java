@@ -84,10 +84,12 @@ public final class ReceiverTest {
         session.recovering(SessionMachine.Reason.NETWORK_LOSS);
         check(session.state() == SessionMachine.State.RECOVERING, "Network loss enters recovery");
         check(!session.authenticated() && session.uptimeMs() == 0, "Lost session cannot accept video as authenticated");
+        session.bootstrapConfirmed(); session.sessionWifiConfirmed();
         session.authenticationConfirmed();
         check(session.state() == SessionMachine.State.RECOVERING, "Fresh authentication alone is not recovered video");
         session.recovering(SessionMachine.Reason.SESSION_LOST);
         check(!session.authenticated(), "Loss before first recovered frame invalidates fresh authentication");
+        session.bootstrapConfirmed(); session.sessionWifiConfirmed();
         session.authenticationConfirmed();
         session.firstCarPlayFrame();
         check(session.state() == SessionMachine.State.STREAMING, "Fresh real frame ends authenticated recovery");
@@ -106,6 +108,36 @@ public final class ReceiverTest {
         RetryBudget retry = new RetryBudget();
         check(retry.peekDelayMs() == 1000 && retry.peekDelayMs() == 1000, "Cancelled timer does not consume retry");
         check(retry.nextDelayMs() == 1000 && retry.nextDelayMs() == 2000 && retry.nextDelayMs() == 5000 && retry.nextDelayMs() == -1, "Recovery waits 1/2/5 seconds then stops");
+        retry.reset();
+        check(retry.attemptStarted() && retry.inFlight(), "Initial negotiation owns one active attempt");
+        check(!retry.attemptStarted(), "Backoff cannot replace an in-flight handshake");
+        check(retry.attemptEnded() && !retry.attemptEnded(), "One failure releases ownership exactly once");
+        for (long delay : new long[] {1000, 2000, 5000}) {
+            check(retry.nextDelayMs() == delay && retry.attemptStarted(), "Only completed failure starts the next bounded retry");
+            check(retry.inFlight() && !retry.attemptStarted(), "A slow hotspot/RFCOMM attempt is not cancelled by another retry");
+            check(retry.attemptEnded(), "Actual retry completion releases ownership");
+        }
+        check(retry.peekDelayMs() == -1 && !retry.inFlight(), "Exhaustion occurs after the final attempt fails");
+        retry.reset();
+        check(!retry.inFlight() && retry.peekDelayMs() == 1000, "Stop or first real frame clears pending retry ownership");
+        session.begin(true);
+        session.bootstrapConfirmed(); session.sessionWifiConfirmed(); session.authenticationConfirmed(); session.firstCarPlayFrame();
+        session.recovering(SessionMachine.Reason.SESSION_LOST);
+        check(session.bluetooth() != SessionMachine.BluetoothState.BOOTSTRAP_CONFIRMED
+            && session.wifi() != SessionMachine.WifiState.SESSION_LINK_CONFIRMED, "Recovery revokes old radio proof");
+        refused = false;
+        try { session.sessionWifiConfirmed(); } catch (IllegalStateException expected) { refused = true; }
+        check(refused, "Recovered Wi-Fi requires fresh Bluetooth bootstrap proof");
+        session.bootstrapConfirmed(); session.sessionWifiConfirmed();
+        check(session.state() == SessionMachine.State.RECOVERING && !session.authenticated()
+            && session.bluetooth() == SessionMachine.BluetoothState.BOOTSTRAP_CONFIRMED
+            && session.wifi() == SessionMachine.WifiState.SESSION_LINK_CONFIRMED, "Fresh retry proof is retained without prematurely claiming recovery");
+        session.recovering(SessionMachine.Reason.NETWORK_LOSS);
+        check(session.bluetooth() != SessionMachine.BluetoothState.BOOTSTRAP_CONFIRMED
+            && session.wifi() != SessionMachine.WifiState.SESSION_LINK_CONFIRMED, "Failure during an unauthenticated retry also revokes its partial proof");
+        session.bootstrapConfirmed(); session.sessionWifiConfirmed();
+        session.authenticationConfirmed(); session.firstCarPlayFrame();
+        check(session.state() == SessionMachine.State.STREAMING, "Fresh authenticated frame completes truthful recovery");
         float[] mapped = new float[2];
         check(TouchMapper.map(640, 360, 1280, 720, 1280, 720, mapped) && mapped[0] == 0.5f && mapped[1] == 0.5f, "Center touch normalized");
         check(!TouchMapper.map(10, 50, 1280, 600, 1280, 720, mapped), "Letterbox touch excluded");

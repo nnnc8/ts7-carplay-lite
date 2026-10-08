@@ -1,4 +1,4 @@
-# TS7 CarPlay Lite DiPlay v1.0.0-dev
+# TS7 CarPlay Lite DiPlay v1.0.0-dev.1
 
 **Experimental identity implemented; actual iPhone session not yet verified.**
 Minimal framework Activity + actual selected GPL DiPlay Legacy core,
@@ -15,8 +15,8 @@ TS7_CARPLAY_UPLOAD_URL=https://ts7-carplay-lite-relay.vercel.app/api/carplay-dia
 python3 diplay-port/tools/verify_source.py
 ```
 
-Source output: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.apk, identity-free.
-Opted-in runtime output: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev-standalone.apk.
+Source output: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1.apk, identity-free.
+Opted-in runtime output: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1-standalone.apk.
 See [runtime source, explicit build flags and acceptance boundaries](../docs/EXPERIMENTAL_AUTHENTICATION.md).
 Native read-only AP radio JNI built from source for API27 ARMv7 +x86_64 emulator.
 Separate --instrumented build includes CI-only Instrumentation, never published as normal.
@@ -37,6 +37,11 @@ to fixed13. No identifiers/SSID/passphrase/certs/exception text; offline copy wo
 Diagnostic v0.2 separate APK/Issue5 unchanged.
 LPCM44.1/48k1/2channels/media and normalized touch adapter fixture-tested;
 real iPhone/bootstrap/auth/video/audio/touch NOT YET. Siri/wired deferred.
+Native API26 audio focus wraps the unchanged sink; transient loss discards live
+samples and regain restarts the same format, permanent loss/stop revoke callbacks.
+Retry backoff1/2/5s waits for actual failure;120s per negotiation, no live attempt
+cancelled by a backoff timer. Startup probe controller retires before Connect.
+Status/events show fixed stage/failure codes, not addresses or exception text.
 GPL corresponding source/licenses/patches/build instructions supplied with release.
 
 Settings → Developer → Test platform readiness is explicit, auth-independent and phone-free.

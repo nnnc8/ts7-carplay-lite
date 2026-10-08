@@ -48,7 +48,7 @@ public final class ReadinessInstrumentation extends Instrumentation {
             require(!app.coreAuthForTest() && !app.sessionForTest().authenticated());
             require(app.rendererForTest() == null && "IDLE".equals(app.modeForTest()));
             JSONObject report = new JSONObject(app.reportForTest());
-            require("1.0.0-dev".equals(report.getString("appVersion")));
+            require(BuildConfig.VERSION_NAME.equals(report.getString("appVersion")));
             require("BLOCKED_BY_AUTHENTICATION_REQUIREMENT".equals(report.getString("authentication")));
             require(report.getJSONObject("platformReadiness").length() == 12);
             Bundle evidence = new Bundle();

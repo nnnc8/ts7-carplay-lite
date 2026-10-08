@@ -62,6 +62,10 @@ public final class SessionMachine {
     }
 
     public synchronized void bootstrapConfirmed() {
+        if (state == State.RECOVERING && !authenticated) {
+            bluetooth = BluetoothState.BOOTSTRAP_CONFIRMED;
+            return;
+        }
         require(State.BT_DISCOVERY);
         bluetooth = BluetoothState.BOOTSTRAP_CONFIRMED;
         transition(State.BT_CONNECTED);
@@ -69,6 +73,10 @@ public final class SessionMachine {
     }
 
     public synchronized void sessionWifiConfirmed() {
+        if (state == State.RECOVERING && !authenticated && bluetooth == BluetoothState.BOOTSTRAP_CONFIRMED) {
+            wifi = WifiState.SESSION_LINK_CONFIRMED;
+            return;
+        }
         require(State.WIFI_CONNECTING);
         wifi = WifiState.SESSION_LINK_CONFIRMED;
         transition(State.WIFI_CONNECTED);
@@ -93,10 +101,10 @@ public final class SessionMachine {
     }
 
     public synchronized void recovering(Reason reason) {
-        if (state == State.IDLE || state == State.ERROR || (state == State.RECOVERING && !authenticated)) return;
+        if (state == State.IDLE || state == State.ERROR) return;
         authenticated = false;
         sessionStartedNs = 0;
-        wifi = observedNetwork ? WifiState.NETWORK_OBSERVED : WifiState.DISCONNECTED;
+        clearRadioProof();
         lastReason = reason;
         events.add(EventCode.SESSION_LOST);
         transition(State.RECOVERING);

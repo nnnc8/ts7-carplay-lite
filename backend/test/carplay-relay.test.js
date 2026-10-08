@@ -47,7 +47,8 @@ function request(payload) {
 }
 
 test("development identity readiness is distinct from phone trust; old previews remain blocked", () => {
-  const development = { ...platformPayload(), appVersion: "1.0.0-dev", authentication: "EXPERIMENTAL_IDENTITY_AVAILABLE" };
+  for (const version of ["1.0.0-dev", "1.0.0-dev.1"]) {
+  const development = { ...platformPayload(), appVersion: version, authentication: "EXPERIMENTAL_IDENTITY_AVAILABLE" };
   assert.deepEqual(relay.validate(development), []);
   for (const version of ["0.1-alpha", "0.2-alpha", "0.2.1-platform"])
     assert.ok(relay.validate({ ...development, appVersion: version }).includes("authentication boundary"));
@@ -60,12 +61,23 @@ test("development identity readiness is distinct from phone trust; old previews 
   assert.ok(relay.validate({ ...streaming, renderedFrames: 0 }).includes("streaming evidence missing"));
   const missing = { ...development }; delete missing.platformReadiness;
   assert.ok(relay.validate(missing).includes("missing platform readiness"));
+  }
 });
 function response() {
   return { statusCode: 200, setHeader() {}, end(body) { this.body = JSON.parse(body); } };
 }
+test("connection repair accepts fixed stage/failure codes and rejects arbitrary error text", async () => {
+  const report = { ...platformPayload(), appVersion: "1.0.0-dev.1", authentication: "EXPERIMENTAL_IDENTITY_AVAILABLE",
+    events: ["CONNECTION_TEARDOWN_PENDING", "WIRELESS_HOTSPOT_START", "HOTSPOT_CHANNEL_UNKNOWN",
+      "LOCAL_BLUETOOTH_ADDRESS_UNAVAILABLE", "CONNECTION_ATTEMPT_TIMEOUT"].map((code) => ({elapsedMs: 30, code, value: 0})) };
+  assert.deepEqual(relay.validate(report), []);
+  await assertRejectedBeforeGithub({...report, events: [{elapsedMs: 30, code: "PRIVATE_CANARY 00:11:22:33:44:55", value: 0}]},
+    "private connection failure text");
+  assert.ok(relay.validate({...report, appVersion: "1.0.0-dev.999"}).includes("unsupported report version"));
+});
 test("development rejects contradictory phone/session/streaming evidence before GitHub", async () => {
-  const streaming = { ...platformPayload(), appVersion: "1.0.0-dev", mode: "CARPLAY", carplayState: "STREAMING",
+  for (const version of ["1.0.0-dev", "1.0.0-dev.1"]) {
+  const streaming = { ...platformPayload(), appVersion: version, mode: "CARPLAY", carplayState: "STREAMING",
     authentication: "PHONE_CONFIRMED_SESSION", bluetoothState: "BOOTSTRAP_CONFIRMED", wifiState: "SESSION_LINK_CONFIRMED" };
   for (const change of [{ mode: "TEST_PATTERN", carplayState: "IDLE" }, { carplayState: "BT_DISCOVERY" },
     { mode: "IDLE" }, { decoderName: "NOT_STARTED" }, { decoderName: "UNKNOWN" },
@@ -73,6 +85,7 @@ test("development rejects contradictory phone/session/streaming evidence before 
     await assertRejectedBeforeGithub({ ...streaming, ...change }, "contradictory development evidence");
   assert.deepEqual(relay.validate({ ...streaming, carplayState: "CARPLAY_NEGOTIATING", decoderName: "NOT_STARTED",
     renderedFrames: 0, videoWidth: 0, videoHeight: 0 }), []);
+  }
 });
 async function assertRejectedBeforeGithub(payload, label) {
   resetTestState();
