@@ -9,7 +9,8 @@
 
 ## Downloads / install
 
-開發安裝包：`dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev-standalone.apk`（含明確選用的實驗性認證）。
+新版：[直接下載 v1.0 Development standalone APK](https://github.com/nnnc8/ts7-carplay-lite/releases/download/carplay-v1.0.0-dev-standalone/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev-standalone.apk)（含明確選用的實驗性認證）。
+[預發佈／對應GPL原始碼／檢查碼與完整驗證](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v1.0.0-dev-standalone)。
 [來源、最短操作、建置及驗證範圍](docs/EXPERIMENTAL_AUTHENTICATION.md)。
 保留：[v0.2.1 平台檢查 APK](https://github.com/nnnc8/ts7-carplay-lite/releases/download/carplay-v0.2.1-platform-preview/TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk)。
 [TS7 Platform Readiness 操作與驗證範圍](docs/PLATFORM_READINESS.md)／

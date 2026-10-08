@@ -13,6 +13,15 @@ Continue toward v1.0 with existing DiPlay code and necessary TS7 adaptations.
 Missing runtime inputs remain BLOCKED; PR18 unmerged/main preserved.
 xcertplay remains fallback/auth-hardware architecture reference, not primary work.
 
+Published [v1.0 development standalone prerelease](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v1.0.0-dev-standalone)
+at exact runtime/source0b5dd532bab09a76ba52a9ece6355dbbc984f58a. Download/read-back APK and source ZIP SHA256 match release assets;
+APK76e0d62d1df3e6fb1b79b4f2299aa3864e72388c4c0b584b1b7e78c53949104f.
+Exact push37719221003 / PR37719225761 / Diagnostic37719225683 allPASS, genuineAPI27 normal/crypto/readiness/Surface and generated-identity signing execution;
+host selected-runtime93 checks and independent repaired-delta recheck PASS. Not real iPhone proof/finalv1 acceptance.
+Current fixed13/fixed5 production relay READY/promoted dpl_67eEPkck3ZZjKX4jdFHQAxgjuwEN;9backend-only files,
+both public routes GET405/invalidPOST400/new-version missing-readiness rejection, no positive test comment, secret untouched.
+Detailed compiled-artifact evidence is in the release notes; subsequent documentation-only commits do not change that release's APK/source tag.
+
 ## Preserved real TS7 evidence
 
 - Android8.1/API27/ARMv7/2GB, display1280×720/160DPI.
@@ -77,7 +86,7 @@ See [DiPlay verification ledger](docs/DIPLAY_PORT_VERIFICATION.md) for exact res
 Current local delta: API27/ARMv7/x86_64 compile PASS, identity-free/standalone APK signature/ABI/input inspection PASS,
 72 source hash +9 renderer-lock PASS. Selected runtime cryptography and nonblocking-close regression covered;
 readiness126, receiver2047, backend29 PASS. Current hosted/commit results require separate evidence.
-Host: receiver2047, authentication24, gate30, DiPlay478 fixtures PASS;
+Historical v0.2 preview checks: receiver2047, authentication24, gate30, DiPlay478 fixtures PASS;
 Diagnostic sanitizer PASS; backend16 tests PASS.
 v0.2.1 local delta: readiness121 + immediate/late/admission cleanup24 assertions, existing receiver2047/auth24/gate30/DiPlay478,
 Diagnostic sanitizer, backend27 PASS; source/license71 + frozen renderer9 PASS; normal and
@@ -110,7 +119,7 @@ does not constitute an authentication certification or complete upstream securit
 - Issue15 stays OPEN;Issues10/11 DEFERRED;Issue4 stays OPEN. Main not overwritten by experiment.
 - [PR18](https://github.com/nnnc8/ts7-carplay-lite/pull/18) OPEN/unmerged;
   high-priority [port issue19](https://github.com/nnnc8/ts7-carplay-lite/issues/19).
-- Relay v0.2-compatible backend READY/promoted dpl_3eDB7nymbC7ug9LoeeENwf82JLJ1;
+- Historical v0.2-compatible backend READY/promoted dpl_3eDB7nymbC7ug9LoeeENwf82JLJ1;
   both public routes GET405/invalidPOST400 PASS. No smoke comments/private uploads.
 
 ## Next blocker / next device check

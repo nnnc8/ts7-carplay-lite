@@ -1,4 +1,18 @@
-# DiPlay v0.2 preview verification ledger
+# DiPlay verification ledger
+
+## v1.0 development standalone — 2026-10-08
+
+Published [experimental standalone prerelease](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v1.0.0-dev-standalone), exact source/runtime0b5dd532bab09a76ba52a9ece6355dbbc984f58a. APK8,123,724bytes/SHA25676e0d62d1df3e6fb1b79b4f2299aa3864e72388c4c0b584b1b7e78c53949104f; corresponding source ZIP SHA256ada4dcba1334de015d9d8703b3bb89b811aaea9afd0579ac5eb7be12c959ff39. Actual public downloads match. Source72/frozen renderer9, API27/ARMv7, license/signature/explicit-input inspection PASS.
+
+Exact [push37719221003](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37719221003)/[PR37719225761](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37719225761)/[Diagnostic37719225683](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37719225683) allPASS, not cancelled/skipped. GenuineAPI27 x86_64 normal idle startup, BCcrypto/JNI, actual12readiness APIs/permission isolation,1280x720 Surface90+/reset/stop and Android→server offline JSON checks. Generated-identity asset load/8P-256 signatures/mutation rejection/experimental-not-authorized/no-false-phone/session/frame PASS. Real selected runtime key/certificate93 host checks separately; runtime inputs NOT uploaded to CI. Renderer screenshot visually checked, generic OMX.google codec, not SPRD/phone proof.
+
+Local receiver2047/readiness126+cleanup24/auth24/gate30/DiPlay478/experimental93/backend29/Diagnostic sanitizer PASS. Scoped independent review found main-thread monitor blocking and inconsistent server session reports; both repaired/regression-tested and independently rechecked, no remaining blockers in delta. Not a full upstream audit/certification.
+
+Fixed13/fixed5 relay dpl_67eEPkck3ZZjKX4jdFHQAxgjuwEN, reviewed source0b5dd53,9backend-only files, staged/tested then promoted; both public routes405/invalid400, new dev version recognized via missing-readiness rejection. Secret unchanged, no fake positive report/comment. Last15min error query empty, monitoring/drains not audited.
+
+Two real TS7 platform reports cover12 individualPASS across runs; no repeat requested, not same-run12PASS/coexistence/phone traffic. User selected upstream experimental runtime on2026-10-08; missing assets still block, available remains not MFi-authorized/Apple-certified. Runtime data not GPL-relicensed, redistribution/futureiOS unresolved. Actual iPhone AA05/SAP/pair-verify/RECORD/firstframe/audio/touch/recovery/30/60min remain NOTYET; Siri/microphone/wired deferred. PR18 OPEN/unmerged, main unchanged. See [source/build/evidence contract](EXPERIMENTAL_AUTHENTICATION.md).
+
+## Historical v0.2 preview
 
 2026-10-07. Release must state NOT YET A FUNCTIONAL CARPLAY RECEIVER.
 Exact source is the release tag; source archive includes GPL/license/provenance/build scripts.
