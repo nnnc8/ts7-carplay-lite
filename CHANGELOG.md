@@ -5,7 +5,8 @@
 - Fixed initial idle-controller teardown race and retry timers cancelling a running wireless negotiation. Backoff1/2/5s only between failures, bounded120s per attempt, no infinite retry.
 - Fresh Bluetooth/Wi-Fi proof retained during recovery; no reuse of the lost session's radio proof. Fixed stage/failure codes identify where connection stopped without private data/arbitrary exception text.
 - Native Android8 audio-focus interruption/regain around unchanged LPCM sink; muted live PCM discarded, stale gain/loss revoked on stop/replacement.
-- versionCode5; older reports/releases/Diagnostic preserved. Exact candidate CI and actual iPhone acceptance pending. Not final v1.0 or Apple certification.
+- versionCode5; older reports/releases/Diagnostic preserved. Actual iPhone acceptance pending. Not final v1.0 or Apple certification.
+- Published carplay-v1.0.0-dev.1-standalone at354cf81; exact push/PR/Diagnostic CI allPASS, actualAPI27 native focus+Surface+generated crypto PASS. Public APK/source downloads verified; same signer as prior standalone permits in-place upgrade. Real phone acceptance still pending.
 
 ## v1.0.0-dev experimental standalone — 2026-10-08
 

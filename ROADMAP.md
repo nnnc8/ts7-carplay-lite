@@ -16,7 +16,7 @@ Lightweight Java/framework shell, lawful-core integration boundary, separate Blu
 
 1280×720 @ 30 fps with 25/20 stability profiles. Prefer OMX.sprd.h264.decoder but record actual fallback. No Compose/WebView or decoded-frame copies.
 
-Current build: **1.0.0-dev experimental standalone**, real iPhone acceptance not yet verified. Generated-H.264 technical preview and identity-free developer build remain separate.
+Current build: **1.0.0-dev.1 experimental standalone connection repair**, real iPhone acceptance not yet verified. Generated-H.264 technical preview and identity-free developer build remain separate.
 
 Functional exit: actual wireless bootstrap/phone-confirmed session and first real CarPlay frame on TS7, bounded queue, explicit failures and captured evidence. Partial audio/touch must be labeled. Only the user-selected experimental identity exception is allowed, not proprietary receiver blobs.
 

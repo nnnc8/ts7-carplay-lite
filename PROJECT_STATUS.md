@@ -8,23 +8,24 @@ Phase 1 — Wireless CarPlay minimal receiver / IMPLEMENTATION_IN_PROGRESS.
 Primary strategy: **TS7-specific DiPlay Android 8.1 port**.
 Protocol: DiPlay-derived port IN_PROGRESS.
 Authentication: **EXPERIMENTAL_LOCAL IMPLEMENTED**, user-selected 2026-10-08.
-Version: **1.0.0-dev.1 repair in progress**, NOT Apple-certified; real iPhone session not yet verified.
+Version: **1.0.0-dev.1 connection repair published**, NOT Apple-certified; real iPhone session not yet verified.
 Continue toward v1.0 with existing DiPlay code and necessary TS7 adaptations.
 Missing runtime inputs remain BLOCKED; PR18 unmerged/main preserved.
 xcertplay remains fallback/auth-hardware architecture reference, not primary work.
 
-Published [v1.0 development standalone prerelease](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v1.0.0-dev-standalone)
-at exact runtime/source0b5dd532bab09a76ba52a9ece6355dbbc984f58a. Download/read-back APK and source ZIP SHA256 match release assets;
-APK76e0d62d1df3e6fb1b79b4f2299aa3864e72388c4c0b584b1b7e78c53949104f.
-Exact push37719221003 / PR37719225761 / Diagnostic37719225683 allPASS, genuineAPI27 normal/crypto/readiness/Surface and generated-identity signing execution;
-host selected-runtime93 checks and independent repaired-delta recheck PASS. Not real iPhone proof/finalv1 acceptance.
-Current fixed13/fixed5 production relay READY/promoted dpl_67eEPkck3ZZjKX4jdFHQAxgjuwEN;9backend-only files,
+Published [v1.0.0-dev.1 connection repair prerelease](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v1.0.0-dev.1-standalone)
+at exact runtime/source354cf813864943bb6ad5ad3392715f62d6fdd3f3. Download/read-back APK and source ZIP SHA256 match release assets;
+APKf366c157002a7d70046467ca72bb5b73d33073ea2f5c9ac99bc486f104c55d05, source ZIPa13e855da930f45c8be1b8d7233becac7f7f077101968e0d9f9df342ccc31fd8.
+APK signer equals original v1.0.0-dev public download; in-place upgrade compatible.
+Exact push37722236538 / PR37722239621 / Diagnostic37722239566 allPASS, genuineAPI27 normal/crypto/readiness/Surface/generated-identity and native focus interruption/regain/late-callback execution;
+host receiver2066/DiPlay496/runtime93/backend30 and independent connection/recovery delta review PASS. Not real iPhone proof/finalv1 acceptance.
+Current fixed13/fixed5 production relay READY/promoted dpl_5963XPZvpbTvg87UDqXqac32qyHY;9backend-only files,
 both public routes GET405/invalidPOST400/new-version missing-readiness rejection, no positive test comment, secret untouched.
 Detailed compiled-artifact evidence is in the release notes; subsequent documentation-only commits do not change that release's APK/source tag.
 
 ## Preserved real TS7 evidence
 
-- [Actual standalone connection failure](https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6051350325): v1.0.0-dev identity available, no decoder/frame/session, initial failure23ms after Connect,3 retries exhausted13s later. Source confirms idle startup controller teardown rejects the immediate first attempt, and prior1/2/5s timers could cancel an accepted slow hotspot/RFCOMM/handshake; timing is consistent but the old generic report cannot identify every runtime failure. v1.0.0-dev.1 repairs these control-flow defects and adds fixed stage/failure codes. Exact-build/device evidence pending; no repeat platform tests requested.
+- [Actual standalone connection failure](https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6051350325): v1.0.0-dev identity available, no decoder/frame/session, initial failure23ms after Connect,3 retries exhausted13s later. Source confirms idle startup controller teardown rejects the immediate first attempt, and prior1/2/5s timers could cancel an accepted slow hotspot/RFCOMM/handshake; timing is consistent but the old generic report cannot identify every runtime failure. v1.0.0-dev.1 repairs these control-flow defects and adds fixed stage/failure codes. Exact-build CI/download proof PASS; actual repaired device session pending, no repeat platform tests requested.
 
 - Android8.1/API27/ARMv7/2GB, display1280×720/160DPI.
 - sprd/SPRD + sp7731e_1h10 board strings VERIFIED; About SL8141E OBSERVED,
@@ -59,7 +60,7 @@ Authorized-provider templates remain separate. See docs/EXPERIMENTAL_AUTHENTICAT
 ## Implemented
 
 - Recovery waits for actual attempt completion before1/2/5s backoff; each negotiation has120s deadline. Startup probe controller retires before Connect; old-controller teardown remains quarantined. Fresh recovery requires Bluetooth/Wi-Fi proof again. Fixed failure/stage events expose no peer/credential/error text.
-- Native API26 audio focus wraps the unchanged PCM sink; temporary loss drops live audio without queueing, gain restarts the same format, permanent loss/stop revoke stale callbacks. No new permission/dependency or frozen renderer change. Candidate API27 focus instrumentation pending.
+- Native API26 audio focus wraps the unchanged PCM sink; temporary loss drops live audio without queueing, gain restarts the same format, permanent loss/stop revoke stale callbacks. No new permission/dependency or frozen renderer change. Actual API27 native focus instrumentation PASS; not physical audible iPhone proof.
 
 - Reused pinned P-256/protocol-major3 authenticator; bounded direct assets, key/certificate self-check, fixed failures, startup worker and no secret logging/storage.
 - Experimental availability separate from authorized MFi/real session proof; Connect guides permission and paired-phone selection.
@@ -90,7 +91,7 @@ Authorized-provider templates remain separate. See docs/EXPERIMENTAL_AUTHENTICAT
 See [DiPlay verification ledger](docs/DIPLAY_PORT_VERIFICATION.md) for exact results.
 Current local delta: API27/ARMv7/x86_64 compile PASS, identity-free/standalone APK signature/ABI/input inspection PASS,
 72 source hash +9 renderer-lock PASS. Selected runtime cryptography and nonblocking-close regression covered;
-readiness126, receiver2047, backend29 PASS. Current hosted/commit results require separate evidence.
+readiness126, receiver2066, backend30 PASS. Current exact hosted results are recorded above and in the release/verification ledger.
 Historical v0.2 preview checks: receiver2047, authentication24, gate30, DiPlay478 fixtures PASS;
 Diagnostic sanitizer PASS; backend16 tests PASS.
 v0.2.1 local delta: readiness121 + immediate/late/admission cleanup24 assertions, existing receiver2047/auth24/gate30/DiPlay478,
