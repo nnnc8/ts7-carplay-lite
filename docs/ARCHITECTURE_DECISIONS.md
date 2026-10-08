@@ -64,7 +64,7 @@ Phase 0 basic report gate complete. Prioritize wireless session, video, decoder,
 
 ## ADR-010 — Lawful-authentication boundary / technical preview
 
-Status: Accepted
+Status: Historical unavailable-provider decision; source strategy superseded by ADR-014 and user-selected experimental authentication by ADR-015.
 
 Research pinned five upstream projects. Current DiPlay/xcertplay require API 28; legacy fork is API-compatible but documented extracted credentials are not acceptable. No inspected project is a lawful ready-to-ship API 27 receiver for this TS7 with an available auth provider. Choose original Java shell/renderer, not a hand-written full protocol. Future hardware-auth core requires license review, legal provider and API 27 port. Shipping ReceiverCore.Unavailable always refuses connections.
 
@@ -89,3 +89,29 @@ Status: Accepted, real-device unverified
 One codec worker; finite 1/2/5 s retries, 3 s frame stall watchdog and vendor-call hang detection. Never spawn replacement while prior vendor worker is stuck. Surface teardown/lifecycle must cancel and prevent new rendering, with bounded wait instead of indefinite UI freeze. Unresponsive vendor calls cannot be force-killed safely; contain/report limitation.
 
 AudioTrack PCM sink and normalized single-finger touch are integration boundaries, not verified CarPlay delivery. No microphone permission; Siri postponed. Long-session/reconnect milestones require lawful real-device evidence.
+
+## ADR-014 — TS7-specific DiPlay Android8.1 primary port
+
+Status: Accepted by explicit user direction,2026-10-07.
+
+Preserve old lawful-core branch/checkpoint; main strategy now selected GPL DiPlay Legacy revision c8884adcc75bfda3c134db63877bd6c6f83beb74. CASKA live source inaccessible/currentSHA UNKNOWN. Retain actual Controller wireless/iAP2/AirPlay/network/media code; remove AGPL UI/site, restricted assets, vendor HUD/CAN/ADB/navigation, wired receiver and offline auth loaders. GPL corresponding source and source-built API27 ARMv7 radio JNI required.
+
+Small MediaSink bridge to the nine frozen TS7 renderer/audio/touch/asset files, not a new decoder. LOHS API26 callback and explicit AP/peer binding; permission explained/no GPS. Unavailable external provider stops before radios/listeners. Authenticated media requires real AA05/SAP/pair-verify/encrypted RECORD and accepted/rendered VCL; fixture states or generated test video never qualify. Core compile/runtime/real phone are separate evidence gates. See DiPlay base/module/API27 audit/verification documents.
+
+## ADR-015 — Reuse selected DiPlay experimental local authentication
+
+Status: Accepted by explicit user direction,2026-10-08; supersedes prior blanket prohibition on these two runtime inputs.
+
+Reuse the pinned GPL LocalMfiAuthenticationClient, protocol-major3/P-256/NONEwithECDSA on an already-digested32-byte challenge. Do not invent a second handshake or require new hardware solely because the old provider was deliberately unavailable. Load bounded inputs directly on a startup worker, validate key/certificate consistency, and keep fixed errors/deadlines/no raw logs.
+
+Experimental availability has an exact positive metadata allowlist separate from isAuthorized(). Phone-confirmed AA05/SAP/pair-verify/encrypted RECORD and real rendered frames still gate session/STREAMING. The user-selected official matching v0.2.7 APK provides only two runtime files; they stay outside Git/source/CI, and require an explicit standalone-build opt-in. Source/CI remains identity-free; API27 CI uses fresh generated test identity, never the selected runtime data. Runtime files are not GPL-relicensed, not Apple-certified, and redistribution/future iOS acceptance unresolved.
+
+Keep existing TS7 renderer/media/recovery and privacy boundaries; guide Connect's permission/paired-phone prerequisites. Existing physical platform reports suffice for that gate, not the phone session. Avoid repeat car trips; complete autonomous checks first. See docs/EXPERIMENTAL_AUTHENTICATION.md.
+
+## ADR-016 — Retry only between attempts; native audio focus
+
+Status: Implemented for1.0.0-dev.1; actual phone acceptance pending.
+
+Captured standalone failure6051350325 shows no session/decoder, first failure23ms after Connect and3 retries exhausted13s later. Retire the startup probe's idle controller before explicit Connect. A single in-flight negotiation owns its120s startup deadline;1/2/5s backoff applies only after failure, never repeatedly cancels that negotiation. Stop/success/replacement invalidates pending timers. Preserve finite intent and old-teardown quarantine; don't overlap a stuck controller. Recovery revokes old/failed-partial radio proof and accepts fresh bootstrap/Wi-Fi proof before authentication/rendering. Fixed status/failure codes, never raw messages or credentials. This repairs source defects consistent with the report, not proof that every device blocker is solved.
+
+Use Android's API26 AudioFocusRequest rather than a media library. Wrap the unchanged PCM sink: transient loss pauses/discards live samples, gain restarts cached format, permanent loss/stop invalidates callbacks. No microphone permission, PCM backlog, decoded-frame copy or frozen renderer change. Silent API27 native focus tests are not audible real-iPhone/TS7 proof.

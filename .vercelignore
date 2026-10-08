@@ -1,0 +1,7 @@
+# Deploy only the fixed diagnostics backend; never upload SDK/compiler/APK/signing files.
+/*
+!backend
+backend/.env
+backend/.env.*
+backend/node_modules
+backend/.vercel

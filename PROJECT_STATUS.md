@@ -1,87 +1,138 @@
 # Project Status
 
-Last updated: 2026-10-07
+Updated: 2026-10-08.
 
 ## Current phase
 
-**Phase 1 — Wireless CarPlay minimal receiver**
+Phase 1 — Wireless CarPlay minimal receiver / IMPLEMENTATION_IN_PROGRESS.
+Primary strategy: **TS7-specific DiPlay Android 8.1 port**.
+Protocol: DiPlay-derived port IN_PROGRESS.
+Authentication: **EXPERIMENTAL_LOCAL IMPLEMENTED**, user-selected 2026-10-08.
+Version: **1.0.0-dev.1 connection repair published**, NOT Apple-certified; real iPhone session not yet verified.
+Continue toward v1.0 with existing DiPlay code and necessary TS7 adaptations.
+Missing runtime inputs remain BLOCKED; PR18 unmerged/main preserved.
+xcertplay remains fallback/auth-hardware architecture reference, not primary work.
 
-Status: **IMPLEMENTATION_IN_PROGRESS**
+Published [v1.0.0-dev.1 connection repair prerelease](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v1.0.0-dev.1-standalone)
+at exact runtime/source354cf813864943bb6ad5ad3392715f62d6fdd3f3. Download/read-back APK and source ZIP SHA256 match release assets;
+APKf366c157002a7d70046467ca72bb5b73d33073ea2f5c9ac99bc486f104c55d05, source ZIPa13e855da930f45c8be1b8d7233becac7f7f077101968e0d9f9df342ccc31fd8.
+APK signer equals original v1.0.0-dev public download; in-place upgrade compatible.
+Exact push37722236538 / PR37722239621 / Diagnostic37722239566 allPASS, genuineAPI27 normal/crypto/readiness/Surface/generated-identity and native focus interruption/regain/late-callback execution;
+host receiver2066/DiPlay496/runtime93/backend30 and independent connection/recovery delta review PASS. Not real iPhone proof/finalv1 acceptance.
+Current fixed13/fixed5 production relay READY/promoted dpl_5963XPZvpbTvg87UDqXqac32qyHY;9backend-only files,
+both public routes GET405/invalidPOST400/new-version missing-readiness rejection, no positive test comment, secret untouched.
+Detailed compiled-artifact evidence is in the release notes; subsequent documentation-only commits do not change that release's APK/source tag.
 
-Phase 0 basic report gate is COMPLETE. [Captured real-device v0.2 report](https://github.com/nnnc8/ts7-carplay-lite/issues/5#issuecomment-6018940228) includes AVC instantiate PASS, explicitly without decoding input. Issue #4 remains OPEN for sustained operation.
+## Preserved real TS7 evidence
 
-v0.1-alpha is **TECHNICAL PREVIEW / NOT YET A FUNCTIONAL CARPLAY RECEIVER**. Original shell/renderer and wireless integration boundaries are implemented; lawful protocol/authentication provider is unavailable: **BLOCKED_BY_AUTHENTICATION_REQUIREMENT**. No simulated iPhone session, extracted identity or proprietary receiver.
+- [Actual standalone connection failure](https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6051350325): v1.0.0-dev identity available, no decoder/frame/session, initial failure23ms after Connect,3 retries exhausted13s later. Source confirms idle startup controller teardown rejects the immediate first attempt, and prior1/2/5s timers could cancel an accepted slow hotspot/RFCOMM/handshake; timing is consistent but the old generic report cannot identify every runtime failure. v1.0.0-dev.1 repairs these control-flow defects and adds fixed stage/failure codes. Exact-build CI/download proof PASS; actual repaired device session pending, no repeat platform tests requested.
 
-## Evidence
+- Android8.1/API27/ARMv7/2GB, display1280×720/160DPI.
+- sprd/SPRD + sp7731e_1h10 board strings VERIFIED; About SL8141E OBSERVED,
+  precise silicon UNKNOWN.
+- [User alpha report](https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6030102288):
+  OMX.sprd.h264.decoder, target30/measured29.8507fps,8380 rendered test-pattern frames,
+  7 drops,queue0,193ms latency,0 restarts/reconnects,availableRAM455MB.
+- Approximately4m41s is 8380/fps estimate, not an uploaded continuous-duration field.
+  Seven drops are not measured network packet loss. TEST_PATTERN is not CarPlay.
+- Renderer VERIFIED on real TS7 for this captured run;5/15-minute acceptance NOT YET.
+  Issue4 stays OPEN. Prior [diagnostic report](https://github.com/nnnc8/ts7-carplay-lite/issues/5#issuecomment-6018940228)
+  is initialization/inventory evidence, not a session/load test.
 
-| Item | Captured fact | Status |
-| --- | --- | --- |
-| OS / ABI | Android 8.1.0 / API 27 / armeabi-v7a, armeabi, armv7l | VERIFIED report |
-| Platform properties | sprd / SPRD; board/hardware sp7731e_1h10; 4 cores | VERIFIED strings; exact silicon UNKNOWN |
-| RAM | total 2048 MB, available 496 MB, lowMemory=false, threshold 144 MB | VERIFIED snapshot |
-| Display | 1280×720 / 160 DPI / 60.0024 Hz / landscape | VERIFIED Android real-display report |
-| Storage | data total 28157 MB / available 26158 MB | VERIFIED snapshot, not nominal chip capacity |
-| Graphics | OpenGL ES 3.2 | VERIFIED reported version |
-| Wi-Fi | 2437 MHz / 65 Mbps / −41 dBm, enabled/connected | VERIFIED snapshot, load behavior UNKNOWN |
-| Bluetooth | adapter present/enabled; BLE feature | VERIFIED inventory, bootstrap UNKNOWN |
-| AVC | OMX.sprd.h264.decoder; advanced instantiate PASS (46 ms probe) | VERIFIED enumeration/initialization only |
-| Advertised AVC | width 64–1920; height 64–1088; bitrate 1–50M; fps 0–960 | OBSERVED capability range, not sustain guarantee |
-| USB | deviceCount=0 | VERIFIED that instant; no inference about MFi hardware |
-| Earlier About screen | Quad-SL8141E | OBSERVED label, not exact silicon proof |
+## DiPlay pivot
 
-UNKNOWN: full wireless session compatibility, legal authentication mechanism, sustained H.264, real audio/touch, reconnect and RAM trend under load.
+Old branch feature/lawful-carplay-core preserved/pushed at
+801d99e9775a50ee32d8486f7fe604250c047047 (unfinished checkpoint, not a release).
+New branch feature/diplay-ts7-port starts from stable main4e98000.
+Primary evaluated: programmerguohuajing/DiPlay-Legacy-Android.
+Secondary evaluated: mrisX/DiPlay-Android8.1-CASKA; live404/access unproven,
+latest exact revision UNKNOWN, no source imported.
+Chosen Legacy revision c8884adcc75bfda3c134db63877bd6c6f83beb74, GPL3 core.
+Reason: reproducible public source, actual wireless/iAP2/AirPlay/audio/touch lifecycle
+and legacy Android work. Current minSdk/README is not TS7 compatibility proof.
 
-## Implemented this round
+72 source/notice files with original blobs/ported hashes in third_party/diplay-base.
+GPL protocol/local-auth code and source-built JNI; no upstream UI/icons/proprietary receiver.
+Only two explicitly selected runtime inputs from the matching official v0.2.7 APK, outside Git/source/CI.
+Runtime credentials are not GPL-relicensed or Apple-certified; public distribution rights unresolved.
+Authorized-provider templates remain separate. See docs/EXPERIMENTAL_AUTHENTICATION.md.
 
-- API 27 Java/framework shell; visible UI before probes, explicit developer mode, settings/status/diagnostics; no Compose/WebView.
-- Separate Bluetooth/Wi-Fi observations and evidence-gated CarPlay states; shipping core refuses authentication.
-- SPS/PPS validation, IDR resync, 4 × 256 KiB compressed slots, 250 ms age bound; MediaCodec → Surface, no decoded pixel copies.
-- 1280×720 @ 30/25/20 fps; SPRD-preferred decoder/fallback and actual rendered-frame telemetry.
-- Locally generated H.264 asset; never claims real CarPlay STREAMING.
-- Fixed 500-event ring/newest 200 exports; frame/drop/latency/queue/RAM/radio/restart/reconnect/audio metrics. No identifiers, credentials or arbitrary exception text.
-- Finite recovery 1/2/5 s, frame watchdog and blocked-vendor-call containment without infinite workers.
-- Normalized touch boundary and minimal AudioTrack PCM sink. Real media audio/touch unverified; Siri/microphone deferred.
-- Fixed alpha route /api/carplay-diagnostics → #13; preserved /api/diagnostics → #5. Explicit upload only, token server-side.
-- Reproducible inspected alpha build, core/privacy tests, separate API 27 Surface instrumentation CI; diagnostic workflow/APK unchanged.
-- Pinned upstream research/licenses and lawful authentication boundary; no upstream protocol/asset imported.
+## Implemented
 
-## Verification ledger
+- Recovery waits for actual attempt completion before1/2/5s backoff; each negotiation has120s deadline. Startup probe controller retires before Connect; old-controller teardown remains quarantined. Fresh recovery requires Bluetooth/Wi-Fi proof again. Fixed failure/stage events expose no peer/credential/error text.
+- Native API26 audio focus wraps the unchanged PCM sink; temporary loss drops live audio without queueing, gain restarts the same format, permanent loss/stop revoke stale callbacks. No new permission/dependency or frozen renderer change. Actual API27 native focus instrumentation PASS; not physical audible iPhone proof.
 
-| Check | Result / scope |
-| --- | --- |
-| Local Java core | PASS: 2047 checks for config/IDR/bounds/malformed input/states/retries/touch |
-| Both backend route tests | PASS: fixed destinations/schema/privacy/limits/auth/duplicates |
-| Local alpha APK | PASS: API 27, Java-only ARMv7-compatible, signed, generated asset inspected |
-| Actual API 27 MediaCodec Surface | PASS emulator: 90+ frames, 720p, stream-reset recovery and stop; OMX.google.h264.decoder, NOT SPRD/TS7 |
-| PR CI | PASS [37495146916](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37495146916); preserved diagnostic [37495147056](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37495147056) PASS |
-| main CI | PASS [alpha + Surface 37496485921](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37496485921) / [diagnostic 37496485898](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37496485898), release source f4a7020 |
-| Real TS7 alpha rendering | NOT YET |
-| Real wireless CarPlay | BLOCKED: lawful authentication/core |
-| Real audio/touch/Siri | NOT YET / Siri deferred |
-| 30/60-minute session gates | NOT YET |
+- Reused pinned P-256/protocol-major3 authenticator; bounded direct assets, key/certificate self-check, fixed failures, startup worker and no secret logging/storage.
+- Experimental availability separate from authorized MFi/real session proof; Connect guides permission and paired-phone selection.
+- Identity-free source/CI versus explicitly opted-in standalone; freshly generated CI crypto fixture, never real runtime data in CI.
+- Hotspot readiness runs last, preventing its client Wi-Fi interruption from contaminating earlier Network checks; no coexistence claim.
+- Strict1.0.0-dev report states BLOCKED / EXPERIMENTAL_IDENTITY_AVAILABLE / PHONE_CONFIRMED_SESSION. Old report versions/fixed5 remain unchanged; client reports are not server-verified phone trust.
+- User-triggered Developer platform readiness: 12 independent real local API probes,
+  fixed typed status/duration/error codes, bounded workers/cancel/late-reservation cleanup,
+  process-wide repeat-run/failed-cleanup quarantine guard, no phone/session/authentication/credential reads.
+- Strict `0.2.1-platform` report extension on fixed Issue13; old alpha reports and fixed5 unchanged.
+  [Exact operations / privacy / emulator limits](docs/PLATFORM_READINESS.md).
 
-JVM tests mean IMPLEMENTED / LOCAL TESTED, not hardware VERIFIED. API 27 screenshot visually inspected: synthetic color bars/counter, TECHNICAL PREVIEW / TEST PATTERN labels, approximately 30 fps and bounded queue. Emulator proves generic Surface output, not SPRD decode. Independent runtime/security reviews found no residual blocking regressions after fixes. See docs/ALPHA_VERIFICATION.md.
+- Actual DiPlay Controller wireless lifecycle + Bonjour/iAP2/AirPlay/media core.
+- API27 LOHS callback/WifiConfiguration, explicit AP/peer sockets and selected paired
+  Bluetooth phone. Permission optional/explained; no GPS/location collection/upload.
+- Bounded parser/media/discovery/tunnel buffers, epoch/cancel/teardown guards,
+  private trace removal, RAM-only bounded pairing store.
+- H264 main720p → adapter → original bounded MediaCodec→Surface;9 locked renderer/
+  audio/touch/asset files byte-identical. Default30fps/25/20 retained.
+- LPCM44.1/48k1/2channels → unchanged AudioTrack sink; normalized single-touch
+  via upstream HID. Both fixture-tested, real iPhone audio/touch NOT YET.
+- Minimal framework UI, waiting/authblocked status; no Compose/WebView/decoded pixel copy.
+- Existing Diagnostic v0.2, both fixed relays(#5/#13), bounded metrics/privacy kept.
+  Relay v0.2-alpha allowlist is backward-compatible; no client destinations/auth success claims.
 
-## Publication / deployment
+## Verification
 
-- [Repository](https://github.com/nnnc8/ts7-carplay-lite): PUBLIC, default main.
-- Branch: feature/wireless-carplay-alpha from 44b688a. Independent receiver/runtime review completed; identified callback/retry/fallback/touch/lifecycle issues repaired, no residual blocking findings.
-- [Alpha test issue #13](https://github.com/nnnc8/ts7-carplay-lite/issues/13).
-- [PR #14](https://github.com/nnnc8/ts7-carplay-lite/pull/14); [lawful wireless core #15](https://github.com/nnnc8/ts7-carplay-lite/issues/15), [state validation #16](https://github.com/nnnc8/ts7-carplay-lite/issues/16), [recovery #17](https://github.com/nnnc8/ts7-carplay-lite/issues/17).
-- PR #14 MERGED; merge/source f4a7020c95c602935ffa20b5dfcf85b5f0454aac. Final PR CI [37496018107](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37496018107) PASS.
-- Published prerelease/tag [carplay-v0.1.0-alpha-preview](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v0.1.0-alpha-preview), explicitly TECHNICAL PREVIEW / NOT YET A FUNCTIONAL CARPLAY RECEIVER.
-- [Normal alpha APK](https://github.com/nnnc8/ts7-carplay-lite/releases/download/carplay-v0.1.0-alpha-preview/TS7-CarPlay-Lite-v0.1-alpha.apk), 176624 bytes, SHA-256 5a2461ce16324b793425aa3fa287840c64f55a9980f95385044839bd252b26da. Published download checksum/permission/asset/signature inspection PASS; no instrumentation.
-- Diagnostic endpoint: https://ts7-carplay-lite-relay.vercel.app/api/diagnostics. User upload succeeded; token configured server-side only.
-- Alpha endpoint: https://ts7-carplay-lite-relay.vercel.app/api/carplay-diagnostics. Final checks caught both routes returning 404 after GitHub auto-deployment used the wrong project root. Vercel Root Directory corrected/read back as `backend`; redeployed from repository root, dpl_D7rRSmDUZfzAPtJ1mPSCavJ3HGWC READY with both API functions. Both routes again pass live JSON GET 405 and invalid-schema POST 400. Future GitHub deployments use the same root; check both routes after every push. Alpha successful GitHub-write behavior tested with mocked responses; real alpha user upload pending. Published APK unchanged.
-- Preserved [diagnostic-v0.2.0](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/diagnostic-v0.2.0), APK SHA-256 87dc5f08a1d0d5562720b834d460329a4cbc008f10072778d8e7f81540497a34.
-- Historical diagnostic main CI [37479902327](https://github.com/nnnc8/ts7-carplay-lite/actions/runs/37479902327) SUCCESS after PR #12.
+See [DiPlay verification ledger](docs/DIPLAY_PORT_VERIFICATION.md) for exact results.
+Current local delta: API27/ARMv7/x86_64 compile PASS, identity-free/standalone APK signature/ABI/input inspection PASS,
+72 source hash +9 renderer-lock PASS. Selected runtime cryptography and nonblocking-close regression covered;
+readiness126, receiver2066, backend30 PASS. Current exact hosted results are recorded above and in the release/verification ledger.
+Historical v0.2 preview checks: receiver2047, authentication24, gate30, DiPlay478 fixtures PASS;
+Diagnostic sanitizer PASS; backend16 tests PASS.
+v0.2.1 local delta: readiness121 + immediate/late/admission cleanup24 assertions, existing receiver2047/auth24/gate30/DiPlay478,
+Diagnostic sanitizer, backend27 PASS; source/license71 + frozen renderer9 PASS; normal and
+separate instrumented API27 APK builds/inspections PASS. Hosted readiness CI and release
+acceptance are recorded against the final exact commit in the v0.2.1 release notes; do not
+reuse v0.2 or local compile results as hosted or physical runtime proof.
+Initial87e9901 Android8.1 normal startup/authblocked/crypto/JNI/Surface PASS,
+PR CI37604670362/push37604605337 PASS, Diagnostic37604670078 PASS.
+Hardened77ef5cb PR37605750814/push37605744850 and Diagnostic37605750770 PASS.
+Final lifecycle/authentication repair source must also pass CI before publication;
+exact source/run/APK/download SHA256 proof is recorded in the release notes.
+Do not reuse v0.1 emulator/CI results as v0.2 proof.
 
-## Next
+Independent upstream network/privacy review completed; identified log/binding/queue/
+producer-wakeup/cleanup issues repaired. Final fresh-context port review identified
+five lock/provenance/stale-callback/reconnect/audio-readiness issues; fixes and regression
+fixtures added. Follow-up review found SETUP ordering and late UI notification issues;
+both repaired and independently rechecked, no remaining P1/P2 in the bounded delta. This
+does not constitute an authentication certification or complete upstream security audit.
 
-1. This round delivered the proven API 27 Surface technical preview; functional Phase 1 remains incomplete/auth-blocked.
-2. TS7: synthetic 5/15-minute runs for all profiles; copy/upload decoder/fps/drops/RAM/recovery evidence to #13.
-3. Keep #4 open until sustained real-device decoding is captured.
-4. Obtain an authorized authentication provider; review/port compatible upstream core. No vendor identity extraction or verification bypass.
-5. Integrate real audio/touch, Siri and actual reconnect; pass 30/60-minute gates only on real evidence.
+## Releases / deployment preserved
 
-User only cares about wireless. #10/#11 deferred, not deleted; wired diagnostics are a narrow debugging fallback, not Phase 1 scope.
+- Diagnostic v0.2 tag/APK unchanged, SHA87dc5f08a1d0d5562720b834d460329a4cbc008f10072778d8e7f81540497a34.
+- v0.1 technical-preview release unchanged, SHA5a2461ce16324b793425aa3fa287840c64f55a9980f95385044839bd252b26da.
+- Preview prerelease: carplay-v0.2.0-diplay-preview, exact title
+  TS7 CarPlay Lite v0.2 Alpha — DiPlay Port Preview. Only normal CI APK/source/checksum,
+  no instrumentation published; [release record](https://github.com/nnnc8/ts7-carplay-lite/releases/tag/carplay-v0.2.0-diplay-preview).
+- Production relay: https://ts7-carplay-lite-relay.vercel.app;RootDirectory backend.
+  Preserve secret server-side. Version2 support deployment/live checks recorded in ledger.
+- Issue15 stays OPEN;Issues10/11 DEFERRED;Issue4 stays OPEN. Main not overwritten by experiment.
+- [PR18](https://github.com/nnnc8/ts7-carplay-lite/pull/18) OPEN/unmerged;
+  high-priority [port issue19](https://github.com/nnnc8/ts7-carplay-lite/issues/19).
+- Historical v0.2-compatible backend READY/promoted dpl_3eDB7nymbC7ug9LoeeENwf82JLJ1;
+  both public routes GET405/invalidPOST400 PASS. No smoke comments/private uploads.
+
+## Next blocker / next device check
+
+[Real report1](https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6050562144): 11PASS/hotspot permission denied.
+[Real report2](https://github.com/nnnc8/ts7-carplay-lite/issues/13#issuecomment-6050623491): 11PASS including hotspot reservation+close; Network UNAVAILABLE after client Wi-Fi loss.
+Across both: all12 individual probes have physicalPASS, not same-run12PASS/coexistence proof.
+Do not request repeats. Finish host/API27/packaging/review first, then consolidate indispensable phone acceptance.
+Crypto/emulator cannot prove real iPhone trust/video/audio/touch/recovery or30/60-minute gates.
+Siri/microphone remain deferred as previously documented.

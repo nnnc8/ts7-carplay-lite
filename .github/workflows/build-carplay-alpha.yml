@@ -1,8 +1,8 @@
-name: Build TS7 CarPlay Lite alpha
+name: Build TS7 DiPlay API27 development
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/diplay-ts7-port]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -29,27 +29,40 @@ jobs:
           packages: platform-tools
           log-accepted-android-sdk-licenses: false
       - name: Install pinned Android build tools
-        run: sdkmanager 'platforms;android-27' 'build-tools;35.0.0'
+        run: sdkmanager 'platforms;android-27' 'build-tools;35.0.0' 'ndk;25.2.9519653'
+      - name: DiPlay API27 and ARMv7 source build
+        run: |
+          ./diplay-port/build.sh
+          TS7_AUTH_FIXTURE_OUTPUT_DIR=build/auth-fixture ./diplay-port/test.sh
+          python3 diplay-port/tools/verify_source.py
       - name: Core and privacy contracts
         run: |
           ./receiver/test.sh
           ./diagnostic-app/test.sh
           npm --prefix backend test
-      - name: Build and inspect alpha APKs
+      - name: Build and inspect platform APKs
         run: |
-          ./receiver/build.sh
-          ./receiver/build.sh --instrumented
-      - name: Upload requested alpha APK
+          TS7_SKIP_CORE_BUILD=1 ./receiver/build.sh
+          TS7_SKIP_CORE_BUILD=1 ./receiver/build.sh --instrumented
+          TS7_SKIP_CORE_BUILD=1 TS7_AUTH_FIXTURE=1 TS7_ENABLE_EXPERIMENTAL_AUTH=1 TS7_DIPLAY_AUTH_ASSETS_DIR="$PWD/build/auth-fixture" ./receiver/build.sh --instrumented
+      - name: Upload requested platform APK
         uses: actions/upload-artifact@v4
         with:
-          name: TS7-CarPlay-Lite-v0.1-alpha.apk
-          path: dist/TS7-CarPlay-Lite-v0.1-alpha.apk
+          name: TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1.apk
+          path: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1.apk
+          if-no-files-found: error
+
+      - name: Upload generated authentication test fixture (not for installation)
+        uses: actions/upload-artifact@v4
+        with:
+          name: TS7-Authentication-Test-Fixture
+          path: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1-auth-fixture-instrumented.apk
           if-no-files-found: error
       - name: Upload separate instrumentation APK
         uses: actions/upload-artifact@v4
         with:
           name: TS7-Alpha-Instrumentation
-          path: dist/TS7-CarPlay-Lite-v0.1-alpha-instrumented.apk
+          path: dist/TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1-instrumented.apk
           if-no-files-found: error
 
   android-81-surface:
@@ -58,14 +71,25 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/download-artifact@v4
+        with:
+          name: TS7-CarPlay-Lite-DiPlay-v1.0.0-dev.1.apk
+          path: dist
       - uses: actions/download-artifact@v4
         with:
           name: TS7-Alpha-Instrumentation
           path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: TS7-Authentication-Test-Fixture
+          path: dist
       - name: Enable KVM
         run: |
           sudo chmod 666 /dev/kvm
-      - name: Actual API 27 MediaCodec Surface test
+      - name: Actual API27 platform probes, normal startup, auth gate and preserved Surface test
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 27
@@ -74,7 +98,7 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
           script: ./receiver/ci-smoke.sh
-      - name: Upload renderer evidence
+      - name: Upload readiness and renderer evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -83,4 +107,10 @@ jobs:
             dist/renderer-smoke.txt
             dist/renderer-smoke.png
             dist/renderer-logcat.txt
+            dist/normal-startup.txt
+            dist/normal-startup.xml
+            dist/normal-startup.png
+            dist/platform-readiness-smoke.txt
+            dist/platform-readiness-smoke.png
+            dist/authentication-smoke.txt
           if-no-files-found: warn

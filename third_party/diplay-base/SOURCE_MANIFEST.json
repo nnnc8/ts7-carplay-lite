@@ -1,0 +1,585 @@
+{
+  "schemaVersion": 1,
+  "primaryBase": "https://github.com/programmerguohuajing/DiPlay-Legacy-Android",
+  "upstreamCommit": "c8884adcc75bfda3c134db63877bd6c6f83beb74",
+  "date": "2026-10-07",
+  "scope": "Selected GPL protocol/network/local-authentication code only; no mobile/common/site or runtime identities in source. User selected upstream experimental runtime separately on 2026-10-08.",
+  "files": [
+    {
+      "path": "LICENSE",
+      "upstreamPath": "LICENSE",
+      "upstreamGitBlob": "f288702d2fa16d3cdf0035b15a9fcbc552cd88e7",
+      "portedSha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "modified": false,
+      "license": "Upstream notice/license (reference only)"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2IdentificationClient.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2IdentificationClient.kt",
+      "upstreamGitBlob": "df51e68cda9fef5cfbecd133fd669e87aadcb0e5",
+      "portedSha256": "53cb4ceeab1fb2f7c98d2e94d4d936bf12cd49dc6cc135f7a4691e3a494e21fe",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/transport/BluetoothRfcommDuplexStream.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/BluetoothRfcommDuplexStream.kt",
+      "upstreamGitBlob": "664cdce06d1239c77b436792e110942641f6f748",
+      "portedSha256": "e03d9ed9724f365cda5a7c8bae8aad2105e1068effb0fe0153a3ecefe94d696a",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2LinkEngine.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2LinkEngine.kt",
+      "upstreamGitBlob": "4fd7d65042a738922fa358301981aeacf6d3db4d",
+      "portedSha256": "31dc76d7c42b6ce1f78f1b0b24a615624d81da92e6c2caf6131a507f6c045d66",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2LinkChannel.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2LinkChannel.kt",
+      "upstreamGitBlob": "7e5659086132e132b8f954bab11701f9b6391e8f",
+      "portedSha256": "827f93b1ee13e96b37b7e353328bf2fd5633672e73363653e2324ac9a702a8e0",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2LocationClient.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2LocationClient.kt",
+      "upstreamGitBlob": "b3661c93d08be22f03925135d73e8cfab8ce7580",
+      "portedSha256": "d1b4d896f704cba97bcd71a618d1faeb44116335d4ed4c7f6744f38e5602434b",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2WiredControlClient.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2WiredControlClient.kt",
+      "upstreamGitBlob": "c7a4a90cb5910df49b65b8352ba281e55c6b3fbf",
+      "portedSha256": "3dcf0c552e2833dcff8c1239e0108046a9fbe5afcc38bd5717b85643909559b9",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2CsmChannel.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2CsmChannel.kt",
+      "upstreamGitBlob": "ce8e89c02e5441c5f5232ca0333e8fdf3eb4e678",
+      "portedSha256": "d9a4d20944d480606805d7193efca16ffce4702f9a24a71a7d06d825f70b4293",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/transport/BlockingDuplexByteStream.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/BlockingDuplexByteStream.kt",
+      "upstreamGitBlob": "4ee2064bcd69b23772f30b6b7dfc30c2f3be87da",
+      "portedSha256": "784b1461f6043d67d3fb3515cf628125992e631d5ace5166376f6020c7b42ffa",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2ControlDeadline.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2ControlDeadline.kt",
+      "upstreamGitBlob": "ffdf88a45424cdcadf65555c308364d8a2314516",
+      "portedSha256": "f3bb86aa25382f8c6d047b1febaa268885d216c14f1b1585b5c452da25aed98c",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/transport/I2cTransport.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/I2cTransport.kt",
+      "upstreamGitBlob": "2ca5c63aa652bdf7a0524ef5d664e3e09f18ece4",
+      "portedSha256": "8d71a63e16b4679b802dd90b55c0f63b6eea4f8ffeb93c8804ff13dca9a9ca40",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2VehicleStatus.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2VehicleStatus.kt",
+      "upstreamGitBlob": "9e637764a069f02b3792dda6126eda0ed7488c44",
+      "portedSha256": "bcd1037550fbc192cfef9b0dbac8c17ad76955c3fe703628574d5626aefaa76f",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2WirelessControlClient.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/transport/Iap2WirelessControlClient.kt",
+      "upstreamGitBlob": "f809fc466a164f0b14967cf7971fefca5e689856",
+      "portedSha256": "67aaab9bb5eb3f3e8c077b9a79630515f0896681c410656bcdaced374a076582",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/network/CarPlayVpnService.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/network/CarPlayVpnService.kt",
+      "upstreamGitBlob": "1fe4c69ff677274a07708d50091ecb6d6d2d5434",
+      "portedSha256": "f195540cd93d9561b82f9a5629a15b4feb939b210d436da9374e441ee0139d06",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/network/LegacyHotspotRadio.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/network/LegacyHotspotRadio.kt",
+      "upstreamGitBlob": "9b7687e570cd276d62e8e867fe24f358df76afcb",
+      "portedSha256": "4bca862676ab367a59b84b7f81dfc08a8c3be6b15388204e3d4ec359d4af9cf1",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/network/WirelessHostAddress.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/network/WirelessHostAddress.kt",
+      "upstreamGitBlob": "262b652e57e23db4c808ed84a00654a5ca0a9b63",
+      "portedSha256": "4c8babaa632872b3778ff0cd7d092212ce58e81c5a8fdc722706141d2ab07bfe",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/network/LocalOnlyHotspotInterfacePolicy.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/network/LocalOnlyHotspotInterfacePolicy.kt",
+      "upstreamGitBlob": "eedf82ab1aed76674cd8f2c8d149ca20939bf40f",
+      "portedSha256": "5fa2920211f317f50afacd35dac6bda073fa48a162a7b443b79beeb35194d783",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/network/WirelessHotspotManager.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/network/WirelessHotspotManager.kt",
+      "upstreamGitBlob": "c29d3fc2bbc8f5fe4d914b769650761984d881a9",
+      "portedSha256": "31a01dda3559793384294241d69ee27708f1c9fa4ba5d2023f987dcaea0f5403",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/network/CarPlayBonjour.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/network/CarPlayBonjour.kt",
+      "upstreamGitBlob": "119160be70113c1e192ada49df00053612b0bc03",
+      "portedSha256": "13e2e26a3a2c37ab76dbcc2efddbdfe4efca4edc7aef1b5611a3ef8503cfe457",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/network/TcpLiveness.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/network/TcpLiveness.kt",
+      "upstreamGitBlob": "24926c33f50d406d21839d9eee07b2361f3cc132",
+      "portedSha256": "462ece369ceb5c9e60a394ab7c344565400db1de523147996647d452b7169a77",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/network/HotspotInterfaceBssid.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/network/HotspotInterfaceBssid.kt",
+      "upstreamGitBlob": "023aee306b04be4dce95a51a8ea4c57df87459c9",
+      "portedSha256": "4af7726dabc704d166b47d4e2a9e2c7661424837d3b4c819021b00b6487054cc",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/network/LocalOnlyHotspotManager.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/network/LocalOnlyHotspotManager.kt",
+      "upstreamGitBlob": "65a5fa90331b1b133dcd7260507178c86180d448",
+      "portedSha256": "4c967d7b44101bb929c8a605718bc2e7e53f953f8942f10b27224b96ca452bd3",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/mfi/Iap2MfiAuthenticationClient.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/mfi/Iap2MfiAuthenticationClient.kt",
+      "upstreamGitBlob": "f8f13331768906935b3c76957f9e38fc17fb8528",
+      "portedSha256": "23be8c7bd341bcd0db1b5842faff5a663377652a9874a796fcee3271c9e26fb4",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/mfi/LocalMfiAuthenticationClient.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/mfi/LocalMfiAuthenticationClient.kt",
+      "upstreamGitBlob": "ebb4a08cb7d4f4be8392307666ba345f7eff2e92",
+      "portedSha256": "a7c05fcad40fdd4d45e3fa2347f38662d93ae2ffe37e018fb55563e2ded3a52d",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/mfi/MfiAuthenticationClient.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/mfi/MfiAuthenticationClient.kt",
+      "upstreamGitBlob": "0b9db61ef88d4ed06c9ddb61f234da837fa69bbf",
+      "portedSha256": "ed90d71104ca6f0fe403861c15706ec95d6ece611174aa9714fedd55cad09003",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/iap2/trace/Iap2FrameFormatter.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/trace/Iap2FrameFormatter.kt",
+      "upstreamGitBlob": "0647d8f3740e6aeb2c29072fdd1b1e6093845015",
+      "portedSha256": "728490a714055c6de510ba9bb84bd36b2e9582fd32ef8d195d610cded1893baa",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/iap2/wire/Iap2WireCodec.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/wire/Iap2WireCodec.kt",
+      "upstreamGitBlob": "f3e01ad721ad1c4aedeb2cf9645d2e5102dd9e8d",
+      "portedSha256": "7f807c02639a527fc6f2dd484e0c48aa14dea297317b42f997fd8822c6f76042",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/iap2/wire/Iap2CsmFramer.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/wire/Iap2CsmFramer.kt",
+      "upstreamGitBlob": "a8f1c3ccbccc1ec08b62f015e5c144033abeda15",
+      "portedSha256": "04d0a5453ca4dd5568fa514af5301c2a05f419a713a305153cc6373467b84da2",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/iap2/wire/Iap2Wire.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/wire/Iap2Wire.kt",
+      "upstreamGitBlob": "e4d6085bebc9fdc877e728141de5f9fb52053ed3",
+      "portedSha256": "cc90a0edfe5f9e17fa7b513d13efaa9c4bb70450c16ab97275b906b4bab5acd7",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/iap2/catalog/Iap2Endpoint.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/catalog/Iap2Endpoint.kt",
+      "upstreamGitBlob": "614b449297950f186bcbf055449b777b01f105ec",
+      "portedSha256": "9c86ec5f9887ee333681d97b738b7d929c657e71e1fc2fc26feea98d67d52932",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/iap2/body/Iap2BodyReader.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/body/Iap2BodyReader.kt",
+      "upstreamGitBlob": "5d0c5501224f52f938afb0d351f126668e1d8dca",
+      "portedSha256": "8f956ef57c834955de0ba75e2d4c4bbcc1c6839dcb6ee217b99580989b6d87d6",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/iap2/body/Iap2BodyBuilder.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/body/Iap2BodyBuilder.kt",
+      "upstreamGitBlob": "23cb9c090e3d1f80e99f1578ceb4b13aa49f8898",
+      "portedSha256": "6dbf46fe5069587caa15143fd97d38c3e3a2cd2920c2566f9662698ddfc7f582",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/iap2/message/Iap2Messages.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/message/Iap2Messages.kt",
+      "upstreamGitBlob": "d9d7fd196e4a88d655f527f228e338972dfa4563",
+      "portedSha256": "298667d051992a311b981535a4fcd89446c2d415e5b067e5704a51eb477eed01",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/iap2/session/Iap2Session.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/iap2/session/Iap2Session.kt",
+      "upstreamGitBlob": "df9252128808571667de2b76117b03bc0306d263",
+      "portedSha256": "2602aa3ff028e3562d9f44c364a19fe36b074b5ee918934c2cb76ee71c47b66b",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/StreamReceiveStats.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/StreamReceiveStats.kt",
+      "upstreamGitBlob": "9beb05504d813c26c388845660a65b633732c3c6",
+      "portedSha256": "3cd78ebe65144d4dc099431a1702609a49b018daa449b904a8788c6bb18dd6f6",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlaySession.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlaySession.kt",
+      "upstreamGitBlob": "9f44d6a85df3f6cc562ce789b50a42ba1fc3d188",
+      "portedSha256": "88e7236c544b7d4d3ab59f6947ea62a356f29b4174b14646593b1371758d87b7",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/ScreenStream.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/ScreenStream.kt",
+      "upstreamGitBlob": "3a7e49ca34f9dbdca6f1608873a06c01da32f1c2",
+      "portedSha256": "1b6c2d26432ea305af5aac8921c78b4188084ce1f329b03575679e9704207701",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/NtpClock.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/NtpClock.kt",
+      "upstreamGitBlob": "297ad998d6027568f8df2170973670246d146f5c",
+      "portedSha256": "49f6dcc17ddc5ab87b7bd4378fad03bee5118d8d596388035e2af8bf27c5e86e",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/IapTunnel.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/IapTunnel.kt",
+      "upstreamGitBlob": "230b96fad96a7f9d246fe2f5060377be924bfdd4",
+      "portedSha256": "5d1fdfb01730c14a0f977587dc82240e10cd316de1e5b961cf46d2ab6494c289",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayDisplaySettings.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayDisplaySettings.kt",
+      "upstreamGitBlob": "93d2904f26dcc3009a84d21c4536bf924c7f5912",
+      "portedSha256": "80efb0344e23192f350d97e47fa63f28e5cebbd893c06f5a06106ec60c63022e",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayIdentity.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayIdentity.kt",
+      "upstreamGitBlob": "fde0015d7e8c5ec0bd7a9c841e9ee27af30a8a65",
+      "portedSha256": "c9fc6af307eee4a2e59ca178a4d5d52f065ce6ffb7a2ff6472679889fdd975a9",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayIapTunnelStream.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayIapTunnelStream.kt",
+      "upstreamGitBlob": "37af88d9739bebd3fb7429e2f1abeeb41bf1b8e5",
+      "portedSha256": "b289ec1fec3ac0c2584140bc17bb252e28094ffdc5e126690d8d4e9e7cf3c9e1",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayInfoPlist.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayInfoPlist.kt",
+      "upstreamGitBlob": "258c2a9b143d4f725a2a9f62486b7202ff03087e",
+      "portedSha256": "c0e56747f6a7b01d3081dc01a384b0135114c5feb25156eb016824a04a3e6371",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/MicrophonePacketizer.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/MicrophonePacketizer.kt",
+      "upstreamGitBlob": "3ef77f8ead4c93e3138a0e82d8e9337a39b00982",
+      "portedSha256": "b5f47f980ec2da734171082d9099b3a62f32769bf85c28aca2dea1aee40abf55",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayConfig.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayConfig.kt",
+      "upstreamGitBlob": "848fc85c6a666123814c28dccdaaf339017fab5d",
+      "portedSha256": "c5a5d5b70cbd2f7875372ee2f6f14e6a9030afc73f03ed287c28042c5f6e1fc6",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/PairVerify.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/PairVerify.kt",
+      "upstreamGitBlob": "67d349db80ce1cf257fe7c1a23c4e96ef3983f99",
+      "portedSha256": "d999fd1fde4df26e025151bd36dd9aafea9712f1d555fce74d60480287f8e5b5",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayHid.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayHid.kt",
+      "upstreamGitBlob": "f1fc1547bedce64b7263ea3896fc2a0d7d816dfc",
+      "portedSha256": "7259f1d27ac2955b8ce80a3713bca371a53dfa51bb823a27dd04283cf41626bd",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/CarPlayMediaEngine.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/CarPlayMediaEngine.kt",
+      "upstreamGitBlob": "e1ae26c5aae01d1f676366a68282d1a411487744",
+      "portedSha256": "7ff241bbda1b944f5f855785c0aa05e8d689eb458e2e27cd754772789aead1a0",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayPeerDiagnostics.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayPeerDiagnostics.kt",
+      "upstreamGitBlob": "6b2e99e115eb888bd7ceab0eea0c3fee305e11a9",
+      "portedSha256": "6aa13bc05e7f658aab80103fdd95bb525e2992abe73a8809252bbf7eee02b072",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/Bytes.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/Bytes.kt",
+      "upstreamGitBlob": "aa33f843e849afa6dcd35a19dcb1faaa4b48c409",
+      "portedSha256": "9cbdeb745ec2a83688472d7318fa360f2b670b7bd93b15196cdbcf3d09edfb54",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/SafeArea.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/SafeArea.kt",
+      "upstreamGitBlob": "3cdadb38fddf7ee45590b15419c1c9979fa20bfa",
+      "portedSha256": "b27f95f65078655fd554424da6ad6ca49b9f40cb35d09767d6dff8671c1bbec6",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/PairSetup.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/PairSetup.kt",
+      "upstreamGitBlob": "820c298126e01cb3da142e0864bc637b818c80f2",
+      "portedSha256": "90cd7c68541945da403f4ccf8c3dd6dc99044c8da26ec48f8dab8a9374b0701a",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/MfiSapAuthSetup.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/MfiSapAuthSetup.kt",
+      "upstreamGitBlob": "b005a8f3a222b8ee4c25d4d01cf5869ffa8dad7c",
+      "portedSha256": "768431d28bba541b99fcce9e5a8ad7cf26a034d9b27f9c3b281e6d8539c6d961",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/AudioStream.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AudioStream.kt",
+      "upstreamGitBlob": "47ec0fb67f9590385ba6366c11d28ed61741788a",
+      "portedSha256": "0703888d6123ac1ea0cdc821635a53cb426d4c07883f0f091f5417ae7680a8c4",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/BplistCodec.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/BplistCodec.kt",
+      "upstreamGitBlob": "786faf8cbf4a024f805fc363fcb01c5bb0c496a0",
+      "portedSha256": "af56af6bfc30f064600bc67775915a8b54de6ad47e8c85d05b519ea364d5825b",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/PairingStore.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/PairingStore.kt",
+      "upstreamGitBlob": "f853ff1f3b2b0b25a8612be2e7b793a7d74e5481",
+      "portedSha256": "8039e13be31911aa1c8161e01294f52c6c314b23862041e0fc9c77b0f30aeb75",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/ControlCipher.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/ControlCipher.kt",
+      "upstreamGitBlob": "00621ff0de4eeefca1f4942a26aa0c9631ad65b1",
+      "portedSha256": "3661fdf45acacd6107db3558db94b3ede7633f3019915668fe9b80e5a7c138af",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/Tlv8Codec.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/Tlv8Codec.kt",
+      "upstreamGitBlob": "93348399c712e1c969894608daf3c54bee9c380c",
+      "portedSha256": "c29b40b8a21ca1e0a529ad187407b2363a9fcac9ef23952b50a9e609a91ef048",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/RtspMessage.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/RtspMessage.kt",
+      "upstreamGitBlob": "df2dd9225c81891bab8eaf6cd5ceeb739b91f8d5",
+      "portedSha256": "dd5176af0fc794081afe334bb7d96124d59edaa4258d8d424b14300a85287a97",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayCrypto.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/AirPlayCrypto.kt",
+      "upstreamGitBlob": "a5a1a9904747fd47e50ab32ca9655a631dcd863c",
+      "portedSha256": "376bb83e29d41c6959138da3b4c872cf98e62a6ce56bb83b6f1835c11ebae516",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/airplay/Srp6a.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/airplay/Srp6a.kt",
+      "upstreamGitBlob": "5a2cc37bc5e47d56b68d2563d9681992cc1138fd",
+      "portedSha256": "cae5be95d34c2ad32a7e5f77d7206679a09dcf0cdce164e917a24ce734efd58a",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/orchestration/CarPlayRuntimeConfig.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/orchestration/CarPlayRuntimeConfig.kt",
+      "upstreamGitBlob": "77320c100ce8a33aa177265906255d2d859e72b6",
+      "portedSha256": "f40ddc1ca5e112f01df6dd87fc4241979849ff226687452e646b8f42281b95cf",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/orchestration/WirelessConnectionProof.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/orchestration/WirelessConnectionProof.kt",
+      "upstreamGitBlob": "51db23f37e493805f3fba5536cda1a2a970c7d59",
+      "portedSha256": "3040fa55cd4acbaf81787b3613cb7e7b77507fdc268e2b81269abb9db51734f2",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/java/com/shilapi/xcertplay/orchestration/CarPlayController.kt",
+      "upstreamPath": "shared/src/main/java/com/shilapi/xcertplay/orchestration/CarPlayController.kt",
+      "upstreamGitBlob": "8a486e026c6e8b8f757ba511a43dae6814700b14",
+      "portedSha256": "1dbfdc7a2a2223b5dbae109a1e41a65ed1cb8ece6b1c092f5d1310f96eb8cfaa",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/jni/Android.mk",
+      "upstreamPath": "shared/src/main/jni/Android.mk",
+      "upstreamGitBlob": "c8fc559591240b1162c21c05fd1ab7ec878b7c45",
+      "portedSha256": "d64253701ed251a613d92e91f8e7a21c1985626e26be091243570683a1f66f0c",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/jni/Application.mk",
+      "upstreamPath": "shared/src/main/jni/Application.mk",
+      "upstreamGitBlob": "0e1d0d27c1a086c9e3bc2c2ab26005d55a594e62",
+      "portedSha256": "045c0fd1e214520e5e3aa0e8c6886ca4e8b9f34bc7ec3926e5e4b8af819e9270",
+      "modified": true,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "shared/src/main/jni/local_hotspot_radio.c",
+      "upstreamPath": "shared/src/main/jni/local_hotspot_radio.c",
+      "upstreamGitBlob": "ba734618eab3846ecb7e073e7d1668378c48bfc0",
+      "portedSha256": "4985fade5d822b2a5f65f56805be3f4be9c8ae354e6c2e3bf14253955b6cee17",
+      "modified": false,
+      "license": "GPL-3.0"
+    },
+    {
+      "path": "docs/UPSTREAM-README.md",
+      "upstreamPath": "README.md",
+      "upstreamGitBlob": "b8d7084f55d60e7d8602470d4ed4c06d82fcda3d",
+      "portedSha256": "3ba5a61151105ecdaafee9fd9d73e62bc92dd45c84ea7542f35fb27c810ff692",
+      "modified": true,
+      "license": "Upstream notice/license (reference only)"
+    },
+    {
+      "path": "docs/licenses/dependencies/Bouncy-Castle-LICENSE.txt",
+      "upstreamPath": "docs/licenses/dependencies/Bouncy-Castle-LICENSE.txt",
+      "upstreamGitBlob": "24506f04ccddbbca1b1770637421f802acb9310a",
+      "portedSha256": "782703fcd39c06fcfba0e23d1cdc65c3f219d58b5a5ffa632a5b37008cfec956",
+      "modified": false,
+      "license": "See retained file"
+    },
+    {
+      "path": "docs/licenses/dependencies/SLF4J-LICENSE.txt",
+      "upstreamPath": "docs/licenses/dependencies/SLF4J-LICENSE.txt",
+      "upstreamGitBlob": "bb09a9ad4ec064976fb245b00f1f713a989691f0",
+      "portedSha256": "cac34505131988f93ff1b21aae610f01500f478dc2bfe7f055c442ff301fd61e",
+      "modified": false,
+      "license": "See retained file"
+    },
+    {
+      "path": "docs/licenses/dependencies/Apache-2.0.txt",
+      "upstreamPath": "docs/licenses/dependencies/Apache-2.0.txt",
+      "upstreamGitBlob": "d645695673349e3947e8e5ae42332d0ac3164cd7",
+      "portedSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "modified": false,
+      "license": "See retained file"
+    },
+    {
+      "path": "docs/THIRD_PARTY_NOTICES.md",
+      "upstreamPath": "docs/THIRD_PARTY_NOTICES.md",
+      "upstreamGitBlob": "dcbc109d5e43b337653b44dfa848061fd8e5916c",
+      "portedSha256": "3602e40c1aa6ce9e80ea76f8c2c5fce616ce1c4eeee864be29d1f4873bb04cbe",
+      "modified": false,
+      "license": "Upstream notice/license (reference only)"
+    }
+  ]
+}

@@ -1,35 +1,76 @@
 # Third-party notices
 
-## OpenJDK JNI header
+## DiPlay Legacy — bundled core and experimental authentication code
 
-`diagnostic/native/jni.h` contains material from OpenJDK and retains its original copyright notice and GPLv2 + Classpath Exception language in the file header.
+Upstream: https://github.com/programmerguohuajing/DiPlay-Legacy-Android
+Exact commit: c8884adcc75bfda3c134db63877bd6c6f83beb74.
+Selected GPL-3.0 core in third_party/diplay-base; full license here and there.
+Every copied/modified file: SOURCE_MANIFEST.json (original Git blob + ported SHA-256).
+Changes: PATCHES.md / docs/DIPLAY_MODULE_MAP.md.
+Upstream DiPlay/xcertplay/LIVI attribution retained in docs/THIRD_PARTY_NOTICES.md
+and UPSTREAM-README.md. Historical references are NOT auth provisioning instructions.
 
-## Future CarPlay receiver dependencies
+Combined receiver preview/original adapter supplied under GPL-3.0 with corresponding
+source, source-built JNI, patches/build scripts at release tag/source archive.
+Existing independently licensed files retain their notices; no blanket relicensing.
+License does not grant Apple certification, credentials, trademarks or artwork.
 
-No third-party CarPlay receiver code is currently vendored into this repository. Before importing or adapting code from DiPlay or another project, record:
+No AGPL common/mobile UI/site copied. No restricted Apple/BYD/CASKA assets, fonts,
+icons, upstream APK, firmware, vendor receiver blob or proprietary TLink/ZLink/Carlinkit
+binary is bundled. Runtime authentication data are described separately below.
+com.shilapi.xcertplay namespace is DiPlay Legacy's actual namespace, not the old
+xcertplay-primary experiment. Old branch remains a separate unfinished checkpoint.
 
-- upstream URL
-- exact commit/release
-- license
-- files copied or adapted
-- required attribution / source-distribution obligations
+## User-selected experimental DiPlay runtime — 2026-10-08
 
-Do not import code until the license has been reviewed for the intended distribution model.
+The user explicitly selected reuse of DiPlay's existing experimental authentication.
+LocalMfiAuthenticationClient.kt is reused from the same GPL core pin; its original
+blob ebb4a08cb7d4f4be8392307666ba345f7eff2e92 is recorded in SOURCE_MANIFEST.json.
+TS7 changes add bounded byte-array input and close; the P-256/NONEwithECDSA/raw64
+signing algorithm is unchanged. Generated identity tests follow upstream test blob
+45f07ef858f9e53bef9bc6d15a6fb0561b4acb42; no stored test identities.
 
-## v0.1-alpha research-only candidates — no code/assets bundled
+Standalone builds may explicitly include only offline-mfi/identity.pk8 and
+offline-mfi/certificate.p7b from the official DiPlay Legacy v0.2.7 release APK,
+SHA-256 391a68216498cdc221745aa8bb2ee06aecb48680bfd982d37bbeb390d8050927.
+These experimental data came from public Carlinkit firmware according to upstream
+notices; they are NOT relicensed as GPL source, NOT newly issued credentials for TS7,
+and NOT Apple certification. Distribution suitability and future iOS acceptance are
+unresolved. A bundled key is extractable; no confidentiality claim is made.
+They stay outside Git and corresponding source. Source/CI builds omit these inputs.
+GitHub credentials and Android APK-signing keys remain entirely separate and excluded.
 
-| Repository | Inspected revision | License/caveats |
+## Runtime dependencies (official downloads, hashes enforced)
+
+| Material | Version / SHA-256 | License |
 | --- | --- | --- |
-| [shihabal3amri/DiPlay](https://github.com/shihabal3amri/DiPlay) | b26cd5443cf19707e7fdbbcc507b038bc37ad989 | Core GPL-3.0; mixed AGPL-3.0 UI/site, separately restricted assets |
-| [PeratX/diplay](https://github.com/PeratX/diplay) | e6135d36e6a64ad85a94795b2dcbd54e826fa4c0 | DiPlay provenance/license caveats remain |
-| [programmerguohuajing/DiPlay-Legacy-Android](https://github.com/programmerguohuajing/DiPlay-Legacy-Android) | c8884adcc75bfda3c134db63877bd6c6f83beb74 | DiPlay-derived GPL/AGPL/asset caveats; imports need exact-file review |
-| [shilapi/xcertplay](https://github.com/shilapi/xcertplay) | 17c92439413638dfd1d7f91d7e1c2e7358398762 | GPL-3.0; hardware-auth options researched only |
-| [f-io/LIVI](https://github.com/f-io/LIVI) | 8851de944d9ce20069d1f49e4f68a6c3494851d9 | GPL-3.0; desktop/GStreamer, not Android drop-in |
+| Kotlin stdlib via official compiler ZIP | 2.2.10 / 302d1d8e671e5c3207e6ed62ff11fb555462a628e22a1158254dcaaf7e7394bc | Apache-2.0 |
+| Bouncy Castle bcprov-jdk18on | 1.79 / 0d81ecc3124536b539bce9aa3fe9621b7f84c9cee371b635a5b31c78b79ab1da | retained BC license |
+| JmDNS | 3.6.3 / 6b6eb1623cb1d9e51467312ea62c567da005c2aa5a95347f566a11b8703c0ef1 | Apache-2.0 |
+| SLF4J API | 2.0.7 / 5d6298b93a1905c32cda6478808ac14c2d4a47e91535e53c41f7feeb85d946f4 | MIT |
+| SLF4J NOP | 2.0.7 / 5411a0d44e2725182271230b9fb4c2c4062c1b5fa7df2d83e00c0302733db173 | MIT |
 
-See docs/CARPLAY_IMPLEMENTATION_RESEARCH.md for exact-source links, deps/API/ABI/auth findings and rejected credential paths. This is research attribution, not a claim that a core is bundled or a blanket repository license. No upstream icons, BYD artwork, extracted identities, prebuilt receiver or auth keys distributed.
+Dependency texts retained in third_party/diplay-base/docs/licenses/dependencies
+and packaged in assets/licenses. Compiler ZIP/SDK/NDK are build tools, not bundled
+runtime executables. No vendor receiver libraries. Build uses API27 SDK,
+build-tools35.0.0, NDK25.2.9519653. Official JetBrains/Maven URLs in build.sh.
+
+## Preserved independent diagnostic material
+
+diagnostic/native/jni.h retains OpenJDK copyright / GPLv2 + Classpath Exception.
+Diagnostic v0.2 APK/sources/Issue5 relay remain independent, not relicensed by assumption.
+
+## Historical research, not additional bundled cores
+
+shihabal3amri/DiPlay b26cd5443cf19707e7fdbbcc507b038bc37ad989;
+PeratX/diplay e6135d36e6a64ad85a94795b2dcbd54e826fa4c0;
+shilapi/xcertplay 17c92439413638dfd1d7f91d7e1c2e7358398762;
+f-io/LIVI 8851de944d9ce20069d1f49e4f68a6c3494851d9.
+mrisX/DiPlay-Android8.1-CASKA current access/revision UNKNOWN; no import.
 
 ## Original synthetic video
 
-receiver/src/main/assets/ts7-pattern.h264 is generated locally by receiver/generate-pattern.sh from FFmpeg testsrc color bars/motion and relative time counter. No captured user/iPhone media or third-party artwork. FFmpeg/libx264 tools are not bundled. SHA-256: 97a807f52df8efbee7fa54ff57c86d03ea5c4463e303a9c97b2a09fffa75affc.
-
-New Java receiver code is original. Existing files retain notices; review exact files and source-distribution obligations before any core import. Do not relicense legacy material by assumption.
+receiver/src/main/assets/ts7-pattern.h264 locally generated by
+receiver/generate-pattern.sh using FFmpeg testsrc/relative counter, no iPhone media/art.
+SHA-256 97a807f52df8efbee7fa54ff57c86d03ea5c4463e303a9c97b2a09fffa75affc.
+FFmpeg/libx264 tools not bundled.

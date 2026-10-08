@@ -2,6 +2,10 @@ package io.ts7.carplay;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.pm.PackageManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
@@ -22,14 +26,18 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.nio.ByteBuffer;
+import java.util.function.BooleanSupplier;
+import io.ts7.carplay.core.DiPlayReceiverCore;
+import io.ts7.carplay.core.ExperimentalDiPlayAuthenticationProvider;
 
 public final class MainActivity extends Activity implements SurfaceHolder.Callback {
     private final Handler main = new Handler();
     private final EventRing events = new EventRing();
     private final SessionMachine session = new SessionMachine(events);
-    private final ReceiverCore core = new ReceiverCore.Unavailable();
+    private DiPlayReceiverCore core;
     private final RetryBudget reconnect = new RetryBudget();
     private final PcmAudioOutput audio = new PcmAudioOutput(events);
+    private FocusedPcmAudioOutput focusedAudio;
     private final float[] touch = new float[2];
     private RadioMonitor radio;
     private SurfaceView surface;
@@ -49,9 +57,16 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     private boolean uploading;
     private boolean fullscreen;
     private TextView diagnosticText;
+    private PlatformReadinessRunner readiness;
+    private TextView readinessText;
+    private AlertDialog readinessDialog;
     private SessionMachine.Reason playbackReason = SessionMachine.Reason.NONE;
     private boolean touchPressed;
     private int touchPointer;
+    private boolean phoneSelected;
+    private boolean connectAfterPermission;
+    private volatile EventCode connectionDetail;
+    private static final long CONNECTION_ATTEMPT_TIMEOUT_MS = 120000;
 
     private final Runnable monitor = new Runnable() {
         @Override public void run() {
@@ -71,7 +86,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.BLACK);
-        heading = text("TS7 CarPlay Lite · TECHNICAL PREVIEW", 20);
+        heading = text("TS7 CarPlay Lite · v1.0 Development", 20);
         heading.setGravity(Gravity.CENTER);
         root.addView(heading, new LinearLayout.LayoutParams(-1, 44));
         surface = new SurfaceView(this);
@@ -95,14 +110,23 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         root.addView(stage, new LinearLayout.LayoutParams(-1, 0, 1));
         bar = new LinearLayout(this);
         bar.setGravity(Gravity.CENTER_VERTICAL);
-        status = text("Waiting for iPhone · authentication blocked", 14);
+        status = text("Preparing DiPlay authentication", 14);
         bar.addView(status, new LinearLayout.LayoutParams(0, -2, 1));
         button(bar, "Settings", this::settings);
         button(bar, "Diagnostics", this::diagnostics);
         root.addView(bar, new LinearLayout.LayoutParams(-1, 54));
         setContentView(root); // No probes, assets or MediaCodec work precede visible UI.
+        focusedAudio = new FocusedPcmAudioOutput(this, audio, events, main);
+        readiness = new PlatformReadinessRunner(new AndroidPlatformProbes(this, surface.getHolder()));
         events.add(EventCode.APP_OPEN);
         radio = new RadioMonitor(this, session);
+        ExperimentalDiPlayAuthenticationProvider provider = new ExperimentalDiPlayAuthenticationProvider();
+        core = new DiPlayReceiverCore(this, provider, 3);
+        new Thread(() -> {
+            AuthenticationAssets.initialize(getAssets(), provider);
+            core.initialize();
+            main.post(() -> { if (!isDestroyed()) updateStatus(); });
+        }, "ts7-diplay-initialize").start();
     }
 
     @Override protected void onResume() {
@@ -117,6 +141,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         resumed = false;
         main.removeCallbacks(monitor);
         radio.stop();
+        readiness.cancel();
         // Start stopping before Android destroys the Surface during a background transition.
         if (coreActive || !"IDLE".equals(mode)) stopPlayback(SessionMachine.Reason.USER_STOP);
         super.onPause();
@@ -128,7 +153,10 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     }
 
     @Override protected void onDestroy() {
+        readiness.cancel();
+        if (readinessDialog != null) readinessDialog.dismiss();
         stopPlayback(SessionMachine.Reason.USER_STOP);
+        core.close();
         main.removeCallbacksAndMessages(null);
         super.onDestroy();
     }
@@ -152,11 +180,12 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
 
     private void settings() {
         boolean developer = getPreferences(0).getBoolean("developerPattern", false);
-        String[] options = {"Connect iPhone (authentication unavailable)", "System Bluetooth pairing",
+        String[] options = {"Connect iPhone", "System Bluetooth pairing",
             "System Wi-Fi settings", "Video profile: " + profile.name(),
             "Developer test mode: " + (developer ? "ON" : "OFF"),
-            "Start developer H.264 pattern", "Stop playback"};
-        new AlertDialog.Builder(this).setTitle("Settings · Technical preview")
+            "Start developer H.264 pattern", "Stop playback",
+            "Wireless discovery permission", "Select paired iPhone", "Developer"};
+        new AlertDialog.Builder(this).setTitle("Settings · Development")
             .setItems(options, (dialog, index) -> {
                 if (index == 0) connect();
                 if (index == 1) startActivity(new Intent(Settings.ACTION_BLUETOOTH_SETTINGS));
@@ -168,7 +197,50 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                 }
                 if (index == 5) startPattern();
                 if (index == 6) stopPlayback(SessionMachine.Reason.USER_STOP);
+                if (index == 7) discoveryPermission();
+                if (index == 8) selectIphone(false);
+                if (index == 9) developer();
             }).setNegativeButton("Close", null).show();
+    }
+
+    private void discoveryPermission() {
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Wireless discovery permission granted. No location is collected.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        new AlertDialog.Builder(this).setTitle("Wi-Fi / Bluetooth discovery")
+            .setMessage("Android 8 requires this permission for Wi-Fi/Bluetooth discovery. TS7 CarPlay Lite does not collect or upload location.")
+            .setPositiveButton("Continue", (dialog, which) ->
+                requestPermissions(new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, 27))
+            .setNegativeButton("Cancel", (dialog, which) -> connectAfterPermission = false)
+            .setOnCancelListener(dialog -> connectAfterPermission = false).show();
+    }
+
+    @SuppressWarnings("deprecation")
+    private void selectIphone(boolean connectAfterSelection) {
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if (adapter == null || !adapter.isEnabled()) {
+            Toast.makeText(this, "Enable Bluetooth and pair an iPhone in Android settings.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        final BluetoothDevice[] devices = adapter.getBondedDevices().toArray(new BluetoothDevice[0]);
+        if (devices.length == 0) {
+            Toast.makeText(this, "No paired device. Pair your iPhone in Android settings.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        String[] names = new String[devices.length];
+        for (int index = 0; index < devices.length; index++) {
+            String name = devices[index].getName();
+            names[index] = name == null ? "Paired device " + (index + 1) : name.substring(0, Math.min(64, name.length()));
+        }
+        new AlertDialog.Builder(this).setTitle("Select paired iPhone · local only")
+            .setItems(names, (dialog, index) -> {
+                stopPlayback(SessionMachine.Reason.USER_STOP);
+                core.selectPairedAddress(devices[index].getAddress());
+                phoneSelected = true;
+                if (connectAfterSelection) connect();
+                else Toast.makeText(this, "iPhone selected locally. Choose Connect iPhone.", Toast.LENGTH_LONG).show();
+            }).setNegativeButton("Cancel", null).show();
     }
 
     private void profiles() {
@@ -181,17 +253,42 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     }
 
     private void connect() {
+        if ("NOT_INITIALIZED".equals(core.initializationStatus())) {
+            Toast.makeText(this, "Preparing authentication. Please try again shortly.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (core.hasAuthenticationProvider()) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                connectAfterPermission = true;
+                discoveryPermission();
+                return;
+            }
+            if (!phoneSelected) { selectIphone(true); return; }
+        }
         stopPlayback(SessionMachine.Reason.USER_STOP);
-        session.begin(core.hasLawfulAuthentication());
-        if (core.hasLawfulAuthentication()) {
+        session.begin(core.hasAuthenticationProvider());
+        if (core.hasAuthenticationProvider()) {
             reconnect.reset();
             coreActive = true;
-            core.connect(profile, coreListener(++connectionGeneration));
+            connectionDetail = null;
+            reconnect.attemptStarted();
+            int expected = ++connectionGeneration;
+            armConnectionDeadline(expected, ++recoveryGeneration);
+            core.connect(profile, coreListener(expected));
         }
         else new AlertDialog.Builder(this).setTitle("Authentication blocked")
-            .setMessage("A lawful CarPlay authentication component is required. This technical preview cannot connect an iPhone yet. The developer H.264 pattern can test the decoder and display.")
+            .setMessage("Runtime identity is missing or invalid. Source/CI builds do not include it. The standalone experimental build must contain the explicitly selected DiPlay runtime identity. Local H.264 tests remain available.")
             .setPositiveButton("OK", null).show();
         updateStatus();
+    }
+
+    @Override public void onRequestPermissionsResult(int request, String[] permissions, int[] results) {
+        super.onRequestPermissionsResult(request, permissions, results);
+        if (request != 27) return;
+        boolean continueConnection = connectAfterPermission;
+        connectAfterPermission = false;
+        if (continueConnection && results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED
+                && !isDestroyed()) connect();
     }
 
     // Package-visible for the separately packaged CI instrumentation build.
@@ -199,6 +296,8 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     SurfaceRenderer rendererForTest() { return renderer; }
     String modeForTest() { return mode; }
     SessionMachine sessionForTest() { return session; }
+    String coreStatusForTest() { return core.initializationStatus(); }
+    boolean coreAuthForTest() { return core.hasAuthenticationProvider(); }
 
     void startPattern() {
         if (!getPreferences(0).getBoolean("developerPattern", false)) {
@@ -234,7 +333,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                 public void firstFrame() {
                     main.post(() -> {
                         if (generation != currentGeneration) return;
-                        if ("CARPLAY".equals(mode) && session.authenticated()) {
+                        if ("CARPLAY".equals(mode) && session.authenticated() && core.frameRendered()) {
                             if (session.state() == SessionMachine.State.CARPLAY_NEGOTIATING
                                     || session.state() == SessionMachine.State.RECOVERING) {
                                 session.firstCarPlayFrame();
@@ -280,7 +379,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         generation++;
         if (pattern != null) { pattern.stop(); pattern = null; events.add(EventCode.TEST_STOP); }
         if (renderer != null) renderer.stop(); // Never wait for a vendor call on the UI thread.
-        audio.stop();
+        focusedAudio.stop();
         mode = "IDLE";
         playbackReason = reason;
         showChrome();
@@ -324,21 +423,29 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
 
     private ReceiverCore.Listener coreListener(final int expected) {
         return new ReceiverCore.Listener() {
-            public void bluetoothBootstrapConfirmed() {
+            public void bluetoothBootstrapConfirmed() { bluetoothBootstrapConfirmed(() -> true); }
+            public void bluetoothBootstrapConfirmed(BooleanSupplier attemptCurrent) {
                 main.post(() -> {
-                    if (connectionCurrent(expected) && session.state() == SessionMachine.State.BT_DISCOVERY)
+                    if (attemptCurrent.getAsBoolean() && connectionCurrent(expected)
+                            && (session.state() == SessionMachine.State.BT_DISCOVERY
+                                || (session.state() == SessionMachine.State.RECOVERING && !session.authenticated())))
                         session.bootstrapConfirmed();
                 });
             }
-            public void wifiSessionLinkConfirmed() {
+            public void wifiSessionLinkConfirmed() { wifiSessionLinkConfirmed(() -> true); }
+            public void wifiSessionLinkConfirmed(BooleanSupplier attemptCurrent) {
                 main.post(() -> {
-                    if (connectionCurrent(expected) && session.state() == SessionMachine.State.WIFI_CONNECTING)
+                    if (attemptCurrent.getAsBoolean() && connectionCurrent(expected)
+                            && (session.state() == SessionMachine.State.WIFI_CONNECTING
+                                || (session.state() == SessionMachine.State.RECOVERING && !session.authenticated()
+                                    && session.bluetooth() == SessionMachine.BluetoothState.BOOTSTRAP_CONFIRMED)))
                         session.sessionWifiConfirmed();
                 });
             }
-            public void authenticatedSessionStarted() {
+            public void authenticatedSessionStarted() { authenticatedSessionStarted(() -> true); }
+            public void authenticatedSessionStarted(BooleanSupplier attemptCurrent) {
                 main.post(() -> {
-                    if (!connectionCurrent(expected)) return;
+                    if (!attemptCurrent.getAsBoolean() || !connectionCurrent(expected)) return;
                     SessionMachine.State state = session.state();
                     if (state != SessionMachine.State.CARPLAY_NEGOTIATING && state != SessionMachine.State.RECOVERING) return;
                     if (session.authenticated()) return; // Duplicate provider callback, not a new session.
@@ -360,15 +467,42 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
                 if (expected == connectionGeneration && coreActive && "CARPLAY".equals(mode) && current != null)
                     current.streamReset();
             }
-            public void disconnected(SessionMachine.Reason reason) {
-                main.post(() -> handleDisconnect(expected, reason));
+            public void disconnected(SessionMachine.Reason reason) { disconnected(reason, () -> true); }
+            public void disconnected(SessionMachine.Reason reason, BooleanSupplier attemptCurrent) {
+                main.post(() -> { if (attemptCurrent.getAsBoolean()) handleDisconnect(expected, reason); });
+            }
+            public boolean audioFormat(int sampleRate, int channels) {
+                if (!connectionCurrent(expected) || !session.authenticated() || !"CARPLAY".equals(mode)) return false;
+                return focusedAudio.start(sampleRate, channels);
+            }
+            public int audioPcm(ByteBuffer pcm, int bytes) {
+                if (!connectionCurrent(expected) || !session.authenticated() || !"CARPLAY".equals(mode)) return 0;
+                int written = focusedAudio.write(pcm, bytes);
+                if (written != bytes) events.add(EventCode.AUDIO_ERROR, bytes - written);
+                return written;
+            }
+            public void audioStopped() {
+                if (expected == connectionGeneration) focusedAudio.stop();
+            }
+            public void connectionEvent(EventCode code, BooleanSupplier attemptCurrent) {
+                if (attemptCurrent.getAsBoolean() && connectionCurrent(expected)) {
+                    connectionDetail = code;
+                    events.add(code);
+                }
             }
         };
     }
 
     private void handleDisconnect(int expected, SessionMachine.Reason reason) {
-        if (!connectionCurrent(expected)
-                || (session.state() == SessionMachine.State.RECOVERING && !session.authenticated())) return;
+        if (!connectionCurrent(expected)) return;
+        if (session.state() == SessionMachine.State.RECOVERING && !session.authenticated()) {
+            if (reconnect.attemptEnded()) {
+                session.recovering(reason); // Revoke proof from this failed retry before the next attempt.
+                scheduleReconnect(expected, ++recoveryGeneration);
+            }
+            return;
+        }
+        reconnect.attemptEnded();
         session.recovering(reason);
         stopVideo(reason); // Fresh authentication and a fresh rendered frame are needed.
         events.add(EventCode.RECOVERY_START);
@@ -381,27 +515,36 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     }
 
     private void scheduleReconnect(int expectedConnection, int expectedRecovery) {
+        if (reconnect.inFlight()) return; // Backoff is between failed attempts, not a timer cancelling a live handshake.
         long delay = reconnect.peekDelayMs();
         if (delay < 0) {
-            // The final attempt gets a completion window; never cancel it on the same UI turn.
-            main.postDelayed(() -> {
-                if (!recoveryCurrent(expectedConnection, expectedRecovery)) return;
-                session.exhausted();
-                stopPlayback(SessionMachine.Reason.RECOVERY_EXHAUSTED);
-            }, 5000);
+            if (!recoveryCurrent(expectedConnection, expectedRecovery)) return;
+            session.exhausted();
+            stopPlayback(SessionMachine.Reason.RECOVERY_EXHAUSTED);
             return;
         }
         main.postDelayed(() -> {
-            if (!recoveryCurrent(expectedConnection, expectedRecovery)) return;
+            if (!recoveryCurrent(expectedConnection, expectedRecovery) || !reconnect.attemptStarted()) return;
             reconnect.nextDelayMs(); // Consume only an attempt actually dispatched.
             reconnectCount++;
-            core.reconnect(); // Acceptance is not evidence of recovery: core must resume authenticated media.
-            // Let synchronous provider callbacks posted to the UI complete first.
+            int deadlineGeneration = ++recoveryGeneration;
+            armConnectionDeadline(expectedConnection, deadlineGeneration);
+            boolean accepted = core.reconnect();
+            // Accepted attempts wait for actual success/failure or their bounded startup deadline.
             main.post(() -> {
-                if (recoveryCurrent(expectedConnection, expectedRecovery))
-                    scheduleReconnect(expectedConnection, expectedRecovery);
+                if (!accepted && recoveryCurrent(expectedConnection, deadlineGeneration) && reconnect.attemptEnded())
+                    scheduleReconnect(expectedConnection, ++recoveryGeneration);
             });
         }, delay);
+    }
+
+    private void armConnectionDeadline(int expectedConnection, int expectedRecovery) {
+        main.postDelayed(() -> {
+            if (!connectionCurrent(expectedConnection) || recoveryGeneration != expectedRecovery
+                    || !reconnect.inFlight() || session.authenticated()) return;
+            events.add(EventCode.CONNECTION_ATTEMPT_TIMEOUT);
+            core.connectionTimedOut(); // Invalidates only this attempt; retains explicit user's finite retry intent.
+        }, CONNECTION_ATTEMPT_TIMEOUT_MS);
     }
 
     private void diagnostics() {
@@ -409,7 +552,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         diagnosticText.setTextIsSelectable(true);
         ScrollView scroll = new ScrollView(this);
         scroll.addView(diagnosticText);
-        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Diagnostics · " + mode)
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Diagnostics · DiPlay · " + core.initializationStatus())
             .setView(scroll).setPositiveButton("Copy diagnostics", (ignored, which) -> {
                 ((ClipboardManager) getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("TS7 alpha diagnostics", report()));
             }).setNeutralButton("Upload diagnostics", (ignored, which) -> confirmUpload())
@@ -422,7 +565,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         if (uploading) return;
         final String publicReport = report();
         new AlertDialog.Builder(this).setTitle("Upload public diagnostics to Issue #13?")
-            .setMessage("This sends only the displayed counters, radio metrics and fixed event codes to the public TS7 alpha testing issue. Test-pattern playback is clearly labeled. No automatic uploads.")
+            .setMessage("This publicly uploads the displayed counters, radio metrics, fixed event codes and platform readiness status/duration/error codes to Issue #13. No identifiers, hotspot credentials or raw exceptions. No automatic uploads.")
             .setPositiveButton("Upload", (dialog, which) -> {
                 uploading = true;
                 new Thread(() -> {
@@ -440,18 +583,95 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     }
 
     private String report() {
-        return Diagnostics.report(this, session, radio, renderer, profile, mode, playbackReason, reconnectCount, audio, events);
+        return Diagnostics.report(this, session, radio, renderer, profile, mode, playbackReason, reconnectCount,
+            audio, events, readiness.snapshot(), core.hasAuthenticationProvider());
     }
+
+    private void developer() {
+        new AlertDialog.Builder(this).setTitle("Developer")
+            .setItems(new String[]{"Test platform readiness", "View platform readiness"}, (dialog, index) -> {
+                if (index == 0) confirmReadiness();
+                else showReadiness(false);
+            }).setNegativeButton("Close", null).show();
+    }
+
+    private void confirmReadiness() {
+        if (readiness.isBusy()) {
+            new AlertDialog.Builder(this).setTitle("Previous platform probe still running")
+                .setMessage("A vendor call or resource cleanup is unfinished or failed. Further tests are blocked to avoid accumulating resources. You can copy/upload the current fixed results. Save results first, then Force stop this app in Android settings before retrying.")
+                .setPositiveButton("View results", (dialog, which) -> showReadiness(false)).show();
+            return;
+        }
+        new AlertDialog.Builder(this).setTitle("Test TS7 platform readiness?")
+            .setMessage("No iPhone needed. No CarPlay session, authentication or credential access. Tests create and release temporary sockets, a multicast lock and a silent AudioTrack; no app-level data is sent or received. The hotspot check may briefly interrupt Wi-Fi and needs the optional discovery permission. Bluetooth is not enabled automatically. Active test-pattern playback will stop. A stuck vendor call cannot stop later checks. Results remain local unless you choose Upload.")
+            .setPositiveButton("Run tests", (dialog, which) -> showReadiness(true))
+            .setNegativeButton("Cancel", null).show();
+    }
+
+    private void showReadiness(boolean run) {
+        if (run) {
+            stopPlayback(SessionMachine.Reason.USER_STOP);
+            startReadiness();
+        }
+        ScrollView scroll = new ScrollView(this);
+        readinessText = text(readinessDisplay(), 15);
+        readinessText.setTextIsSelectable(true);
+        scroll.addView(readinessText);
+        readinessDialog = new AlertDialog.Builder(this).setTitle("TS7 Platform Readiness")
+            .setView(scroll).setPositiveButton("Copy report", (dialog, which) -> {
+                ((ClipboardManager) getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(
+                    ClipData.newPlainText("TS7 public platform readiness", report()));
+            }).setNeutralButton("Upload to Issue #13", (dialog, which) -> confirmUpload())
+            .setNegativeButton("Close / cancel", (dialog, which) -> readiness.cancel()).create();
+        readinessDialog.setOnDismissListener(dialog -> {
+            if (readiness.isRunning()) readiness.cancel();
+            readinessText = null;
+            readinessDialog = null;
+        });
+        readinessDialog.show();
+        updateReadiness();
+    }
+
+    private boolean startReadiness() {
+        return readiness.start(report -> main.post(() -> { if (!isDestroyed()) updateReadiness(); }),
+            () -> main.post(() -> { if (!isDestroyed()) updateReadiness(); }));
+    }
+
+    private String readinessDisplay() {
+        return readiness.snapshot().display() + (readiness.isRunning() ? "\n\nTesting… Close cancels unfinished checks."
+            : readiness.isBusy() ? "\n\nVendor call/cleanup unfinished or failed. Repeat run blocked; save report then Force stop." : "");
+    }
+
+    private void updateReadiness() {
+        if (readinessText != null) readinessText.setText(readinessDisplay());
+        if (readinessDialog != null) {
+            readinessDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(!readiness.isRunning());
+            readinessDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setEnabled(!readiness.isRunning());
+        }
+    }
+
+    boolean startReadinessForTest() { return startReadiness(); }
+    boolean readinessRunningForTest() { return readiness.isRunning(); }
+    boolean readinessBusyForTest() { return readiness.isBusy(); }
+    PlatformReadiness readinessForTest() { return readiness.snapshot(); }
+    void showReadinessForTest() { showReadiness(false); }
+    String reportForTest() { return report(); }
 
     private void updateStatus() {
         if (status == null) return;
         SurfaceRenderer current = renderer;
-        String line = "Waiting for iPhone · authentication blocked";
+        String line = core.hasAuthenticationProvider()
+            ? "Waiting for iPhone · experimental identity ready · DiPlay ready"
+            : "Waiting for iPhone · authentication blocked";
+        if ("DIPLAY_CORE_READY_AUTH_BLOCKED".equals(core.initializationStatus())) line += " · DiPlay ready";
+        else if ("DIPLAY_CORE_INITIALIZATION_FAILED".equals(core.initializationStatus())) line += " · port initialization failed";
         if ("TEST_PATTERN".equals(mode) && current != null) {
             line = "TEST PATTERN (not CarPlay) · " + profile.fps + " fps target · "
                 + String.format(java.util.Locale.US, "%.1f fps · q=%d", current.measuredFps(), current.queueDepth());
         } else if (coreActive) line = session.state().name();
         else if (playbackReason != SessionMachine.Reason.NONE && playbackReason != SessionMachine.Reason.USER_STOP) line += " · " + playbackReason.name();
+        if (connectionDetail != null && (coreActive || playbackReason == SessionMachine.Reason.RECOVERY_EXHAUSTED))
+            line += " · " + connectionDetail.name();
         status.setText(line);
     }
 

@@ -5,17 +5,22 @@ import re
 import sys
 import subprocess
 import zipfile
+import os
 
 apk = pathlib.Path(sys.argv[1])
 badging = subprocess.check_output([sys.argv[2], "dump", "badging", str(apk)], text=True)
 assert re.search(r"(?:minSdkVersion|sdkVersion):'27'", badging) and "targetSdkVersion:'27'" in badging
-assert "package: name='io.ts7.carplay'" in badging and "versionName='0.1-alpha'" in badging
-assert "native-code:" not in badging
+assert "package: name='io.ts7.carplay'" in badging and "versionName='1.0.0-dev.1'" in badging and "versionCode='5'" in badging
+experimental = len(sys.argv) == 4 and sys.argv[3] == "--experimental-auth"
+assert len(sys.argv) == (4 if experimental else 3)
+assert set(re.search(r"native-code: (.*)", badging).group(1).replace("'", "").split()) == {"armeabi-v7a", "x86_64"}
 assert "launchable-activity: name='io.ts7.carplay.MainActivity'" in badging
 permissions = set(re.findall(r"uses-permission: name='([^']+)'", badging))
 assert permissions == {
     "android.permission.INTERNET", "android.permission.ACCESS_NETWORK_STATE",
     "android.permission.ACCESS_WIFI_STATE", "android.permission.BLUETOOTH",
+    "android.permission.BLUETOOTH_ADMIN", "android.permission.CHANGE_WIFI_STATE",
+    "android.permission.CHANGE_WIFI_MULTICAST_STATE", "android.permission.ACCESS_FINE_LOCATION",
 }, "Unexpected permission or missing declared purpose"
 instrumented = apk.name.endswith("-instrumented.apk")
 if not instrumented:
@@ -24,17 +29,43 @@ with zipfile.ZipFile(apk) as archive:
     names = archive.namelist()
     assert "classes.dex" in names and "AndroidManifest.xml" in names
     assert "assets/ts7-pattern.h264" in names
-    assert not any(name.startswith("lib/") for name in names), "Java-only build must not become host-native"
-    assert not any(re.search(r"(?i)(tlink|zlink|offline-mfi|[.](pk8|p7b|pem|key|so|p12|pfx|jks|keystore)$)", name) for name in names)
-    dex = archive.read("classes.dex")
+    libraries = [name for name in names if name.startswith("lib/")]
+    assert set(libraries) == {"lib/armeabi-v7a/liblocal_hotspot_radio.so", "lib/x86_64/liblocal_hotspot_radio.so"}
+    arm = archive.read("lib/armeabi-v7a/liblocal_hotspot_radio.so")
+    assert arm[:5] == b"\x7fELF\x01" and int.from_bytes(arm[18:20], "little") == 40, "Actual ELF32 ARM required"
+    x86 = archive.read("lib/x86_64/liblocal_hotspot_radio.so")
+    assert x86[:5] == b"\x7fELF\x02" and int.from_bytes(x86[18:20], "little") == 62
+    identity = {"assets/offline-mfi/identity.pk8", "assets/offline-mfi/certificate.p7b"}
+    credential_names = {name for name in names if re.search(r"(?i)(tlink|zlink|offline-mfi|[.](pk8|p7b|pem|key|p12|pfx|jks|keystore)$)", name)}
+    assert credential_names == (identity if experimental else set()), "Only two explicitly selected experimental inputs are allowed"
+    if experimental:
+        source_identity = pathlib.Path(os.environ["TS7_DIPLAY_AUTH_ASSETS_DIR"])
+        for name in identity:
+            content = archive.read(name)
+            assert 0 < len(content) <= 16384
+            assert content == (source_identity / pathlib.Path(name).name).read_bytes(), "Runtime input mismatch"
+    assert "assets/licenses/DiPlay-GPL-3.0.txt" in names and "assets/licenses/TS7-NOTICES.md" in names
+    assert "assets/licenses/DiPlay-UPSTREAM-NOTICES.md" in names
+    notices = archive.read("assets/licenses/TS7-NOTICES.md")
+    assert b"c8884adcc75bfda3c134db63877bd6c6f83beb74" in notices
+    dex = b"".join(archive.read(name) for name in names if re.fullmatch(r"classes\d*[.]dex", name))
+    for core in (b"CarPlayController;", b"DiPlayReceiverCore;", b"CarPlayMediaEngine;", b"DiPlayMediaBridge;"):
+        assert core in dex, "Missing actual DiPlay core/renderer seam"
+    assert b"LocalMfiAuthenticationClient;" in dex and b"ExperimentalDiPlayAuthenticationProvider;" in dex
+    for excluded in (b"RemoteMfiAuthenticationClient;", b"BydNavigationOutputs;", b"DiPlayActivity;", b"FakeAuthenticationProvider;"):
+        assert excluded not in dex, "Excluded upstream/test-only code was packaged"
     assert instrumented == (b"Lio/ts7/carplay/RendererInstrumentation;" in dex), "Test entry point must be CI-only"
+    assert instrumented == (b"Lio/ts7/carplay/ReadinessInstrumentation;" in dex), "Readiness test entry point must be CI-only"
+    assert instrumented == (b"Lio/ts7/carplay/AuthenticationInstrumentation;" in dex), "Authentication test entry point must be CI-only"
+    for readiness in (b"PlatformReadiness;", b"PlatformReadinessRunner;", b"AndroidPlatformProbes;"):
+        assert readiness in dex, "Missing platform readiness implementation"
     assert not re.search(rb"ghp_|github_pat_|GITHUB_TOKEN|BEGIN [A-Z ]*PRIVATE KEY", dex)
     for forbidden in (b"Landroid/graphics/Bitmap;", b"Landroid/webkit/WebView;", b"Landroid/graphics/Canvas;",
-                      b"getSSID", b"getBSSID", b"getMacAddress", b"getIpAddress", b"getSerial", b"getDeviceId",
-                      b"getImei", b"getSubscriberId", b"Landroid/accounts/AccountManager;"):
+                      b"Landroid/location/LocationManager;", b"Landroid/telephony/TelephonyManager;",
+                      b"Landroid/accounts/AccountManager;"):
         assert forbidden not in dex, "Forbidden API reference: " + forbidden.decode()
     asset = archive.read("assets/ts7-pattern.h264")
     source = pathlib.Path(__file__).resolve().parents[1] / "src/main/assets/ts7-pattern.h264"
     assert hashlib.sha256(asset).digest() == hashlib.sha256(source.read_bytes()).digest()
     assert len(asset) <= 1024 * 1024
-print("APK inspection PASS: API-27 manifest, Java-only/ARMv7-compatible, synthetic H.264 asset, no credentials/proprietary binaries/pixel-copy APIs")
+print("APK inspection PASS: API27, source-built ARM JNI, unchanged Surface seam, no GitHub/signing secrets/vendor UI/GPS/pixel-copy APIs; experimental identity " + ("explicitly included" if experimental else "absent"))

@@ -1,5 +1,43 @@
 # Changelog
 
+## v1.0.0-dev.1 connection repair — 2026-10-08
+
+- Fixed initial idle-controller teardown race and retry timers cancelling a running wireless negotiation. Backoff1/2/5s only between failures, bounded120s per attempt, no infinite retry.
+- Fresh Bluetooth/Wi-Fi proof retained during recovery; no reuse of the lost session's radio proof. Fixed stage/failure codes identify where connection stopped without private data/arbitrary exception text.
+- Native Android8 audio-focus interruption/regain around unchanged LPCM sink; muted live PCM discarded, stale gain/loss revoked on stop/replacement.
+- versionCode5; older reports/releases/Diagnostic preserved. Actual iPhone acceptance pending. Not final v1.0 or Apple certification.
+- Published carplay-v1.0.0-dev.1-standalone at354cf81; exact push/PR/Diagnostic CI allPASS, actualAPI27 native focus+Surface+generated crypto PASS. Public APK/source downloads verified; same signer as prior standalone permits in-place upgrade. Real phone acceptance still pending.
+
+## v1.0.0-dev experimental standalone — 2026-10-08
+
+- Reused pinned DiPlay P-256 authentication and two explicitly user-selected runtime inputs from official v0.2.7. No proprietary receiver binary/UI/icons.
+- Experimental availability separate from MFi authorization/phone session proof; identity-free source/CI and opted-in standalone; missing/invalid inputs fail closed.
+- Bounded startup-worker loading, real signature/key match, expiry/failure tests and no credential logging/storage.
+- Connect guides permission/paired-phone selection; nine TS7 renderer files unchanged; hotspot readiness last to avoid earlier Network-check interference.
+- Strict1.0.0-dev report contract, generated-identity API27 crypto test; old clients/Diagnostic v0.2/fixed5 unchanged.
+- Runtime identity is NOT Apple-certified or GPL-relicensed; public distribution/future iOS acceptance unresolved. Actual phone/video/audio/touch/recovery not yet verified; not final v1.0 acceptance.
+
+## TS7 Platform Readiness Preview v0.2.1 — 2026-10-07
+
+- Added Settings → Developer → Test platform readiness: 12 independent actual core/JNI/Bluetooth/RFCOMM/hotspot/multicast/mDNS/TCP/UDP/Network/Surface/AudioTrack checks.
+- Added immutable fixed status/duration/error-code results, per-probe watchdog/cancel, late hotspot reservation cleanup and process-wide repeat-run/failed-cleanup quarantine guards.
+- No iPhone/session/authentication/credential access; silent AudioTrack, local binds only, no app-level packet exchange. Hotspot interruption warning is explicit.
+- Extended sanitized fixed Issue13 relay for 0.2.1-platform with strict 12-probe nested schema; old clients and Diagnostic v0.2/fixed5 preserved.
+- Added API27 actual readiness instrumentation and Android-to-backend public-JSON verification, alongside existing H.264 Surface smoke; nine renderer/audio/touch/asset files unchanged.
+- ARMv7 native runtime and TS7 radios/vendor services remain unverified until real-device report; x86 reports JNI NOT_TESTED/ABI_NOT_ARMV7.
+- Prerelease carplay-v0.2.1-platform-preview; APK TS7-CarPlay-Lite-DiPlay-v0.2.1-platform.apk. PR18 remains OPEN/unmerged; further CarPlay and authentication hardware work paused.
+
+## CarPlay Lite DiPlay v0.2-alpha port preview — 2026-10-07
+
+- Pivoted primary development to TS7-specific DiPlay Android8.1/Legacy GPL core, exact c8884ad; preserved old lawful-core branch801d99e.
+- Imported selected pinned source/notices, API27 patches and source-built ARMv7 read-only radio JNI; no upstream UI/assets/APK/credentials.
+- Connected actual DiPlay wireless lifecycle and compressed-H264/LPCM/touch seams to preserved TS7 Surface pipeline; existing nine renderer files unchanged.
+- Added bounded parsers/discovery/tunnel queues, explicit AP/peer binding, private trace removal and fail-closed external authentication.
+- Minimal DiPlayready/waiting/authblocked UI, explained optional discovery/LOHS permission; no GPS/telemetry/microphone or fake session.
+- Preserved Diagnostic v0.2/fixed5 and extended fixed13 relay for v0.2-alpha without accepting simulated auth/streaming.
+- Added API27/ARMv7/provenance/licenses/privacy/crypto/JNI/startup and preserved Surface CI checks.
+- **NOT YET A FUNCTIONAL CARPLAY RECEIVER**. Real iPhone/TS7 wireless/auth/audio/touch unverified; Siri/wired deferred.
+
 ## CarPlay Lite v0.1-alpha technical preview — 2026-10-07
 
 - Advanced to wireless-only Phase 1 after captured Diagnostic v0.2 report; wired/USB issues remain deferred.
